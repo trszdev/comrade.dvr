@@ -1,0 +1,22 @@
+include:
+  - ./config.production.yml
+  - ./config.staging.yml
+  - ./config.debug.yml
+
+configs:
+  Production: release
+  Staging: release
+  Debug: debug
+
+options:
+  minimumXcodeGenVersion: 2.3.0
+  deploymentTarget:
+    iOS: 14.0
+  defaultConfig: Production
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: 5.0
+    TARGETED_DEVICE_FAMILY: 1 # iphone/ipod/ipad
+

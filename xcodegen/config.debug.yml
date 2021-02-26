@@ -1,0 +1,8 @@
+settings:
+  configs:
+    Debug:
+      ENABLE_TESTABILITY: YES
+      SWIFT_COMPILATION_MODE: singlefile
+      SWIFT_OPTIMIZATION_LEVEL: -Onone
+      VALIDATE_PRODUCT: NO
+

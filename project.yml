@@ -1,0 +1,6 @@
+name: ComradeDVR
+
+include:
+ - ./xcodegen/configs.yml
+ - ./xcodegen/targets.yml
+ - ./xcodegen/dependencies.yml
