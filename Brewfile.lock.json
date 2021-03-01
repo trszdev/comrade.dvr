@@ -5,7 +5,7 @@
         "revision": "b8b5bdb46cc45b7be5f305654a145473469d19d0"
       },
       "homebrew/core": {
-        "revision": "a2a59b2ee70045121e141efad2c7520230aabcc3"
+        "revision": "f5d13c001802d6839f3decb5bf4a7d18d9585d75"
       }
     },
     "brew": {
@@ -35,6 +35,29 @@
             }
           }
         }
+      },
+      "swiftlint": {
+        "version": "0.42.0",
+        "bottle": {
+          "rebuild": 0,
+          "cellar": ":any_skip_relocation",
+          "prefix": "/usr/local",
+          "root_url": "https://homebrew.bintray.com/bottles",
+          "files": {
+            "arm64_big_sur": {
+              "url": "https://homebrew.bintray.com/bottles/swiftlint-0.42.0.arm64_big_sur.bottle.tar.gz",
+              "sha256": "a9cf09a414fd3b8a5cb3d94e682a725f654a4d1caef19497a500d6dbb926ba7c"
+            },
+            "big_sur": {
+              "url": "https://homebrew.bintray.com/bottles/swiftlint-0.42.0.big_sur.bottle.tar.gz",
+              "sha256": "1a0540f0ff6cac2da0a51672db7963aef71cc58954c34791e9b01dafd63c5898"
+            },
+            "catalina": {
+              "url": "https://homebrew.bintray.com/bottles/swiftlint-0.42.0.catalina.bottle.tar.gz",
+              "sha256": "e9023ed754eb8cb78a9f2b469a90875ca42a7afffd3e96f8142252e81d889793"
+            }
+          }
+        }
       }
     }
   },
@@ -43,7 +66,7 @@
       "big_sur": {
         "HOMEBREW_VERSION": "3.0.2",
         "HOMEBREW_PREFIX": "/usr/local",
-        "Homebrew/homebrew-core": "a2a59b2ee70045121e141efad2c7520230aabcc3",
+        "Homebrew/homebrew-core": "f5d13c001802d6839f3decb5bf4a7d18d9585d75",
         "CLT": "12.4.0.0.1.1610135815",
         "Xcode": "12.4",
         "macOS": "11.2.1"

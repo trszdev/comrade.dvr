@@ -30,8 +30,7 @@ targets:
         DYLD_PRINT_STATISTICS: 1
     postCompileScripts:
       - script: |
-                if which swiftlint >/dev/null; then
-                  swiftlint --no-cache
-                fi
+          brew bundle exec swiftlint --no-cache
+          brew bundle exec swiftlint autocorrect
         name: SwiftLint
 

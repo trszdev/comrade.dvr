@@ -1,0 +1,33 @@
+included:
+  - src
+
+opt_in_rules:
+  - indentation_width
+  - conditional_returns_on_newline
+  - multiline_parameters_brackets
+  - multiline_parameters
+  - multiline_literal_brackets
+  - multiline_function_chains
+  - closure_end_indentation
+  - redundant_nil_coalescing
+  - collection_alignment
+
+conditional_returns_on_newline:
+  if_only: true
+
+indentation_width:
+  indentation_width: 2
+
+trailing_comma:
+  mandatory_comma: true
+
+custom_rules:
+  prohibited_symbols:
+    name: "Prohibited symbols"
+    regex: "[\r\t]"
+    message: "Remove carriage return and tabs"
+    severity: error
+  class_protocol:
+    regex: ': class'
+    message: "Use Anyobject instead"
+

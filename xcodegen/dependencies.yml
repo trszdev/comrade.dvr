@@ -1,8 +1,8 @@
-# localPackages:
-# - ../src/Autocontainer
+localPackages:
+  - ./src/AutocontainerKit
 
-# targets:
-#  ComradeDVR:
-#     dependencies:
-#       - package: Autocontainer
+targets:
+  ComradeDVR:
+    dependencies:
+      - package: AutocontainerKit
 
