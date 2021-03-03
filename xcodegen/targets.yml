@@ -31,6 +31,6 @@ targets:
     postCompileScripts:
       - script: |
           brew bundle exec swiftlint -- autocorrect
-          brew bundle exec swiftlint -- --no-cache
+          brew bundle exec swiftlint -- --no-cache --strict
         name: SwiftLint
 
