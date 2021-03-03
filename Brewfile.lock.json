@@ -2,10 +2,10 @@
   "entries": {
     "tap": {
       "homebrew/bundle": {
-        "revision": "b8b5bdb46cc45b7be5f305654a145473469d19d0"
+        "revision": "4cd094d3396392aef87185a95bf1e0aecb214502"
       },
       "homebrew/core": {
-        "revision": "f5d13c001802d6839f3decb5bf4a7d18d9585d75"
+        "revision": "7414769121bffa777f3058485c2dffb6c8e6915b"
       }
     },
     "brew": {
@@ -58,18 +58,45 @@
             }
           }
         }
+      },
+      "pre-commit": {
+        "version": "2.10.1",
+        "bottle": {
+          "rebuild": 0,
+          "cellar": ":any",
+          "prefix": "/usr/local",
+          "root_url": "https://homebrew.bintray.com/bottles",
+          "files": {
+            "arm64_big_sur": {
+              "url": "https://homebrew.bintray.com/bottles/pre-commit-2.10.1.arm64_big_sur.bottle.tar.gz",
+              "sha256": "0800a3c02e6807e6b6f1602ee322b7c5a0667fd9d1333e1fa274c7cdf7b14166"
+            },
+            "big_sur": {
+              "url": "https://homebrew.bintray.com/bottles/pre-commit-2.10.1.big_sur.bottle.tar.gz",
+              "sha256": "afd36a3c6bb29f0c6ee5fcc7c4c41236ca9722704ff883c1ecbca66b35031520"
+            },
+            "catalina": {
+              "url": "https://homebrew.bintray.com/bottles/pre-commit-2.10.1.catalina.bottle.tar.gz",
+              "sha256": "16e75f0ac5a2bc62f52519f25918557cdcfb7033dc7a96bc92cc70b6ff194795"
+            },
+            "mojave": {
+              "url": "https://homebrew.bintray.com/bottles/pre-commit-2.10.1.mojave.bottle.tar.gz",
+              "sha256": "599db2e4dc1759a4c16735e649c3e44e524f59e21f7fd25518b7dc0231cd508b"
+            }
+          }
+        }
       }
     }
   },
   "system": {
     "macos": {
       "big_sur": {
-        "HOMEBREW_VERSION": "3.0.2",
+        "HOMEBREW_VERSION": "3.0.4",
         "HOMEBREW_PREFIX": "/usr/local",
-        "Homebrew/homebrew-core": "f5d13c001802d6839f3decb5bf4a7d18d9585d75",
-        "CLT": "12.4.0.0.1.1610135815",
+        "Homebrew/homebrew-core": "7414769121bffa777f3058485c2dffb6c8e6915b",
+        "CLT": "",
         "Xcode": "12.4",
-        "macOS": "11.2.1"
+        "macOS": "11.2.2"
       }
     }
   }

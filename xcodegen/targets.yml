@@ -30,7 +30,7 @@ targets:
         DYLD_PRINT_STATISTICS: 1
     postCompileScripts:
       - script: |
-          brew bundle exec swiftlint --no-cache
-          brew bundle exec swiftlint autocorrect
+          brew bundle exec swiftlint -- autocorrect
+          brew bundle exec swiftlint -- --no-cache
         name: SwiftLint
 

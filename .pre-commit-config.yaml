@@ -1,0 +1,8 @@
+- repo: local
+  hooks:
+    - id: SwiftLint
+      name: SwiftLint
+      entry: bash -c 'PATH=/usr/local/bin:$PATH brew bundle exec swiftlint -- --no-cache'
+      language: system
+      pass_filenames: false
+

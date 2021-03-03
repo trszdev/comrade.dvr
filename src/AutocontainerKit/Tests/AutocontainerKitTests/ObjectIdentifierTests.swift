@@ -36,8 +36,8 @@ final class ObjectIdentifierTests: XCTestCase {
   }
 
   func testNested() {
-    let (a, b) = makeNestedObjectIds()
-    XCTAssertNotEqual(a, b)
+    let (nested, nested2) = makeNestedObjectIds()
+    XCTAssertNotEqual(nested, nested2)
     XCTAssertNotEqual(ObjectIdentifier(Struct.Nested.self), ObjectIdentifier(Class.Nested.self))
   }
 }

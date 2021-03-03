@@ -21,6 +21,16 @@ indentation_width:
 trailing_comma:
   mandatory_comma: true
 
+identifier_name:
+  excluded:
+    - ok
+    - yes
+    - no
+    - url
+    - uri
+    - id
+    - ids
+
 custom_rules:
   prohibited_symbols:
     name: "Prohibited symbols"

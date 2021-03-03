@@ -1,3 +1,4 @@
+// swiftlint:disable nesting
 import XCTest
 @testable import AutocontainerKit
 
@@ -135,7 +136,7 @@ final class AKHashContainerTests: XCTestCase {
     let container = makeContainer()
     container.registerMany(assemblies: [
       Assembly(),
-      Assembly2()
+      Assembly2(),
     ])
     XCTAssertNotNil(container.resolve(Sample.self))
     XCTAssertNotNil(container.resolve(Sample2.self))

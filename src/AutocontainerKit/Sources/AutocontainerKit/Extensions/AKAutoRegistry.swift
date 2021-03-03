@@ -1,3 +1,4 @@
+// swiftlint:disable large_tuple
 public extension AKAutoRegistry {
   func autoregister<T>(construct: @escaping (()) -> T) {
     autoregister(T.self, construct: construct)
@@ -11,7 +12,7 @@ public extension AKAutoRegistry {
     autoregister(T.self, construct: construct)
   }
 
-  func autoregister<T, A, B, C>(construct: @escaping ((A, B, C)) -> T){
+  func autoregister<T, A, B, C>(construct: @escaping ((A, B, C)) -> T) {
     autoregister(T.self, construct: construct)
   }
 
