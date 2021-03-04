@@ -5,8 +5,6 @@ targets:
     deploymentTarget: 14.0
     sources:
       - path: ../src/App
-        excludes:
-          - Readme.txt
     settings:
       base:
         ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: $(inherited)
@@ -22,9 +20,35 @@ targets:
         Production:
           ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         Staging:
-          ASSETCATALOG_COMPILER_APPICON_NAME: AppIconStaging
+          ASSETCATALOG_COMPILER_APPICON_NAME: AppIconInverted
         Debug:
-          ASSETCATALOG_COMPILER_APPICON_NAME: AppIconDebug
+          ASSETCATALOG_COMPILER_APPICON_NAME: AppIconInverted
+    scheme:
+      environmentVariables:
+        DYLD_PRINT_STATISTICS: 1
+    postCompileScripts:
+      - script: |
+          brew bundle exec swiftlint -- autocorrect
+          brew bundle exec swiftlint -- --no-cache --strict
+        name: SwiftLint
+  TestCameraKitApp:
+    type: application
+    platform: iOS
+    deploymentTarget: 14.0
+    sources:
+      - path: ../src/TestCameraKitApp
+    settings:
+      base:
+        ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: $(inherited)
+        CODE_SIGN_IDENTITY: iPhone Developer
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: H6UDD5Y5X5
+        DEFINES_MODULE: YES
+        INFOPLIST_FILE: src/TestCameraKitApp/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.trszdev.TestCameraKitApp
+        TARGETED_DEVICE_FAMILY: 1
+        XCODEGEN_STATE: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     scheme:
       environmentVariables:
         DYLD_PRINT_STATISTICS: 1
