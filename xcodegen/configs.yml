@@ -9,6 +9,9 @@ configs:
   Debug: debug
 
 options:
+  usesTabs: false
+  indentWidth: 2
+  developmentLanguage: ru
   minimumXcodeGenVersion: 2.3.0
   deploymentTarget:
     iOS: 14.0
