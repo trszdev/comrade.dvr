@@ -1,0 +1,3 @@
+CFBundleDisplayName = "TestCameraKitApp";
+NSMicrophoneUsageDescription = "DAI MIC";
+NSCameraUsageDescription = "DAI KAMERU";

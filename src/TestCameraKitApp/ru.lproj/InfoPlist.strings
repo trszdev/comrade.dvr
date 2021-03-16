@@ -1,2 +1,3 @@
-NSLocationWhenInUseUsageDescription = "Description of this";
-CFBundleDisplayName = "Тест CameraKit"
+CFBundleDisplayName = "Тест CameraKit";
+NSMicrophoneUsageDescription = "Дай мик";
+NSCameraUsageDescription = "Дай камеру";

@@ -12,10 +12,13 @@ let package = Package(
       targets: ["CameraKit"]
     ),
   ],
+  dependencies: [
+    .package(path: "../AutocontainerKit"),
+  ],
   targets: [
     .target(
       name: "CameraKit",
-      dependencies: []
+      dependencies: ["AutocontainerKit"]
     ),
     .testTarget(
       name: "CameraKitTests",
