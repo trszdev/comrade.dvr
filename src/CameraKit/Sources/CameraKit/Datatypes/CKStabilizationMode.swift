@@ -1,4 +1,4 @@
-public enum CKStabilizationMode {
+public enum CKStabilizationMode: CaseIterable {
   case off
   case standard
   case cinematic

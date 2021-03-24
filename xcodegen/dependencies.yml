@@ -7,4 +7,8 @@ targets:
     dependencies:
       - package: AutocontainerKit
       - package: CameraKit
+  TestCameraKitApp:
+    dependencies:
+      - package: AutocontainerKit
+      - package: CameraKit
 

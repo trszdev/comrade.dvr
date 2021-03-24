@@ -1,4 +1,5 @@
 public class AKHashContainer: AKContainer, AKLocator {
+  public init() {}
   public var asserts = true
   public lazy private(set) var singleton: AKAutoRegistry & AKSingletonAutoRegistry
     = AKSingletonAutoRegistryAdapter(registry: AKSingletonRegistry(didOutputConstructor: didOutputConstructor))

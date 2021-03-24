@@ -1,4 +1,5 @@
 public protocol CKSessionMaker {
-  var adjustableConfiguration: CKAdjustableCameraConfiguration { get }
-  func makeSession(configuration: CKConfiguration) -> CKSession?
+  var adjustableConfiguration: CKAdjustableConfiguration { get }
+  var nearestConfigurationPicker: CKNearestConfigurationPicker { get }
+  func makeSession(configuration: CKConfiguration) -> CKSession
 }

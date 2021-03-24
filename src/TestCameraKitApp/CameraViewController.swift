@@ -6,7 +6,7 @@ import AVKit
 final class MainViewController: UITabBarController {
   override func viewDidLoad() {
     super.viewDidLoad()
-    let cameraVc = CameraViewController()
+    let cameraVc = CameraKitViewController()
     cameraVc.tabBarItem = UITabBarItem(tabBarSystemItem: .topRated, tag: 0)
     let second = UIViewController()
     second.view.backgroundColor = .red

@@ -1,6 +1,9 @@
 included:
   - src
 
+disabled_rules:
+  - todo
+
 opt_in_rules:
   - indentation_width
   - conditional_returns_on_newline
@@ -24,6 +27,7 @@ trailing_comma:
 identifier_name:
   excluded:
     - ok
+    - ui
     - yes
     - no
     - url

@@ -45,7 +45,8 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
           orientation: .portrait,
           autoFocus: .phaseDetection,
           isVideoMirrored: sampleCamera.configuration[0].isVideoMirroringAvailable,
-          stabilizationMode: .auto
+          stabilizationMode: .auto,
+          videoGravity: .resize
         )
       ),
     ],
@@ -65,7 +66,8 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
           orientation: .portrait,
           autoFocus: .phaseDetection,
           isVideoMirrored: true,
-          stabilizationMode: .auto
+          stabilizationMode: .auto,
+          videoGravity: .resize
         )
       ),
     ],
@@ -85,7 +87,8 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
           orientation: .portrait,
           autoFocus: .phaseDetection,
           isVideoMirrored: true,
-          stabilizationMode: .auto
+          stabilizationMode: .auto,
+          videoGravity: .resize
         )
       ),
     ],
@@ -103,7 +106,7 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
   )
 
   func testPickExistingConfiguration() {
-    let picker = CKNearestConfigurationPicker(
+    let picker = makePicker(
       adjustableConfiguration: CKAdjustableConfiguration(
         cameras: [sampleCamera.id: sampleCamera],
         microphone: nil
@@ -114,7 +117,7 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
   }
 
   func testPickNonExistingCamera() {
-    let picker = CKNearestConfigurationPicker(
+    let picker = makePicker(
       adjustableConfiguration: CKAdjustableConfiguration(
         cameras: [sampleCamera.id: sampleCamera],
         microphone: nil
@@ -125,7 +128,7 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
   }
 
   func testPickNearestCamera() {
-    let picker = CKNearestConfigurationPicker(
+    let picker = makePicker(
       adjustableConfiguration: CKAdjustableConfiguration(
         cameras: [sampleCamera.id: sampleCamera],
         microphone: nil
@@ -133,5 +136,9 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
     )
     let nearest = picker.nearestConfiguration(for: requestedConfiguration)
     XCTAssertEqual(nearest, resultConfiguration)
+  }
+
+  private func makePicker(adjustableConfiguration: CKAdjustableConfiguration) -> CKNearestConfigurationPicker {
+    CKAVNearestConfigurationPicker(adjustableConfiguration: adjustableConfiguration)
   }
 }
