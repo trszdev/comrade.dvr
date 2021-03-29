@@ -1,4 +1,4 @@
-public struct CKConfiguration: Hashable {
+public struct CKConfiguration: CKConfigurationKind, Hashable {
   public let cameras: [CKDeviceID: CKDevice<CKCameraConfiguration>]
   public let microphone: CKDevice<CKMicrophoneConfiguration>?
 

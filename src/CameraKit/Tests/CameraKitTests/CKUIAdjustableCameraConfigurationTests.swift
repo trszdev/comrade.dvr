@@ -15,7 +15,6 @@ final class CKUIAdjustableCameraConfigurationTests: CKTestCase {
         minFps: 0,
         maxFps: 30,
         fieldOfView: 70,
-        isVideoMirroringAvailable: false,
         supportedStabilizationModes: CKStabilizationMode.allCases,
         isMulticamAvailable: true
       ),
@@ -27,7 +26,6 @@ final class CKUIAdjustableCameraConfigurationTests: CKTestCase {
         minFps: 1,
         maxFps: 30,
         fieldOfView: 80,
-        isVideoMirroringAvailable: true,
         supportedStabilizationModes: [],
         isMulticamAvailable: false
       ),
@@ -46,7 +44,6 @@ final class CKUIAdjustableCameraConfigurationTests: CKTestCase {
     XCTAssertEqual(uiConfiguration.maxFps, 30)
     XCTAssertEqual(uiConfiguration.minFieldOfView, 70)
     XCTAssertEqual(uiConfiguration.maxFieldOfView, 80)
-    XCTAssertEqual(uiConfiguration.isVideoMirroringAvailable, true)
     XCTAssertEqual(uiConfiguration.supportedStabilizationModes, Set(CKStabilizationMode.allCases))
     XCTAssertEqual(uiConfiguration.isMulticamAvailable, true)
   }

@@ -5,8 +5,7 @@ public struct CKAdjustableCameraConfiguration: Identifiable, Hashable {
   public let maxZoom: Double
   public let minFps: Int
   public let maxFps: Int
-  public let fieldOfView: Double
-  public let isVideoMirroringAvailable: Bool
+  public let fieldOfView: Int
   public let supportedStabilizationModes: [CKStabilizationMode]
   public let isMulticamAvailable: Bool
 }

@@ -1,6 +1,25 @@
 import AVFoundation
 import Combine
 
+enum CKAVSessionError: Error {
+  case cantAddDevice
+  case cantConnectDevice
+  case cantConfigureDevice(inner: Error)
+}
+
+extension CKAVSessionError: LocalizedError {
+  var errorDescription: String? {
+    switch self {
+    case .cantAddDevice:
+      return "Can't add device"
+    case let .cantConfigureDevice(inner):
+      return "Can't configure device (\(inner.localizedDescription))"
+    case .cantConnectDevice:
+      return "Can't connect device"
+    }
+  }
+}
+
 final class CKAVSingleCameraSession: NSObject, CKSession {
   struct Builder {
     let mapper: CKAVConfigurationMapper
@@ -17,7 +36,14 @@ final class CKAVSingleCameraSession: NSObject, CKSession {
 
   private(set) var cameras: [CKDeviceID: CKCameraDevice] = [:]
   private(set) var microphone: CKMicrophoneDevice?
-  private(set) var pressureLevel: CKPressureLevel = .nominal
+  var pressureLevel: CKPressureLevel {
+    let devices: [AVCaptureDevice] = session.connections.compactMap { connection in
+      let input = connection.inputPorts.first?.input
+      let deviceInput = input.flatMap { $0 as? AVCaptureDeviceInput }
+      return deviceInput?.device
+    }
+    return devices.map(\.ckPressureLevel).max() ?? .nominal
+  }
   private(set) var session = AVCaptureSession()
   let configuration: CKConfiguration
   let mapper: CKAVConfigurationMapper
@@ -26,28 +52,65 @@ final class CKAVSingleCameraSession: NSObject, CKSession {
     cameras.values.first
   }
 
-  var isRunning: Bool {
-    get {
-      isRunningInternal
+  private(set) var isRunning: Bool = false
+
+  func start() throws {
+    session.stopRunning()
+    session = AVCaptureSession()
+    session.startRunning()
+    if let camera = configuration.cameras.values.first {
+      try tryAddCamera(camera: camera)
     }
-    set {
-      isRunningInternal = newValue
-      if isRunningInternal {
-        start()
-      } else {
-        stop()
-      }
+    if let microphone = configuration.microphone {
+      tryAddMicrophone(microphone: microphone)
+    }
+    session.commitConfiguration()
+    session.startRunning()
+    for plugin in plugins {
+      plugin.didStart(session: self)
     }
   }
 
-  private var isRunningInternal = false
-
-  private func tryAddCamera(camera: CKDevice<CKCameraConfiguration>) {
+  private func tryAddCamera(camera: CKDevice<CKCameraConfiguration>) throws {
     let output = AVCaptureVideoDataOutput()
     output.setSampleBufferDelegate(self, queue: .global(qos: .userInteractive))
-    guard tryAddInputOutput(for: camera, output: output) else { return }
+    guard let avDevice = mapper.avCaptureDevice(camera.key),
+      let avFormat = mapper.avFormat(camera.key),
+      let input = try? AVCaptureDeviceInput(device: avDevice),
+      session.canAddInput(input),
+      session.canAddOutput(output)
+    else {
+      throw CKAVSessionError.cantAddDevice
+    }
+    session.addInputWithNoConnections(input)
+    session.addOutputWithNoConnections(output)
     let previewView = AVPreviewView()
-    previewView.videoPreviewLayer.session = session
+    previewView.videoPreviewLayer.setSessionWithNoConnection(session)
+    let ports = input.ports(for: .video, sourceDeviceType: avDevice.deviceType, sourceDevicePosition: avDevice.position)
+    guard !ports.isEmpty else {
+      throw CKAVSessionError.cantConnectDevice
+    }
+    let connection = AVCaptureConnection(inputPorts: ports, output: output)
+    let previewConnection = AVCaptureConnection(inputPort: ports[0], videoPreviewLayer: previewView.videoPreviewLayer)
+    guard session.canAddConnection(connection), session.canAddConnection(previewConnection) else {
+      throw CKAVSessionError.cantConnectDevice
+    }
+    session.addConnection(connection)
+    session.addConnection(previewConnection)
+    do {
+      try avDevice.lockForConfiguration()
+    } catch {
+      throw CKAVSessionError.cantConfigureDevice(inner: error)
+    }
+    for connection in [connection, previewConnection] {
+      connection.videoOrientation = camera.configuration.orientation.avOrientation
+      connection.preferredVideoStabilizationMode = camera.configuration.stabilizationMode.avStabilizationMode
+    }
+    avDevice.activeFormat = avFormat
+    avDevice.videoZoomFactor = CGFloat(camera.configuration.zoom)
+    avDevice.activeVideoMinFrameDuration = CMTime(value: 1, timescale: CMTimeScale(camera.configuration.fps))
+    avDevice.activeVideoMaxFrameDuration = avDevice.activeVideoMinFrameDuration
+    avDevice.unlockForConfiguration()
     previewView.videoPreviewLayer.videoGravity = camera.configuration.videoGravity.avVideoGravity
     let ckPreviewView = CKCameraPreviewView(previewView)
     cameras[camera.id] = CKAVCameraDevice(device: camera, previewView: ckPreviewView)
@@ -56,38 +119,6 @@ final class CKAVSingleCameraSession: NSObject, CKSession {
   private func tryAddMicrophone(microphone: CKDevice<CKMicrophoneConfiguration>) {
     let output = AVCaptureAudioDataOutput()
     output.setSampleBufferDelegate(self, queue: .global(qos: .userInteractive))
-    tryAddInputOutput(for: microphone, output: output)
-  }
-
-  @discardableResult private func tryAddInputOutput<T: Identifiable>(
-    for device: CKDevice<T>,
-    output: AVCaptureOutput
-  ) -> Bool where T.ID == CKDeviceConfigurationID {
-    guard let avDevice = mapper.avCaptureDevice(device.id, device.configuration.id),
-      let input = try? AVCaptureDeviceInput(device: avDevice),
-      session.canAddInput(input),
-      session.canAddOutput(output)
-    else {
-      return false
-    }
-    session.addInput(input)
-    session.addOutput(output)
-    return true
-  }
-
-  private func start() {
-    session.stopRunning()
-    session = AVCaptureSession()
-    if let camera = configuration.cameras.values.first {
-      tryAddCamera(camera: camera)
-    }
-    if let microphone = configuration.microphone {
-      tryAddMicrophone(microphone: microphone)
-    }
-    session.startRunning()
-    for plugin in plugins {
-      plugin.didStart(session: self)
-    }
   }
 
   private func stop() {
@@ -104,7 +135,30 @@ extension CKAVSingleCameraSession: AVCaptureVideoDataOutputSampleBufferDelegate,
     didOutput sampleBuffer: CMSampleBuffer,
     from connection: AVCaptureConnection
   ) {
-    let input = connection.inputPorts.first?.input
-    print(">>> captureOutput \(input)")
+    guard let input = connection.inputPorts.first?.input,
+      let deviceInput = input as? AVCaptureDeviceInput,
+      let id = mapper.id(deviceInput.device)
+    else {
+      return
+    }
+    if let camera = configuration.cameras[id.deviceId] {
+      // print(">>> capture camera \(id)")
+    } else if let microphone = configuration.microphone, microphone.id == id.deviceId {
+      // print(">>> microphone \(id)")
+    }
+  }
+
+  func captureOutput(
+    _ output: AVCaptureOutput,
+    didDrop sampleBuffer: CMSampleBuffer,
+    from connection: AVCaptureConnection
+  ) {
+    // print("123123")
+  }
+}
+
+extension AVCaptureDevice {
+  var ckPressureLevel: CKPressureLevel {
+    .nominal
   }
 }

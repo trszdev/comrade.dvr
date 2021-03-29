@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Give camera</string>
+	<string>CameraUsageDescription</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Give microphone</string>
+	<string>MicrophoneUsageDescription</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

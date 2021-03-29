@@ -13,7 +13,6 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
         minFps: 10,
         maxFps: 30,
         fieldOfView: 80,
-        isVideoMirroringAvailable: true,
         supportedStabilizationModes: [.auto, .off, .cinematic, .cinematicExtended, .standard],
         isMulticamAvailable: true
       ),
@@ -25,7 +24,6 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
         minFps: 10,
         maxFps: 60,
         fieldOfView: 80,
-        isVideoMirroringAvailable: true,
         supportedStabilizationModes: [.auto, .off, .cinematic, .cinematicExtended, .standard],
         isMulticamAvailable: true
       ),
@@ -44,7 +42,6 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
           fieldOfView: sampleCamera.configuration[0].fieldOfView,
           orientation: .portrait,
           autoFocus: .phaseDetection,
-          isVideoMirrored: sampleCamera.configuration[0].isVideoMirroringAvailable,
           stabilizationMode: .auto,
           videoGravity: .resize
         )
@@ -65,7 +62,6 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
           fieldOfView: 70,
           orientation: .portrait,
           autoFocus: .phaseDetection,
-          isVideoMirrored: true,
           stabilizationMode: .auto,
           videoGravity: .resize
         )
@@ -86,7 +82,6 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
           fieldOfView: 80,
           orientation: .portrait,
           autoFocus: .phaseDetection,
-          isVideoMirrored: true,
           stabilizationMode: .auto,
           videoGravity: .resize
         )

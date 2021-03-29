@@ -1,4 +1,5 @@
 import AVFoundation
+import zlib
 
 extension AVCaptureDevice.Format {
   var size: CKSize {
@@ -10,6 +11,21 @@ extension AVCaptureDevice.Format {
 extension CMTime {
   var timeInterval: TimeInterval {
     TimeInterval(CMTimeGetSeconds(self))
+  }
+}
+
+extension CKOrientation {
+  var avOrientation: AVCaptureVideoOrientation {
+    switch self {
+    case .portrait:
+      return .portrait
+    case .portraitUpsideDown:
+      return .portraitUpsideDown
+    case .landscapeLeft:
+      return .landscapeLeft
+    case .landscapeRight:
+      return .landscapeRight
+    }
   }
 }
 

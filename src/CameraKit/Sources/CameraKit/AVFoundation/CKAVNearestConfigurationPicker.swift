@@ -36,7 +36,6 @@ struct CKAVNearestConfigurationPicker: CKNearestConfigurationPicker {
         fieldOfView: available.fieldOfView,
         orientation: device.configuration.orientation,
         autoFocus: device.configuration.autoFocus,
-        isVideoMirrored: available.isVideoMirroringAvailable ? device.configuration.isVideoMirrored: false,
         stabilizationMode: available.supportedStabilizationModes.contains(device.configuration.stabilizationMode) ?
           device.configuration.stabilizationMode :
           .auto,
@@ -61,9 +60,6 @@ struct CKAVNearestConfigurationPicker: CKNearestConfigurationPicker {
       difference += 100
     }
     if camera.fps > available.maxFps || camera.fps < available.minFps {
-      difference += 10
-    }
-    if camera.isVideoMirrored, !available.isVideoMirroringAvailable {
       difference += 10
     }
     if !available.supportedStabilizationModes.contains(camera.stabilizationMode) {

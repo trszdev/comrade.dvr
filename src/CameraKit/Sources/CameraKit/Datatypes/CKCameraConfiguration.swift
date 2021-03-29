@@ -5,10 +5,9 @@ public struct CKCameraConfiguration: Identifiable, Hashable {
   public let size: CKSize
   public let zoom: Double
   public let fps: Int
-  public let fieldOfView: Double
+  public let fieldOfView: Int
   public let orientation: CKOrientation
   public let autoFocus: CKAutoFocus
-  public let isVideoMirrored: Bool
   public let stabilizationMode: CKStabilizationMode
   public let videoGravity: CKVideoGravity
 
@@ -16,10 +15,9 @@ public struct CKCameraConfiguration: Identifiable, Hashable {
     size: CKSize,
     zoom: Double,
     fps: Int,
-    fieldOfView: Double,
+    fieldOfView: Int,
     orientation: CKOrientation,
     autoFocus: CKAutoFocus,
-    isVideoMirrored: Bool,
     stabilizationMode: CKStabilizationMode,
     videoGravity: CKVideoGravity
   ) {
@@ -30,7 +28,6 @@ public struct CKCameraConfiguration: Identifiable, Hashable {
     self.fieldOfView = fieldOfView
     self.orientation = orientation
     self.autoFocus = autoFocus
-    self.isVideoMirrored = isVideoMirrored
     self.stabilizationMode = stabilizationMode
     self.videoGravity = videoGravity
   }
@@ -40,10 +37,9 @@ public struct CKCameraConfiguration: Identifiable, Hashable {
     size: CKSize,
     zoom: Double,
     fps: Int,
-    fieldOfView: Double,
+    fieldOfView: Int,
     orientation: CKOrientation,
     autoFocus: CKAutoFocus,
-    isVideoMirrored: Bool,
     stabilizationMode: CKStabilizationMode,
     videoGravity: CKVideoGravity
   ) {
@@ -54,7 +50,6 @@ public struct CKCameraConfiguration: Identifiable, Hashable {
     self.fieldOfView = fieldOfView
     self.orientation = orientation
     self.autoFocus = autoFocus
-    self.isVideoMirrored = isVideoMirrored
     self.stabilizationMode = stabilizationMode
     self.videoGravity = videoGravity
   }

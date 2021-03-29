@@ -24,5 +24,6 @@ let package = Package(
       name: "CameraKitTests",
       dependencies: ["CameraKit"]
     ),
-  ]
+  ],
+  swiftLanguageVersions: [.version("5.3")]
 )

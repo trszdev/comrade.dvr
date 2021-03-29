@@ -1,8 +1,21 @@
 import AVFoundation
 
+struct CKAVMapperKey: Hashable {
+  let deviceId: CKDeviceID
+  let configurationId: CKDeviceConfigurationID
+}
+
+extension CKDevice where Configuration: Identifiable, Configuration.ID == CKDeviceConfigurationID {
+  var key: CKAVMapperKey {
+    CKAVMapperKey(deviceId: id, configurationId: configuration.id)
+  }
+}
+
 protocol CKAVConfigurationMapper {
   var currentConfiguration: CKAdjustableConfiguration { get }
-  func avCaptureDevice(_ deviceId: CKDeviceID, _ configurationId: CKDeviceConfigurationID) -> AVCaptureDevice?
+  func avCaptureDevice(_ key: CKAVMapperKey) -> AVCaptureDevice?
+  func avFormat(_ key: CKAVMapperKey) -> AVCaptureDevice.Format?
+  func id(_ device: AVCaptureDevice) -> CKAVMapperKey?
 }
 
 final class CKAVConfigurationMapperImpl: CKAVConfigurationMapper {
@@ -17,16 +30,29 @@ final class CKAVConfigurationMapperImpl: CKAVConfigurationMapper {
     return configuration
   }
 
-  func avCaptureDevice(_ deviceId: CKDeviceID, _ configurationId: CKDeviceConfigurationID) -> AVCaptureDevice? {
+  func avCaptureDevice(_ key: CKAVMapperKey) -> AVCaptureDevice? {
     tryInitialize()
-    return deviceMap[CKMapperKey(deviceId: deviceId, configurationId: configurationId)]
+    return deviceMap[key]
+  }
+
+  func avFormat(_ key: CKAVMapperKey) -> AVCaptureDevice.Format? {
+    tryInitialize()
+    return formatMap[key]
+  }
+
+  func id(_ device: AVCaptureDevice) -> CKAVMapperKey? {
+    tryInitialize()
+    return reverseDeviceMap[device]
   }
 
   func add(cameras: [AVCaptureDevice], deviceId: CKDeviceID) -> CKDevice<[CKAdjustableCameraConfiguration]>? {
     let confs = cameras.flatMap { device in
       device.formats.map { format in
         let conf = adjustableCameraConfiguration(device: device, format: format)
-        deviceMap[CKMapperKey(deviceId: deviceId, configurationId: conf.id)] = device
+        let key = CKAVMapperKey(deviceId: deviceId, configurationId: conf.id)
+        formatMap[key] = format
+        deviceMap[key] = device
+        reverseDeviceMap[device] = key
         return conf
       } as [CKAdjustableCameraConfiguration]
     }
@@ -44,8 +70,7 @@ final class CKAVConfigurationMapperImpl: CKAVConfigurationMapper {
       maxZoom: Double(format.videoMaxZoomFactor),
       minFps: (format.videoSupportedFrameRateRanges.first?.minFrameRate).flatMap(Int.init) ?? 1,
       maxFps: (format.videoSupportedFrameRateRanges.first?.maxFrameRate).flatMap(Int.init) ?? 30,
-      fieldOfView: Double(format.videoFieldOfView),
-      isVideoMirroringAvailable: false, // TODO
+      fieldOfView: Int(format.videoFieldOfView),
       supportedStabilizationModes: CKStabilizationMode.allCases.filter {
         format.isVideoStabilizationModeSupported($0.avStabilizationMode)
       },
@@ -53,26 +78,21 @@ final class CKAVConfigurationMapperImpl: CKAVConfigurationMapper {
     )
   }
 
-  private var deviceMap: [CKMapperKey: AVCaptureDevice] = [:]
+  private var deviceMap: [CKAVMapperKey: AVCaptureDevice] = [:]
+  private var formatMap: [CKAVMapperKey: AVCaptureDevice.Format] = [:]
+  private var reverseDeviceMap: [AVCaptureDevice: CKAVMapperKey] = [:]
   private var initialized = false
   private var configuration: CKAdjustableConfiguration!
 
   private func tryInitialize() {
     guard !initialized else { return }
-    let backCamera = add(cameras: discovery.backCameras, deviceId: backCameraId)
-    let frontCamera = add(cameras: discovery.frontCameras, deviceId: frontCameraId)
+    discovery.microphone.u
+    let backCamera = add(cameras: discovery.backCameras, deviceId: CKCameraDeviceID.back)
+    let frontCamera = add(cameras: discovery.frontCameras, deviceId: CKCameraDeviceID.front)
     let cameras = [backCamera, frontCamera].compactMap { $0 }.map { ($0.id, $0) }
     configuration = CKAdjustableConfiguration(
       cameras: Dictionary(uniqueKeysWithValues: cameras),
       microphone: nil
     )
   }
-}
-
-private let frontCameraId = CKDeviceID(value: "front-camera")
-private let backCameraId = CKDeviceID(value: "back-camera")
-
-private struct CKMapperKey: Hashable {
-  let deviceId: CKDeviceID
-  let configurationId: CKDeviceConfigurationID
 }

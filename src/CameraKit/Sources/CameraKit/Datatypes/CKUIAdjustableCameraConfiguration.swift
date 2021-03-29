@@ -4,9 +4,8 @@ public struct CKUIAdjustableCameraConfiguration: Hashable {
   public let maxZoom: Double
   public let minFps: Int
   public let maxFps: Int
-  public let minFieldOfView: Double
-  public let maxFieldOfView: Double
-  public let isVideoMirroringAvailable: Bool
+  public let minFieldOfView: Int
+  public let maxFieldOfView: Int
   public let supportedStabilizationModes: Set<CKStabilizationMode>
   public let isMulticamAvailable: Bool
 }
@@ -18,15 +17,13 @@ public extension Array where Element == CKAdjustableCameraConfiguration {
     var maxZoom = -Double.greatestFiniteMagnitude
     var minFps = Int.max
     var maxFps = Int.min
-    var minFieldOfView = Double.greatestFiniteMagnitude
-    var maxFieldOfView = -Double.greatestFiniteMagnitude
-    var isVideoMirroringAvailable = false
+    var minFieldOfView = Int.max
+    var maxFieldOfView = Int.min
     var isMulticamAvailable = false
     var supportedStabilizationModes = Set<CKStabilizationMode>()
     for conf in self {
       sizes.insert(conf.size)
       supportedStabilizationModes.formUnion(conf.supportedStabilizationModes)
-      isVideoMirroringAvailable = conf.isVideoMirroringAvailable || isVideoMirroringAvailable
       isMulticamAvailable = conf.isMulticamAvailable || isMulticamAvailable
       minZoom = Swift.min(minZoom, conf.minZoom)
       maxZoom = Swift.max(maxZoom, conf.maxZoom)
@@ -43,7 +40,6 @@ public extension Array where Element == CKAdjustableCameraConfiguration {
       maxFps: maxFps,
       minFieldOfView: minFieldOfView,
       maxFieldOfView: maxFieldOfView,
-      isVideoMirroringAvailable: isVideoMirroringAvailable,
       supportedStabilizationModes: supportedStabilizationModes,
       isMulticamAvailable: isMulticamAvailable
     )
