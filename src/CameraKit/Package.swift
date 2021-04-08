@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
   name: "CameraKit",
   platforms: [
-    .iOS(.v13),
+    .iOS(.v14),
   ],
   products: [
     .library(
@@ -18,7 +18,8 @@ let package = Package(
   targets: [
     .target(
       name: "CameraKit",
-      dependencies: ["AutocontainerKit"]
+      dependencies: ["AutocontainerKit"],
+      resources: [.process("Resources")]
     ),
     .testTarget(
       name: "CameraKitTests",

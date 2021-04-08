@@ -1,19 +1,13 @@
 import AVFoundation
 
 protocol CKAVDiscovery {
-  var microphone: AVCaptureDevice? { get }
   var backCameras: [AVCaptureDevice] { get }
   var frontCameras: [AVCaptureDevice] { get }
+  var audioInputs: [AVAudioSessionPortDescription] { get }
 }
 
 struct CKAVDiscoveryImpl: CKAVDiscovery {
-  var microphone: AVCaptureDevice? {
-    AVCaptureDevice.DiscoverySession(
-      deviceTypes: [.builtInMicrophone],
-      mediaType: .audio,
-      position: .unspecified
-    ).devices.first
-  }
+  let audioSession: AVAudioSession
 
   var backCameras: [AVCaptureDevice] {
     AVCaptureDevice.DiscoverySession(
@@ -29,6 +23,10 @@ struct CKAVDiscoveryImpl: CKAVDiscovery {
       mediaType: .video,
       position: .front
     ).devices
+  }
+
+  var audioInputs: [AVAudioSessionPortDescription] {
+    audioSession.availableInputs ?? []
   }
 }
 

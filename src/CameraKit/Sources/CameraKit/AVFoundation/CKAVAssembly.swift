@@ -1,7 +1,17 @@
 import AutocontainerKit
+import AVFoundation
 
 public struct CKAVAssembly: AKAssembly {
   public func assemble(container: AKContainer) {
+    container.singleton.autoregister(CKTempFileMaker.self, construct: CKTempFileMakerImpl.init)
+    container.transient.autoregister(CKTimestampMaker.self, construct: CKTimestampMakerImpl.init)
+    container.singleton.autoregister(value: FileManager.default)
+    container.singleton.autoregister(value: AVAudioSession.sharedInstance())
+    container.transient.autoregister(
+      CKAVMicrophoneRecorder.self,
+      construct: CKAVMicrophoneRecorderImpl.init(tempFileMaker:timestampMaker:)
+    )
+    container.transient.autoregister(construct: CKAVMicrophoneSession.Builder.init(mapper:session:recorder:))
     container.transient.autoregister(construct: CKAVManager.Builder.init(locator:))
     container.transient.autoregister(CKAVDiscovery.self, construct: CKAVDiscoveryImpl.init)
     container.transient.autoregister(

@@ -1,13 +1,14 @@
 import AVFoundation
 import Combine
+import Foundation
 
-enum CKAVSessionError: Error {
+enum CKAVCameraSessionError: Error {
   case cantAddDevice
   case cantConnectDevice
   case cantConfigureDevice(inner: Error)
 }
 
-extension CKAVSessionError: LocalizedError {
+extension CKAVCameraSessionError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .cantAddDevice:
@@ -21,6 +22,11 @@ extension CKAVSessionError: LocalizedError {
 }
 
 final class CKAVSingleCameraSession: NSObject, CKSession {
+  let startupInfo = CKSessionStartupInfo()
+
+  func requestMediaChunk() {
+  }
+
   struct Builder {
     let mapper: CKAVConfigurationMapper
 
@@ -32,10 +38,20 @@ final class CKAVSingleCameraSession: NSObject, CKSession {
   init(configuration: CKConfiguration, mapper: CKAVConfigurationMapper) {
     self.configuration = configuration
     self.mapper = mapper
+    //    NotificationCenter.default.publisher(for: .AVCaptureSessionWasInterrupted)
+    //      .sink(receiveValue: cameraCaptureWasInterrupted)
+    //      .store(in: &cancellables)
+    //    NotificationCenter.default.publisher(for: .AVCaptureSessionInterruptionEnded)
+    //      .sink(receiveValue: cameraCaptureInterruptionEnded)
+    //      .store(in: &cancellables)
   }
 
+  weak var delegate: CKSessionDelegate?
+
   private(set) var cameras: [CKDeviceID: CKCameraDevice] = [:]
-  private(set) var microphone: CKMicrophoneDevice?
+
+  var microphone: CKMicrophoneDevice? { nil }
+
   var pressureLevel: CKPressureLevel {
     let devices: [AVCaptureDevice] = session.connections.compactMap { connection in
       let input = connection.inputPorts.first?.input
@@ -44,10 +60,13 @@ final class CKAVSingleCameraSession: NSObject, CKSession {
     }
     return devices.map(\.ckPressureLevel).max() ?? .nominal
   }
+
   private(set) var session = AVCaptureSession()
+
   let configuration: CKConfiguration
+
   let mapper: CKAVConfigurationMapper
-  var plugins: [CKSessionPlugin] = []
+
   var camera: CKCameraDevice? {
     cameras.values.first
   }
@@ -57,18 +76,12 @@ final class CKAVSingleCameraSession: NSObject, CKSession {
   func start() throws {
     session.stopRunning()
     session = AVCaptureSession()
-    session.startRunning()
+    session.beginConfiguration()
     if let camera = configuration.cameras.values.first {
       try tryAddCamera(camera: camera)
     }
-    if let microphone = configuration.microphone {
-      tryAddMicrophone(microphone: microphone)
-    }
     session.commitConfiguration()
     session.startRunning()
-    for plugin in plugins {
-      plugin.didStart(session: self)
-    }
   }
 
   private func tryAddCamera(camera: CKDevice<CKCameraConfiguration>) throws {
@@ -80,7 +93,7 @@ final class CKAVSingleCameraSession: NSObject, CKSession {
       session.canAddInput(input),
       session.canAddOutput(output)
     else {
-      throw CKAVSessionError.cantAddDevice
+      throw CKAVCameraSessionError.cantAddDevice
     }
     session.addInputWithNoConnections(input)
     session.addOutputWithNoConnections(output)
@@ -88,19 +101,19 @@ final class CKAVSingleCameraSession: NSObject, CKSession {
     previewView.videoPreviewLayer.setSessionWithNoConnection(session)
     let ports = input.ports(for: .video, sourceDeviceType: avDevice.deviceType, sourceDevicePosition: avDevice.position)
     guard !ports.isEmpty else {
-      throw CKAVSessionError.cantConnectDevice
+      throw CKAVCameraSessionError.cantConnectDevice
     }
     let connection = AVCaptureConnection(inputPorts: ports, output: output)
     let previewConnection = AVCaptureConnection(inputPort: ports[0], videoPreviewLayer: previewView.videoPreviewLayer)
     guard session.canAddConnection(connection), session.canAddConnection(previewConnection) else {
-      throw CKAVSessionError.cantConnectDevice
+      throw CKAVCameraSessionError.cantConnectDevice
     }
     session.addConnection(connection)
     session.addConnection(previewConnection)
     do {
       try avDevice.lockForConfiguration()
     } catch {
-      throw CKAVSessionError.cantConfigureDevice(inner: error)
+      throw CKAVCameraSessionError.cantConfigureDevice(inner: error)
     }
     for connection in [connection, previewConnection] {
       connection.videoOrientation = camera.configuration.orientation.avOrientation
@@ -115,21 +128,9 @@ final class CKAVSingleCameraSession: NSObject, CKSession {
     let ckPreviewView = CKCameraPreviewView(previewView)
     cameras[camera.id] = CKAVCameraDevice(device: camera, previewView: ckPreviewView)
   }
-
-  private func tryAddMicrophone(microphone: CKDevice<CKMicrophoneConfiguration>) {
-    let output = AVCaptureAudioDataOutput()
-    output.setSampleBufferDelegate(self, queue: .global(qos: .userInteractive))
-  }
-
-  private func stop() {
-    for plugin in plugins {
-      plugin.didStop(session: self)
-    }
-  }
 }
 
-extension CKAVSingleCameraSession: AVCaptureVideoDataOutputSampleBufferDelegate,
-  AVCaptureAudioDataOutputSampleBufferDelegate {
+extension CKAVSingleCameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
   func captureOutput(
     _ output: AVCaptureOutput,
     didOutput sampleBuffer: CMSampleBuffer,
@@ -139,12 +140,15 @@ extension CKAVSingleCameraSession: AVCaptureVideoDataOutputSampleBufferDelegate,
       let deviceInput = input as? AVCaptureDeviceInput,
       let id = mapper.id(deviceInput.device)
     else {
+      // print(1234)
       return
     }
     if let camera = configuration.cameras[id.deviceId] {
       // print(">>> capture camera \(id)")
-    } else if let microphone = configuration.microphone, microphone.id == id.deviceId {
+    // } else if let microphone = configuration.microphone, microphone.id == id.deviceId {
       // print(">>> microphone \(id)")
+    } else {
+      // print(123)
     }
   }
 
@@ -153,12 +157,12 @@ extension CKAVSingleCameraSession: AVCaptureVideoDataOutputSampleBufferDelegate,
     didDrop sampleBuffer: CMSampleBuffer,
     from connection: AVCaptureConnection
   ) {
-    // print("123123")
-  }
-}
-
-extension AVCaptureDevice {
-  var ckPressureLevel: CKPressureLevel {
-    .nominal
+    guard let input = connection.inputPorts.first?.input,
+      let deviceInput = input as? AVCaptureDeviceInput,
+      let id = mapper.id(deviceInput.device)
+    else {
+      return
+    }
+    // print(">>> Dropped: \(id)")
   }
 }

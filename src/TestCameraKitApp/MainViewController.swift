@@ -14,12 +14,13 @@ final class MainViewController: UIViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
+    printCurrentTime()
     view.addSubview(responsivenessView)
     NSLayoutConstraint.activate([
       responsivenessView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
       responsivenessView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
     ])
-    DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) {
+    DispatchQueue.main.asyncAfter(deadline: .now()) {
       CKAVManager.shared.sessionMakerPublisher
         .receive(on: DispatchQueue.main)
         .map { [weak self] sessionMaker in
@@ -29,9 +30,46 @@ final class MainViewController: UIViewController {
     }
   }
 
+  private func addSessionTemplates(
+    sessionMaker: CKSessionMaker,
+    alertVc: UIAlertController,
+    backCameraId: CKDeviceID?,
+    frontCameraId: CKDeviceID?,
+    microphoneId: CKDeviceID?
+  ) {
+    if let backCameraId = backCameraId {
+      addAction(
+        alertVc: alertVc,
+        title: microphoneId == nil ? "Back only" : "Back + mic",
+        sessionMaker: sessionMaker,
+        cameraIds: [backCameraId],
+        microphoneId: microphoneId
+      )
+    }
+    if let frontCameraId = frontCameraId {
+      addAction(
+        alertVc: alertVc,
+        title: microphoneId == nil ? "Front only" : "Front + mic",
+        sessionMaker: sessionMaker,
+        cameraIds: [frontCameraId],
+        microphoneId: microphoneId
+      )
+    }
+    if let backCameraId = backCameraId, let frontCameraId = frontCameraId {
+      addAction(
+        alertVc: alertVc,
+        title: microphoneId == nil ? "Back + front" : "Back + front + mic",
+        sessionMaker: sessionMaker,
+        cameraIds: [backCameraId, frontCameraId],
+        microphoneId: microphoneId
+      )
+    }
+  }
+
   private func startSession(sessionMaker: CKSessionMaker) {
-    let backCameraId = sessionMaker.adjustableConfiguration.backCamera?.id
-    let frontCameraId = sessionMaker.adjustableConfiguration.frontCamera?.id
+    let backCameraId = sessionMaker.adjustableConfiguration.camera(.back)?.id
+    let frontCameraId = sessionMaker.adjustableConfiguration.camera(.front)?.id
+    let microphoneId = sessionMaker.adjustableConfiguration.microphone?.id
     print("Available configuration:")
     dump(sessionMaker.adjustableConfiguration.ui)
     guard backCameraId != nil, frontCameraId != nil else {
@@ -39,33 +77,20 @@ final class MainViewController: UIViewController {
       return
     }
     let alertVc = UIAlertController(title: "Choose preset", message: nil, preferredStyle: .alert)
-    if let backCameraId = backCameraId {
-      addAction(
-        alertVc: alertVc,
-        title: "Back only",
-        sessionMaker: sessionMaker,
-        cameraIds: [backCameraId],
-        microphoneId: nil
-      )
-    }
-    if let frontCameraId = frontCameraId {
-      addAction(
-        alertVc: alertVc,
-        title: "Front only",
-        sessionMaker: sessionMaker,
-        cameraIds: [frontCameraId],
-        microphoneId: nil
-      )
-    }
-    if let backCameraId = backCameraId, let frontCameraId = frontCameraId {
-      addAction(
-        alertVc: alertVc,
-        title: "Back + front",
-        sessionMaker: sessionMaker,
-        cameraIds: [backCameraId, frontCameraId],
-        microphoneId: nil
-      )
-    }
+    addSessionTemplates(
+      sessionMaker: sessionMaker,
+      alertVc: alertVc,
+      backCameraId: backCameraId,
+      frontCameraId: frontCameraId,
+      microphoneId: microphoneId
+    )
+    addSessionTemplates(
+      sessionMaker: sessionMaker,
+      alertVc: alertVc,
+      backCameraId: backCameraId,
+      frontCameraId: frontCameraId,
+      microphoneId: nil
+    )
     present(alertVc, animated: true, completion: nil)
   }
 
@@ -78,12 +103,12 @@ final class MainViewController: UIViewController {
   ) {
     let action = UIAlertAction(title: title, style: .default) { [weak self] _ in
       guard let self = self else { return }
-      let session = self.makeSession(sessionMaker: sessionMaker, cameraIds: cameraIds, microphoneId: microphoneId)
       do {
-        try session.start()
+        let session = try self.makeSession(sessionMaker: sessionMaker, cameraIds: cameraIds, microphoneId: microphoneId)
         self.alert(title: "Session info", message: String(describing: session.configuration)) {
           let hostingVc = UIHostingController(rootView: CameraKitView(session: session))
           hostingVc.view.backgroundColor = .black
+          printCurrentTime()
           self.present(hostingVc, animated: true, completion: nil)
         }
       } catch {
@@ -105,12 +130,11 @@ final class MainViewController: UIViewController {
     sessionMaker: CKSessionMaker,
     cameraIds: [CKDeviceID],
     microphoneId: CKDeviceID?
-  ) -> CKSession {
+  ) throws -> CKSession {
     let cameras = cameraIds.map { CKDevice(id: $0, configuration: someConfiguration)}
-    let microphone = microphoneId.flatMap { CKDevice(id: $0, configuration: CKMicrophoneConfiguration()) }
+    let microphone = microphoneId.flatMap { CKDevice(id: $0, configuration: someMicConf) }
     let configuration = CKConfiguration(cameras: Set(cameras), microphone: microphone)
-    let neareast = sessionMaker.nearestConfigurationPicker.nearestConfiguration(for: configuration)
-    return sessionMaker.makeSession(configuration: neareast)
+    return try sessionMaker.makeSession(configuration: configuration)
   }
 
   private var someConfiguration = CKCameraConfiguration(
@@ -122,6 +146,16 @@ final class MainViewController: UIViewController {
     autoFocus: .phaseDetection,
     stabilizationMode: .auto,
     videoGravity: .resizeAspect
+  )
+
+  private var someMicConf = CKMicrophoneConfiguration(
+    orientation: .portrait,
+    location: .unspecified,
+    polarPattern: .unspecified,
+    duckOthers: false,
+    useSpeaker: false,
+    useBluetoothCompatibilityMode: false,
+    audioQuality: .min
   )
 }
 //
@@ -269,36 +303,6 @@ final class MainViewController: UIViewController {
 //    }
 //    print(123)
 //  }
-
-//
-//  // https://stackoverflow.com/a/35607761
-//  func describe(device: AVCaptureDevice) {
-//    DispatchQueue.main.async {
-//      // let fmtDesc = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
-//      let fps = device.activeFormat.videoSupportedFrameRateRanges[0]
-//      let autofocus: [AVCaptureDevice.Format.AutoFocusSystem: String] = [
-//        .none: "none",
-//        .contrastDetection: "contrast detection",
-//        .phaseDetection: "phase detection",
-//      ]
-//      self.debugLabel.text = [
-//        "device: \(self.deviceCounter + 1)/\(self.maxDevices), format: \(self.formatCounter + 1)/\(self.maxFormats)",
-//        device.systemPressureState.level.rawValue,
-//        device.uniqueID,
-//        "size: \(device.activeFormat.size)",
-//        "\(Int(fps.minFrameRate)) - \(Int(fps.maxFrameRate)) fps",
-//        "autofocus: \(autofocus[device.activeFormat.autoFocusSystem]!)",
-//        "fpses: \(device.activeFormat.videoSupportedFrameRateRanges.count)",
-//        "fov: \(device.activeFormat.videoFieldOfView)",
-//      ].joined(separator: "\n")
-//      self.debugLabel.alpha = 1
-//      self.nextFormatButton.setTitle(
-//        "\(Int(device.activeVideoMaxFrameDuration.milliseconds))" +
-//        "/\(device.activeVideoMinFrameDuration.milliseconds)ms",
-//      for: .normal)
-//    }
-//  }
-//
 //  var deviceCounter = 0
 //  var maxDevices = 0
 //  var formatCounter = 0
@@ -327,17 +331,6 @@ final class MainViewController: UIViewController {
 //
 //  @objc func prevFormat() {
 //
-//  }
-//
-//  func setupSession() {
-//    session = AVCaptureSession()
-//    previewLayer = AVCaptureVideoPreviewLayer(sessionWithNoConnection: session)
-//    previewLayer.videoGravity = .resizeAspect
-//    setupNewRandomCamera()
-//    DispatchQueue.main.async {
-//      self.previewLayer.frame = self.view.bounds
-//      self.view.layer.insertSublayer(self.previewLayer, at: 0)
-//    }
 //  }
 //
 //  func cameras() -> [AVCaptureDevice] {

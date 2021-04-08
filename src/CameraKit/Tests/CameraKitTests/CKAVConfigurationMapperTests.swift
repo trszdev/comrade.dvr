@@ -8,7 +8,7 @@ final class CKAVConfigurationMapperTests: CKTestCase {
   func testNoDiscoveryOnCreation() {
     let mock = CKAVDiscoveryMock()
     _ = makeMapper(discovery: mock)
-    XCTAssertEqual(mock.calls, 0)
+    XCTAssertEqual(mock.calls.total, 0)
   }
 
   func testHasSomeConfiguration() {
@@ -25,19 +25,26 @@ final class CKAVConfigurationMapperTests: CKTestCase {
 }
 
 private final class CKAVDiscoveryMock: CKAVDiscovery {
-  var calls = 0
-  var microphone: AVCaptureDevice? {
-    calls += 1
-    return nil
+  enum Table {
+    case backCameras
+    case frontCameras
+    case audioInputs
   }
 
+  let calls = CallLogger(Table.self)
+
   var backCameras: [AVCaptureDevice] {
-    calls += 1
+    calls.log(.backCameras)
     return []
   }
 
   var frontCameras: [AVCaptureDevice] {
-    calls += 1
+    calls.log(.frontCameras)
+    return []
+  }
+
+  var audioInputs: [AVAudioSessionPortDescription] {
+    calls.log(.audioInputs)
     return []
   }
 }

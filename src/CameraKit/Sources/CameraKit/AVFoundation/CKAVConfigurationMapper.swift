@@ -16,6 +16,9 @@ protocol CKAVConfigurationMapper {
   func avCaptureDevice(_ key: CKAVMapperKey) -> AVCaptureDevice?
   func avFormat(_ key: CKAVMapperKey) -> AVCaptureDevice.Format?
   func id(_ device: AVCaptureDevice) -> CKAVMapperKey?
+
+  func audioInput(_ key: CKAVMapperKey) -> AVAudioSessionPortDescription?
+  func audioDataSource(_ key: CKAVMapperKey) -> AVAudioSessionDataSourceDescription?
 }
 
 final class CKAVConfigurationMapperImpl: CKAVConfigurationMapper {
@@ -45,7 +48,17 @@ final class CKAVConfigurationMapperImpl: CKAVConfigurationMapper {
     return reverseDeviceMap[device]
   }
 
-  func add(cameras: [AVCaptureDevice], deviceId: CKDeviceID) -> CKDevice<[CKAdjustableCameraConfiguration]>? {
+  func audioInput(_ key: CKAVMapperKey) -> AVAudioSessionPortDescription? {
+    tryInitialize()
+    return audioInputMap[key]
+  }
+
+  func audioDataSource(_ key: CKAVMapperKey) -> AVAudioSessionDataSourceDescription? {
+    tryInitialize()
+    return audioDataSourceMap[key]
+  }
+
+  private func add(cameras: [AVCaptureDevice], deviceId: CKDeviceID) -> CKDevice<[CKAdjustableCameraConfiguration]>? {
     let confs = cameras.flatMap { device in
       device.formats.map { format in
         let conf = adjustableCameraConfiguration(device: device, format: format)
@@ -57,6 +70,38 @@ final class CKAVConfigurationMapperImpl: CKAVConfigurationMapper {
       } as [CKAdjustableCameraConfiguration]
     }
     return confs.isEmpty ? nil : CKDevice(id: deviceId, configuration: confs)
+  }
+
+  private func add(
+    microphones: [AVAudioSessionPortDescription],
+    deviceId: CKDeviceID
+  ) -> CKDevice<[CKAdjustableMicrophoneConfiguration]> {
+    var configurations = [CKAdjustableMicrophoneConfiguration]()
+    if let microphone = microphones.first(where: { $0.portType == .builtInMic }) {
+      configurations = (microphone.dataSources ?? []).flatMap { dataSource in
+        return (dataSource.supportedPolarPatterns ?? []).map { polarPattern in
+          let key = CKAVMapperKey(
+            deviceId: deviceId,
+            configurationId: CKDeviceConfigurationID(value: "\(dataSource.dataSourceID)_\(polarPattern.rawValue)")
+          )
+          audioInputMap[key] = microphone
+          audioDataSourceMap[key] = dataSource
+          return CKAdjustableMicrophoneConfiguration(
+            id: key.configurationId,
+            location: dataSource.orientation.ckDeviceLocation,
+            polarPattern: polarPattern.ckPolarPattern
+          )
+        }
+      }
+    }
+    configurations.append(
+      CKAdjustableMicrophoneConfiguration(
+        id: CKDeviceConfigurationID(value: "default"),
+        location: .unspecified,
+        polarPattern: .unspecified
+      )
+    )
+    return CKDevice(id: deviceId, configuration: configurations)
   }
 
   private func adjustableCameraConfiguration(
@@ -78,6 +123,8 @@ final class CKAVConfigurationMapperImpl: CKAVConfigurationMapper {
     )
   }
 
+  private var audioInputMap: [CKAVMapperKey: AVAudioSessionPortDescription] = [:]
+  private var audioDataSourceMap: [CKAVMapperKey: AVAudioSessionDataSourceDescription] = [:]
   private var deviceMap: [CKAVMapperKey: AVCaptureDevice] = [:]
   private var formatMap: [CKAVMapperKey: AVCaptureDevice.Format] = [:]
   private var reverseDeviceMap: [AVCaptureDevice: CKAVMapperKey] = [:]
@@ -86,13 +133,14 @@ final class CKAVConfigurationMapperImpl: CKAVConfigurationMapper {
 
   private func tryInitialize() {
     guard !initialized else { return }
-    discovery.microphone.u
-    let backCamera = add(cameras: discovery.backCameras, deviceId: CKCameraDeviceID.back)
-    let frontCamera = add(cameras: discovery.frontCameras, deviceId: CKCameraDeviceID.front)
+    initialized = true
+    let backCamera = add(cameras: discovery.backCameras, deviceId: CKAVCamera.back.value)
+    let frontCamera = add(cameras: discovery.frontCameras, deviceId: CKAVCamera.front.value)
+    let microphone = add(microphones: discovery.audioInputs, deviceId: CKAVMicrophone.builtIn.value)
     let cameras = [backCamera, frontCamera].compactMap { $0 }.map { ($0.id, $0) }
     configuration = CKAdjustableConfiguration(
       cameras: Dictionary(uniqueKeysWithValues: cameras),
-      microphone: nil
+      microphone: microphone
     )
   }
 }

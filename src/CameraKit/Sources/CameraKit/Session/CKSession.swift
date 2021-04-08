@@ -1,9 +1,9 @@
-public protocol CKSession {
+public protocol CKSession: AnyObject {
+  var startupInfo: CKSessionStartupInfo { get }
+  var delegate: CKSessionDelegate? { get set }
   var cameras: [CKDeviceID: CKCameraDevice] { get }
   var microphone: CKMicrophoneDevice? { get }
   var configuration: CKConfiguration { get }
-  var isRunning: Bool { get }
-  func start() throws
+  func requestMediaChunk()
   var pressureLevel: CKPressureLevel { get }
-  var plugins: [CKSessionPlugin] { get set }
 }

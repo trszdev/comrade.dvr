@@ -3,7 +3,9 @@ import Combine
 import Foundation
 @testable import CameraKit
 
-final class CKManagerTests: CKTestCase {
+class CKManagerTests: CKTestCase {
+  override var isAbstractTestCase: Bool { true }
+
   func testRequestPermission_endsWithAnyResult() {
     testRequestPermission_endsWithAnyResult(mediaType: .audio)
     testRequestPermission_endsWithAnyResult(mediaType: .video)
@@ -25,8 +27,8 @@ final class CKManagerTests: CKTestCase {
       })
       .store(in: &cancellables)
     expectation.wait()
-    XCTAssertEqual(mock.permissionStatusCalls, 2)
-    XCTAssertEqual(mock.requestPermissionCalls, 2)
+    XCTAssertEqual(mock.calls.for(.permissionStatus), 2)
+    XCTAssertEqual(mock.calls.for(.requestPermission), 2)
   }
 
   func testSessionMaker_failsOnAnyPermissionProblem() {
@@ -57,8 +59,8 @@ final class CKManagerTests: CKTestCase {
       })
       .store(in: &cancellables)
     expectation.wait()
-    XCTAssertEqual(mock.permissionStatusCalls, 2)
-    XCTAssertEqual(mock.requestPermissionCalls, 0)
+    XCTAssertEqual(mock.calls.for(.permissionStatus), 2)
+    XCTAssertEqual(mock.calls.for(.requestPermission), 0)
   }
 
   private func testCheckPermission_endsWithAnyResult(mediaType: CKMediaType) {
@@ -88,30 +90,34 @@ final class CKManagerTests: CKTestCase {
     expectation.wait()
   }
 
-  private func makeManager() -> CKManager {
-    avLocator.resolve(CKAVManager.Builder.self).makeManager(infoPlistBundle: nil)
+  open func makeManager() -> CKManager {
+    fatalError("Not implemented")
   }
 
-  private func makeManager(mock: CKPermissionManager) -> CKManager {
-    CKAVManager(permissionManager: mock, locator: avLocator)
+  open func makeManager(mock: CKPermissionManager) -> CKManager {
+    fatalError("Not implemented")
   }
 
   private var cancellables = Set<AnyCancellable>()
 }
 
 private final class CKPermissionManagerMock: CKPermissionManager {
+  enum Table {
+    case permissionStatus
+    case requestPermission
+  }
+
+  let calls = CallLogger(Table.self)
   var permissionStatuses = [CKMediaType: Bool]()
   var requestedPermissions = [CKMediaType: CKPermissionError]()
-  var requestPermissionCalls = 0
-  var permissionStatusCalls = 0
 
   func permissionStatus(for mediaType: CKMediaType) -> AnyPublisher<Bool?, Never> {
-    permissionStatusCalls += 1
+    calls.log(.permissionStatus)
     return Just(permissionStatuses[mediaType]).setFailureType(to: Never.self).eraseToAnyPublisher()
   }
 
   func requestPermission(for mediaType: CKMediaType) -> AnyPublisher<Void, CKPermissionError> {
-    requestPermissionCalls += 1
+    calls.log(.requestPermission)
     return requestedPermissions[mediaType].flatMap { Fail(outputType: Void.self, failure: $0).eraseToAnyPublisher() } ??
       Just(()).setFailureType(to: CKPermissionError.self).eraseToAnyPublisher()
   }

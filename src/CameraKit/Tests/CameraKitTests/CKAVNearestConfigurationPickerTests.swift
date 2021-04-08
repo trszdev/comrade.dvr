@@ -30,9 +30,25 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
     ]
   )
 
+  var sampleMicrophone = CKDevice<[CKAdjustableMicrophoneConfiguration]>(
+    id: CKDeviceID(value: "id2"),
+    configuration: [
+      CKAdjustableMicrophoneConfiguration(
+        id: CKDeviceConfigurationID(value: "conf_id1"),
+        location: .unspecified,
+        polarPattern: .unspecified
+      ),
+      CKAdjustableMicrophoneConfiguration(
+        id: CKDeviceConfigurationID(value: "conf_id2"),
+        location: .back,
+        polarPattern: .stereo
+      ),
+    ]
+  )
+
   lazy var existingConfiguration = CKConfiguration(
     cameras: [
-      sampleCamera.id: CKDevice(
+      CKDevice(
         id: sampleCamera.id,
         configuration: CKCameraConfiguration(
           id: sampleCamera.configuration[0].id,
@@ -47,15 +63,26 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
         )
       ),
     ],
-    microphone: nil
+    microphone: CKDevice(
+      id: sampleMicrophone.id,
+      configuration: CKMicrophoneConfiguration(
+        id: sampleMicrophone.configuration[0].id,
+        orientation: .portrait,
+        location: sampleMicrophone.configuration[0].location,
+        polarPattern: sampleMicrophone.configuration[0].polarPattern,
+        duckOthers: true,
+        useSpeaker: true,
+        useBluetoothCompatibilityMode: true,
+        audioQuality: .medium
+      )
+    )
   )
 
   lazy var requestedConfiguration = CKConfiguration(
     cameras: [
-      sampleCamera.id: CKDevice(
+      CKDevice(
         id: sampleCamera.id,
         configuration: CKCameraConfiguration(
-          id: sampleCamera.configuration[0].id,
           size: sampleCamera.configuration[0].size,
           zoom: 1.5,
           fps: 60,
@@ -67,12 +94,23 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
         )
       ),
     ],
-    microphone: nil
+    microphone: CKDevice(
+      id: sampleMicrophone.id,
+      configuration: CKMicrophoneConfiguration(
+        orientation: .landscapeLeft,
+        location: sampleMicrophone.configuration[0].location,
+        polarPattern: .omnidirectional,
+        duckOthers: true,
+        useSpeaker: true,
+        useBluetoothCompatibilityMode: true,
+        audioQuality: .medium
+      )
+    )
   )
 
   lazy var resultConfiguration = CKConfiguration(
     cameras: [
-      sampleCamera.id: CKDevice(
+      CKDevice(
         id: sampleCamera.id,
         configuration: CKCameraConfiguration(
           id: sampleCamera.configuration[0].id,
@@ -87,7 +125,19 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
         )
       ),
     ],
-    microphone: nil
+    microphone: CKDevice(
+      id: sampleMicrophone.id,
+      configuration: CKMicrophoneConfiguration(
+        id: sampleMicrophone.configuration[0].id,
+        orientation: .landscapeLeft,
+        location: sampleMicrophone.configuration[0].location,
+        polarPattern: sampleMicrophone.configuration[0].polarPattern,
+        duckOthers: true,
+        useSpeaker: true,
+        useBluetoothCompatibilityMode: true,
+        audioQuality: .medium
+      )
+    )
   )
 
   lazy var nonExistingCamera = CKConfiguration(
@@ -97,14 +147,17 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
         configuration: existingConfiguration.cameras.first!.value.configuration
       ),
     ],
-    microphone: nil
+    microphone: CKDevice(
+      id: CKDeviceID(value: "404_mic"),
+      configuration: existingConfiguration.microphone!.configuration
+    )
   )
 
   func testPickExistingConfiguration() {
     let picker = makePicker(
       adjustableConfiguration: CKAdjustableConfiguration(
         cameras: [sampleCamera.id: sampleCamera],
-        microphone: nil
+        microphone: sampleMicrophone
       )
     )
     let nearest = picker.nearestConfiguration(for: existingConfiguration)
@@ -115,18 +168,40 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
     let picker = makePicker(
       adjustableConfiguration: CKAdjustableConfiguration(
         cameras: [sampleCamera.id: sampleCamera],
-        microphone: nil
+        microphone: sampleMicrophone
       )
     )
     let nearest = picker.nearestConfiguration(for: nonExistingCamera)
     XCTAssertEqual(nearest, CKConfiguration(cameras: [:], microphone: nil))
   }
 
-  func testPickNearestCamera() {
+  func testPickNoCamera() {
+    let picker = makePicker(
+      adjustableConfiguration: CKAdjustableConfiguration(
+        cameras: [:],
+        microphone: sampleMicrophone
+      )
+    )
+    let nearest = picker.nearestConfiguration(for: existingConfiguration)
+    XCTAssertEqual(nearest, existingConfiguration.with(cameras: [:]))
+  }
+
+  func testPickNoMicrophone() {
     let picker = makePicker(
       adjustableConfiguration: CKAdjustableConfiguration(
         cameras: [sampleCamera.id: sampleCamera],
         microphone: nil
+      )
+    )
+    let nearest = picker.nearestConfiguration(for: existingConfiguration)
+    XCTAssertEqual(nearest, existingConfiguration.with(microphone: nil))
+  }
+
+  func testPickNearest() {
+    let picker = makePicker(
+      adjustableConfiguration: CKAdjustableConfiguration(
+        cameras: [sampleCamera.id: sampleCamera],
+        microphone: sampleMicrophone
       )
     )
     let nearest = picker.nearestConfiguration(for: requestedConfiguration)

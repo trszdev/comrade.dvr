@@ -25,4 +25,6 @@ public struct CKConfiguration: CKConfigurationKind, Hashable {
   func with(microphone: CKDevice<CKMicrophoneConfiguration>?) -> CKConfiguration {
     CKConfiguration(cameras: cameras, microphone: microphone)
   }
+
+  static let empty = CKConfiguration(cameras: [], microphone: nil)
 }

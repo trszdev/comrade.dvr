@@ -8,15 +8,23 @@ struct CKAVSessionMaker: CKSessionMaker {
     configurationMapper.currentConfiguration
   }
 
-  var nearestConfigurationPicker: CKNearestConfigurationPicker {
-    CKAVNearestConfigurationPicker(adjustableConfiguration: adjustableConfiguration)
-  }
-
-  func makeSession(configuration: CKConfiguration) -> CKSession {
-    if configuration.cameras.count < 2 {
-      return locator.resolve(CKAVSingleCameraSession.Builder.self).makeSession(configuration: configuration)
+  func makeSession(configuration: CKConfiguration) throws -> CKSession {
+    let picker = CKAVNearestConfigurationPicker(adjustableConfiguration: adjustableConfiguration)
+    let nearestConf = picker.nearestConfiguration(for: configuration)
+    var cameraSession: CKSession?
+    var microphoneSession: CKSession?
+    if nearestConf.cameras.count < 2 {
+      let session = locator.resolve(CKAVSingleCameraSession.Builder.self).makeSession(configuration: nearestConf)
+      try session.start()
+      cameraSession = session
     } else {
-      fatalError()
+      fatalError("N/A")
     }
+    if nearestConf.microphone != nil {
+      let session = locator.resolve(CKAVMicrophoneSession.Builder.self).makeSession(configuration: nearestConf)
+      try session.start()
+      microphoneSession = session
+    }
+    return CKCombinedSession(sessions: [cameraSession, microphoneSession].compactMap { $0 }, configuration: nearestConf)
   }
 }

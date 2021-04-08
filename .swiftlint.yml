@@ -34,6 +34,8 @@ identifier_name:
     - uri
     - id
     - ids
+    - x
+    - y
 
 custom_rules:
   prohibited_symbols:
