@@ -2,55 +2,36 @@ import AVFoundation
 import Combine
 import Foundation
 
-enum CKAVCameraSessionError: Error {
-  case cantAddDevice
-  case cantConnectDevice
-  case cantConfigureDevice(inner: Error)
-}
-
-extension CKAVCameraSessionError: LocalizedError {
-  var errorDescription: String? {
-    switch self {
-    case .cantAddDevice:
-      return "Can't add device"
-    case let .cantConfigureDevice(inner):
-      return "Can't configure device (\(inner.localizedDescription))"
-    case .cantConnectDevice:
-      return "Can't connect device"
-    }
-  }
-}
-
 final class CKAVSingleCameraSession: NSObject, CKSession {
-  let startupInfo = CKSessionStartupInfo()
-
-  func requestMediaChunk() {
-  }
-
   struct Builder {
     let mapper: CKAVConfigurationMapper
+    let recorder: CKAVCameraRecorder
 
     func makeSession(configuration: CKConfiguration) -> CKAVSingleCameraSession {
-      CKAVSingleCameraSession(configuration: configuration, mapper: mapper)
+      CKAVSingleCameraSession(configuration: configuration, mapper: mapper, recorder: recorder)
     }
   }
 
-  init(configuration: CKConfiguration, mapper: CKAVConfigurationMapper) {
+  init(configuration: CKConfiguration, mapper: CKAVConfigurationMapper, recorder: CKAVCameraRecorder) {
     self.configuration = configuration
     self.mapper = mapper
-    //    NotificationCenter.default.publisher(for: .AVCaptureSessionWasInterrupted)
-    //      .sink(receiveValue: cameraCaptureWasInterrupted)
-    //      .store(in: &cancellables)
-    //    NotificationCenter.default.publisher(for: .AVCaptureSessionInterruptionEnded)
-    //      .sink(receiveValue: cameraCaptureInterruptionEnded)
-    //      .store(in: &cancellables)
+    self.recorder = recorder
   }
 
-  weak var delegate: CKSessionDelegate?
+  weak var delegate: CKSessionDelegate? {
+    didSet {
+      recorder.sessionDelegate = delegate
+    }
+  }
 
-  private(set) var cameras: [CKDeviceID: CKCameraDevice] = [:]
-
+  private(set) var cameras = [CKDeviceID: CKCameraDevice]()
   var microphone: CKMicrophoneDevice? { nil }
+  let startupInfo = CKSessionStartupInfo()
+  let configuration: CKConfiguration
+
+  func requestMediaChunk() {
+    recorder.requestMediaChunk()
+  }
 
   var pressureLevel: CKPressureLevel {
     let devices: [AVCaptureDevice] = session.connections.compactMap { connection in
@@ -61,19 +42,13 @@ final class CKAVSingleCameraSession: NSObject, CKSession {
     return devices.map(\.ckPressureLevel).max() ?? .nominal
   }
 
-  private(set) var session = AVCaptureSession()
-
-  let configuration: CKConfiguration
-
-  let mapper: CKAVConfigurationMapper
-
-  var camera: CKCameraDevice? {
-    cameras.values.first
-  }
-
-  private(set) var isRunning: Bool = false
-
   func start() throws {
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(didReceiveRuntimeError(notification:)),
+      name: .AVCaptureSessionRuntimeError,
+      object: nil
+    )
     session.stopRunning()
     session = AVCaptureSession()
     session.beginConfiguration()
@@ -84,9 +59,18 @@ final class CKAVSingleCameraSession: NSObject, CKSession {
     session.startRunning()
   }
 
+  @objc private func didReceiveRuntimeError(notification: Notification) {
+    guard let error = notification.userInfo?[AVCaptureSessionErrorKey] as? AVError else {
+      assert(false, "Unknown notification")
+      return
+    }
+    delegate?.sessionDidOutput(error: CKAVCameraSessionError.runtimeError(inner: error))
+  }
+
   private func tryAddCamera(camera: CKDevice<CKCameraConfiguration>) throws {
     let output = AVCaptureVideoDataOutput()
-    output.setSampleBufferDelegate(self, queue: .global(qos: .userInteractive))
+    output.setSampleBufferDelegate(recorder, queue: videoQueue)
+    try recorder.setup(output: output, camera: camera)
     guard let avDevice = mapper.avCaptureDevice(camera.key),
       let avFormat = mapper.avFormat(camera.key),
       let input = try? AVCaptureDeviceInput(device: avDevice),
@@ -110,6 +94,7 @@ final class CKAVSingleCameraSession: NSObject, CKSession {
     }
     session.addConnection(connection)
     session.addConnection(previewConnection)
+    try recorder.setup(output: output, camera: camera)
     do {
       try avDevice.lockForConfiguration()
     } catch {
@@ -128,41 +113,9 @@ final class CKAVSingleCameraSession: NSObject, CKSession {
     let ckPreviewView = CKCameraPreviewView(previewView)
     cameras[camera.id] = CKAVCameraDevice(device: camera, previewView: ckPreviewView)
   }
-}
 
-extension CKAVSingleCameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
-  func captureOutput(
-    _ output: AVCaptureOutput,
-    didOutput sampleBuffer: CMSampleBuffer,
-    from connection: AVCaptureConnection
-  ) {
-    guard let input = connection.inputPorts.first?.input,
-      let deviceInput = input as? AVCaptureDeviceInput,
-      let id = mapper.id(deviceInput.device)
-    else {
-      // print(1234)
-      return
-    }
-    if let camera = configuration.cameras[id.deviceId] {
-      // print(">>> capture camera \(id)")
-    // } else if let microphone = configuration.microphone, microphone.id == id.deviceId {
-      // print(">>> microphone \(id)")
-    } else {
-      // print(123)
-    }
-  }
-
-  func captureOutput(
-    _ output: AVCaptureOutput,
-    didDrop sampleBuffer: CMSampleBuffer,
-    from connection: AVCaptureConnection
-  ) {
-    guard let input = connection.inputPorts.first?.input,
-      let deviceInput = input as? AVCaptureDeviceInput,
-      let id = mapper.id(deviceInput.device)
-    else {
-      return
-    }
-    // print(">>> Dropped: \(id)")
-  }
+  private lazy var videoQueue = DispatchQueue(label: "\(Self.self)[\(startupInfo.id.uuid)]", qos: .userInteractive)
+  private let mapper: CKAVConfigurationMapper
+  private var session = AVCaptureSession()
+  private let recorder: CKAVCameraRecorder
 }

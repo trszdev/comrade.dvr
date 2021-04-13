@@ -8,7 +8,7 @@ public struct CKMicrophoneConfiguration: Identifiable, Hashable {
   public let duckOthers: Bool
   public let useSpeaker: Bool
   public let useBluetoothCompatibilityMode: Bool
-  public let audioQuality: CKAudioQuality
+  public let audioQuality: CKQuality
 
   public init(
     orientation: CKOrientation,
@@ -17,7 +17,7 @@ public struct CKMicrophoneConfiguration: Identifiable, Hashable {
     duckOthers: Bool,
     useSpeaker: Bool,
     useBluetoothCompatibilityMode: Bool,
-    audioQuality: CKAudioQuality
+    audioQuality: CKQuality
   ) {
     self.id = CKDeviceConfigurationID(value: UUID().uuidString)
     self.orientation = orientation
@@ -37,7 +37,7 @@ public struct CKMicrophoneConfiguration: Identifiable, Hashable {
     duckOthers: Bool,
     useSpeaker: Bool,
     useBluetoothCompatibilityMode: Bool,
-    audioQuality: CKAudioQuality
+    audioQuality: CKQuality
   ) {
     self.id = id
     self.orientation = orientation

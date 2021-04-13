@@ -59,7 +59,8 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
           orientation: .portrait,
           autoFocus: .phaseDetection,
           stabilizationMode: .auto,
-          videoGravity: .resize
+          videoGravity: .resize,
+          videoQuality: .medium
         )
       ),
     ],
@@ -90,7 +91,8 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
           orientation: .portrait,
           autoFocus: .phaseDetection,
           stabilizationMode: .auto,
-          videoGravity: .resize
+          videoGravity: .resize,
+          videoQuality: .medium
         )
       ),
     ],
@@ -121,7 +123,8 @@ final class CKNearestConfigurationPickerTests: XCTestCase {
           orientation: .portrait,
           autoFocus: .phaseDetection,
           stabilizationMode: .auto,
-          videoGravity: .resize
+          videoGravity: .resize,
+          videoQuality: .medium
         )
       ),
     ],

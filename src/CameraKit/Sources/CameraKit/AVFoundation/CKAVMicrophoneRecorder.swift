@@ -3,16 +3,15 @@ import AVFoundation
 
 protocol CKAVMicrophoneRecorder: AnyObject {
   func requestMediaChunk()
-  func setup(microphoneId: CKDeviceID, audioQuality: CKAudioQuality)
+  func setup(microphoneId: CKDeviceID, audioQuality: CKQuality) throws
   var sessionDelegate: CKSessionDelegate? { get set }
   func stop()
   func record()
 }
 
 final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
-  init(tempFileMaker: CKTempFileMaker, timestampMaker: CKTimestampMaker) {
-    self.tempFileMaker = tempFileMaker
-    self.timestampMaker = timestampMaker
+  init(mediaChunkMaker: CKMediaChunkMaker) {
+    self.mediaChunkMaker = mediaChunkMaker
   }
 
   func requestMediaChunk() {
@@ -20,29 +19,22 @@ final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
   }
 
   func stop() {
-    for recorder in recorders.values {
+    for (recorder, _) in recorders.values {
       recorder.stop()
     }
   }
 
   func record() {
-    stop()
     do {
-      let recorder = try AVAudioRecorder(
-        url: tempFileMaker.makeTempFile(),
-        settings: audioQuality.avAudioRecorderSettings
-      )
-      recorder.delegate = self
-      recorder.record()
-      recorders[recorder.url] = recorder
+      try recordInternal()
     } catch {
-      sessionDelegate?.sessionDidOutput(error: CKAVMicrophoneSessionError.cantConfigureSession(inner: error))
+      sessionDelegate?.sessionDidOutput(error: error)
     }
   }
 
   weak var sessionDelegate: CKSessionDelegate?
 
-  func setup(microphoneId: CKDeviceID, audioQuality: CKAudioQuality) {
+  func setup(microphoneId: CKDeviceID, audioQuality: CKQuality) throws {
     NotificationCenter.default.addObserver(
       self,
       selector: #selector(wasInterrupted(notification:)),
@@ -51,7 +43,23 @@ final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
     )
     self.audioQuality = audioQuality
     self.microphoneId = microphoneId
-    record()
+    try recordInternal()
+  }
+
+  private func recordInternal() throws {
+    stop()
+    do {
+      let mediaChunk = mediaChunkMaker.makeMediaChunk(deviceId: microphoneId, fileType: .m4a)
+      let recorder = try AVAudioRecorder(
+        url: mediaChunk.url,
+        settings: audioQuality.avAudioRecorderSettings
+      )
+      recorder.delegate = self
+      recorder.record()
+      recorders[mediaChunk.url] = (recorder, mediaChunk)
+    } catch {
+      throw CKAVMicrophoneSessionError.cantConfigureSession(inner: error)
+    }
   }
 
   @objc private func wasInterrupted(notification: Notification) {
@@ -82,11 +90,10 @@ final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
     record()
   }
 
-  private var recorders = [URL: AVAudioRecorder]()
-  private let tempFileMaker: CKTempFileMaker
-  private let timestampMaker: CKTimestampMaker
+  private var recorders = [URL: (AVAudioRecorder, CKMediaChunk)]()
+  private let mediaChunkMaker: CKMediaChunkMaker
   private var microphoneId = CKAVMicrophone.builtIn.value
-  private var audioQuality = CKAudioQuality.medium
+  private var audioQuality = CKQuality.medium
 }
 
 extension CKAVMicrophoneRecorderImpl: AVAudioRecorderDelegate {
@@ -99,17 +106,11 @@ extension CKAVMicrophoneRecorderImpl: AVAudioRecorderDelegate {
   }
 
   func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
-    recorders.removeValue(forKey: recorder.url)
-    guard flag else {
+    guard flag, let (_, mediaChunk) = recorders[recorder.url] else {
       sessionDelegate?.sessionDidOutput(error: CKAVMicrophoneSessionError.failedToFinish)
       return
     }
-    let mediaChunk = CKMediaChunk(
-      timestamp: timestampMaker.currentTimestamp,
-      url: recorder.url,
-      deviceId: microphoneId,
-      fileType: .m4a
-    )
+    recorders.removeValue(forKey: recorder.url)
     sessionDelegate?.sessionDidOutput(mediaChunk: mediaChunk)
   }
 }

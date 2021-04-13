@@ -1,4 +1,4 @@
-public enum CKAudioQuality {
+public enum CKQuality {
   case min
   case low
   case medium

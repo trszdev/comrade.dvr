@@ -9,7 +9,7 @@ public struct CKAVAssembly: AKAssembly {
     container.singleton.autoregister(value: AVAudioSession.sharedInstance())
     container.transient.autoregister(
       CKAVMicrophoneRecorder.self,
-      construct: CKAVMicrophoneRecorderImpl.init(tempFileMaker:timestampMaker:)
+      construct: CKAVMicrophoneRecorderImpl.init(mediaChunkMaker:)
     )
     container.transient.autoregister(construct: CKAVMicrophoneSession.Builder.init(mapper:session:recorder:))
     container.transient.autoregister(construct: CKAVManager.Builder.init(locator:))
@@ -22,6 +22,14 @@ public struct CKAVAssembly: AKAssembly {
       CKSessionMaker.self,
       construct: CKAVSessionMaker.init(configurationMapper:locator:)
     )
-    container.transient.autoregister(construct: CKAVSingleCameraSession.Builder.init(mapper:))
+    container.transient.autoregister(
+      CKMediaChunkMaker.self,
+      construct: CKMediaChunkMakerImpl.init(timestampMaker:tempFileMaker:)
+    )
+    container.transient.autoregister(
+      CKAVCameraRecorder.self,
+      construct: CKAVCameraRecorderImpl.init(mapper:mediaChunkMaker:)
+    )
+    container.transient.autoregister(construct: CKAVSingleCameraSession.Builder.init(mapper:recorder:))
   }
 }

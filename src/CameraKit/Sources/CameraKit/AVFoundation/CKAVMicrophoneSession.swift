@@ -40,7 +40,11 @@ final class CKAVMicrophoneSession: CKSession {
   let mapper: CKAVConfigurationMapper
   let session: AVAudioSession
   var pressureLevel: CKPressureLevel { .nominal }
-  weak var delegate: CKSessionDelegate?
+  weak var delegate: CKSessionDelegate? {
+    didSet {
+      recorder.sessionDelegate = delegate
+    }
+  }
 
   func start() throws {
     guard let microphone = configuration.microphone else { return }
@@ -52,7 +56,7 @@ final class CKAVMicrophoneSession: CKSession {
         try dataSource.setPreferredPolarPattern(polarPattern)
       }
     }
-    recorder.setup(microphoneId: microphone.id, audioQuality: microphone.configuration.audioQuality)
+    try recorder.setup(microphoneId: microphone.id, audioQuality: microphone.configuration.audioQuality)
     self.microphone = CKAVMicrophoneDevice(device: microphone) { [weak self] isMuted in
       if isMuted {
         self?.recorder.stop()

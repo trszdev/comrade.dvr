@@ -97,6 +97,34 @@ extension AVAudioSession.PolarPattern {
   }
 }
 
+extension CKCameraConfiguration {
+  var assetWriterInput: AVAssetWriterInput {
+    let bitrate: Int
+    switch videoQuality {
+    case .min:
+      bitrate = 230_000
+    case .low:
+      bitrate = 230_000
+    case .medium:
+      bitrate = 230_000
+    case .high:
+      bitrate = 230_000
+    case .max:
+      bitrate = 230_000
+    }
+    let result = AVAssetWriterInput(mediaType: .video, outputSettings: [
+      AVVideoCodecKey: AVVideoCodecType.h264,
+      AVVideoWidthKey: size.width,
+      AVVideoHeightKey: size.height,
+      AVVideoCompressionPropertiesKey: [
+        AVVideoAverageBitRateKey: bitrate,
+      ],
+    ])
+    result.expectsMediaDataInRealTime = true
+    return result
+  }
+}
+
 extension CKPolarPattern {
   var avPolarPattern: AVAudioSession.PolarPattern? {
     switch self {
@@ -129,7 +157,7 @@ extension AVCaptureDevice {
   }
 }
 
-extension CKAudioQuality {
+extension CKQuality {
   var avAudioRecorderSettings: [String: Any] {
     switch self {
     case .min:

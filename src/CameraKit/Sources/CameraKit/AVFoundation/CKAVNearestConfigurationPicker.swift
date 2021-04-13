@@ -56,7 +56,8 @@ struct CKAVNearestConfigurationPicker: CKNearestConfigurationPicker {
         stabilizationMode: available.supportedStabilizationModes.contains(device.configuration.stabilizationMode) ?
           device.configuration.stabilizationMode :
           .auto,
-        videoGravity: device.configuration.videoGravity
+        videoGravity: device.configuration.videoGravity,
+        videoQuality: device.configuration.videoQuality
       )
     )
   }

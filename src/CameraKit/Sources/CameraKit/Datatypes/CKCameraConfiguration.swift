@@ -10,6 +10,7 @@ public struct CKCameraConfiguration: Identifiable, Hashable {
   public let autoFocus: CKAutoFocus
   public let stabilizationMode: CKStabilizationMode
   public let videoGravity: CKVideoGravity
+  public let videoQuality: CKQuality
 
   public init(
     size: CKSize,
@@ -19,7 +20,8 @@ public struct CKCameraConfiguration: Identifiable, Hashable {
     orientation: CKOrientation,
     autoFocus: CKAutoFocus,
     stabilizationMode: CKStabilizationMode,
-    videoGravity: CKVideoGravity
+    videoGravity: CKVideoGravity,
+    videoQuality: CKQuality
   ) {
     self.id = CKDeviceConfigurationID(value: UUID().uuidString)
     self.size = size
@@ -30,6 +32,7 @@ public struct CKCameraConfiguration: Identifiable, Hashable {
     self.autoFocus = autoFocus
     self.stabilizationMode = stabilizationMode
     self.videoGravity = videoGravity
+    self.videoQuality = videoQuality
   }
 
   init(
@@ -41,7 +44,8 @@ public struct CKCameraConfiguration: Identifiable, Hashable {
     orientation: CKOrientation,
     autoFocus: CKAutoFocus,
     stabilizationMode: CKStabilizationMode,
-    videoGravity: CKVideoGravity
+    videoGravity: CKVideoGravity,
+    videoQuality: CKQuality
   ) {
     self.id = id
     self.size = size
@@ -52,5 +56,6 @@ public struct CKCameraConfiguration: Identifiable, Hashable {
     self.autoFocus = autoFocus
     self.stabilizationMode = stabilizationMode
     self.videoGravity = videoGravity
+    self.videoQuality = videoQuality
   }
 }

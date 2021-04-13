@@ -13,16 +13,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   }
 }
 
-func printCurrentTime() {
-  let time = DispatchTime.now().uptimeNanoseconds
-  var seconds = Decimal(time)
-  seconds *= 1e-9
-  let fmt = NumberFormatter()
-  fmt.numberStyle = .decimal
-  fmt.maximumFractionDigits = 3
-  print(">>> time: \(time), seconds: \(seconds)")
-}
-
 extension Publisher {
   func sinkAndStore() {
     // closure variables for debug purposes

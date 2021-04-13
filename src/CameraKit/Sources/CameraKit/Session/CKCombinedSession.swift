@@ -8,6 +8,9 @@ final class CKCombinedSession: CKSession {
     self.cameras = sessions.reduce(into: [:]) { acc, x in acc.merge(x.cameras) { first, _ in first } }
     self.microphone = sessions.first { $0.microphone != nil }?.microphone
     self.configuration = configuration
+    for session in sessions {
+      session.delegate = self
+    }
   }
 
   let sessions: [CKSession]

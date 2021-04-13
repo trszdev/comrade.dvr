@@ -1,6 +1,6 @@
 import Foundation
 
-public struct CKMediaChunk {
+public struct CKMediaChunk: Hashable {
   public let timestamp: CKTimestamp
   public let url: URL
   public let deviceId: CKDeviceID
