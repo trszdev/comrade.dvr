@@ -113,6 +113,16 @@ private struct CKAVCameraConfigurator {
   func configurePreviewView() {
     previewView.videoPreviewLayer.setSessionWithNoConnection(session)
     previewView.videoPreviewLayer.videoGravity = configuration.videoGravity.avVideoGravity
+    switch configuration.orientation {
+    case .portrait:
+      previewView.transform = .identity
+    case .portraitUpsideDown:
+      previewView.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi))
+    case .landscapeLeft:
+      previewView.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi/2))
+    case .landscapeRight:
+      previewView.transform = CGAffineTransform(rotationAngle: CGFloat(-Double.pi/2))
+    }
   }
 
   func addInputOutput() throws {

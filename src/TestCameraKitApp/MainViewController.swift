@@ -108,7 +108,7 @@ final class MainViewController: UIViewController {
         self.alert(title: "Session info", message: String(describing: session.configuration)) {
           let viewBuilder = Assembly().hashContainer.resolve(CameraKitViewBuilder.self)!
           let view = viewBuilder.makeView(session: session)
-          let hostingVc = UIHostingController(rootView: view)
+          let hostingVc = UIHostingControllerWithoutRotation(rootView: view)
           hostingVc.view.backgroundColor = .black
           hostingVc.modalPresentationStyle = .fullScreen
           self.present(hostingVc, animated: true, completion: nil)
@@ -139,17 +139,31 @@ final class MainViewController: UIViewController {
     return try sessionMaker.makeSession(configuration: configuration)
   }
 
-  private var sampleCameraConfiguration = CKCameraConfiguration(
-    size: CKSize(width: 1920, height: 1080),
-    zoom: 1,
-    fps: 60,
-    fieldOfView: 107,
-    orientation: .portrait,
-    autoFocus: .phaseDetection,
-    stabilizationMode: .auto,
-    videoGravity: .resizeAspect,
-    videoQuality: .medium
-  )
+  private var sampleCameraConfiguration: CKCameraConfiguration {
+    let interfaceOrienation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation
+    let orientation: CKOrientation
+    switch interfaceOrienation! {
+    case .landscapeLeft:
+      orientation = .landscapeLeft
+    case .landscapeRight:
+      orientation = .landscapeRight
+    case .portraitUpsideDown:
+      orientation = .portraitUpsideDown
+    default:
+      orientation = .portrait
+    }
+    return CKCameraConfiguration(
+      size: CKSize(width: 1920, height: 1080),
+      zoom: 1,
+      fps: 60,
+      fieldOfView: 107,
+      orientation: orientation,
+      autoFocus: .phaseDetection,
+      stabilizationMode: .auto,
+      videoGravity: .resizeAspect,
+      videoQuality: .medium
+    )
+  }
 
   private var sampleMicrophoneConfiguration = CKMicrophoneConfiguration(
     orientation: .portrait,
@@ -160,4 +174,10 @@ final class MainViewController: UIViewController {
     useBluetoothCompatibilityMode: false,
     audioQuality: .max
   )
+}
+
+class UIHostingControllerWithoutRotation<Content: View>: UIHostingController<Content> {
+  override var shouldAutorotate: Bool {
+    false
+  }
 }
