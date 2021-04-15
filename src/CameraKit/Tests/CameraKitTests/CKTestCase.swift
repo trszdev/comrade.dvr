@@ -10,10 +10,5 @@ class CKTestCase: XCTestCase {
     super.perform(run)
   }
 
-  lazy var avLocator: AKLocator = {
-    let container = AKHashContainer()
-    container.singleton.autoregister(AKLocator.self, value: container)
-    CKAVAssembly().assemble(container: container)
-    return container
-  }()
+  lazy var avLocator: AKLocator = CKAVAssembly().hashContainer
 }

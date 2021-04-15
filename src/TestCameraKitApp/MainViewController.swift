@@ -106,10 +106,11 @@ final class MainViewController: UIViewController {
       do {
         let session = try self.makeSession(sessionMaker: sessionMaker, cameraIds: cameraIds, microphoneId: microphoneId)
         self.alert(title: "Session info", message: String(describing: session.configuration)) {
-          let view = CameraKitView(session: session)
-          session.delegate = self
+          let viewBuilder = Assembly().hashContainer.resolve(CameraKitViewBuilder.self)!
+          let view = viewBuilder.makeView(session: session)
           let hostingVc = UIHostingController(rootView: view)
           hostingVc.view.backgroundColor = .black
+          hostingVc.modalPresentationStyle = .fullScreen
           self.present(hostingVc, animated: true, completion: nil)
         }
       } catch {
@@ -157,16 +158,6 @@ final class MainViewController: UIViewController {
     duckOthers: false,
     useSpeaker: false,
     useBluetoothCompatibilityMode: false,
-    audioQuality: .min
+    audioQuality: .max
   )
-}
-
-extension MainViewController: CKSessionDelegate {
-  func sessionDidOutput(mediaChunk: CKMediaChunk) {
-    print(mediaChunk)
-  }
-
-  func sessionDidOutput(error: Error) {
-    print(error)
-  }
 }

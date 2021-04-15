@@ -68,49 +68,30 @@ final class CKAVSingleCameraSession: NSObject, CKSession {
   }
 
   private func tryAddCamera(camera: CKDevice<CKCameraConfiguration>) throws {
-    let output = AVCaptureVideoDataOutput()
-    output.setSampleBufferDelegate(recorder, queue: videoQueue)
-    try recorder.setup(output: output, camera: camera)
     guard let avDevice = mapper.avCaptureDevice(camera.key),
       let avFormat = mapper.avFormat(camera.key),
-      let input = try? AVCaptureDeviceInput(device: avDevice),
-      session.canAddInput(input),
-      session.canAddOutput(output)
+      let input = try? AVCaptureDeviceInput(device: avDevice)
     else {
       throw CKAVCameraSessionError.cantAddDevice
     }
-    session.addInputWithNoConnections(input)
-    session.addOutputWithNoConnections(output)
-    let previewView = AVPreviewView()
-    previewView.videoPreviewLayer.setSessionWithNoConnection(session)
-    let ports = input.ports(for: .video, sourceDeviceType: avDevice.deviceType, sourceDevicePosition: avDevice.position)
-    guard !ports.isEmpty else {
-      throw CKAVCameraSessionError.cantConnectDevice
-    }
-    let connection = AVCaptureConnection(inputPorts: ports, output: output)
-    let previewConnection = AVCaptureConnection(inputPort: ports[0], videoPreviewLayer: previewView.videoPreviewLayer)
-    guard session.canAddConnection(connection), session.canAddConnection(previewConnection) else {
-      throw CKAVCameraSessionError.cantConnectDevice
-    }
-    session.addConnection(connection)
-    session.addConnection(previewConnection)
+    let output = AVCaptureVideoDataOutput()
+    output.setSampleBufferDelegate(recorder, queue: videoQueue)
+    print(output.availableVideoPixelFormatNames)
+    output.setPixelFormat(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)
+    let configurator = CKAVCameraConfigurator(
+      session: session,
+      avDevice: avDevice,
+      avFormat: avFormat,
+      configuration: camera.configuration,
+      input: input,
+      output: output
+    )
+    try configurator.addInputOutput()
+    configurator.configurePreviewView()
+    try configurator.addConnections()
+    try configurator.configureDevice()
     try recorder.setup(output: output, camera: camera)
-    do {
-      try avDevice.lockForConfiguration()
-    } catch {
-      throw CKAVCameraSessionError.cantConfigureDevice(inner: error)
-    }
-    for connection in [connection, previewConnection] {
-      connection.videoOrientation = camera.configuration.orientation.avOrientation
-      connection.preferredVideoStabilizationMode = camera.configuration.stabilizationMode.avStabilizationMode
-    }
-    avDevice.activeFormat = avFormat
-    avDevice.videoZoomFactor = CGFloat(camera.configuration.zoom)
-    avDevice.activeVideoMinFrameDuration = CMTime(value: 1, timescale: CMTimeScale(camera.configuration.fps))
-    avDevice.activeVideoMaxFrameDuration = avDevice.activeVideoMinFrameDuration
-    avDevice.unlockForConfiguration()
-    previewView.videoPreviewLayer.videoGravity = camera.configuration.videoGravity.avVideoGravity
-    let ckPreviewView = CKCameraPreviewView(previewView)
+    let ckPreviewView = CKCameraPreviewView(configurator.previewView)
     cameras[camera.id] = CKAVCameraDevice(device: camera, previewView: ckPreviewView)
   }
 
@@ -118,4 +99,60 @@ final class CKAVSingleCameraSession: NSObject, CKSession {
   private let mapper: CKAVConfigurationMapper
   private var session = AVCaptureSession()
   private let recorder: CKAVCameraRecorder
+}
+
+private struct CKAVCameraConfigurator {
+  let session: AVCaptureSession
+  let avDevice: AVCaptureDevice
+  let avFormat: AVCaptureDevice.Format
+  let configuration: CKCameraConfiguration
+  let input: AVCaptureDeviceInput
+  let output: AVCaptureVideoDataOutput
+  let previewView = AVPreviewView()
+
+  func configurePreviewView() {
+    previewView.videoPreviewLayer.setSessionWithNoConnection(session)
+    previewView.videoPreviewLayer.videoGravity = configuration.videoGravity.avVideoGravity
+  }
+
+  func addInputOutput() throws {
+    guard session.canAddInput(input), session.canAddOutput(output) else {
+      throw CKAVCameraSessionError.cantAddDevice
+    }
+    session.addInputWithNoConnections(input)
+    session.addOutputWithNoConnections(output)
+  }
+
+  func addConnections() throws {
+    let ports = input.ports(for: .video, sourceDeviceType: avDevice.deviceType, sourceDevicePosition: avDevice.position)
+    guard !ports.isEmpty else {
+      throw CKAVCameraSessionError.cantConnectDevice
+    }
+    let connection = AVCaptureConnection(inputPorts: ports, output: output)
+    let previewConnection = AVCaptureConnection(inputPort: ports[0], videoPreviewLayer: previewView.videoPreviewLayer)
+    let connections = [connection, previewConnection]
+    for connection in connections {
+      connection.videoOrientation = configuration.orientation.avOrientation
+      connection.preferredVideoStabilizationMode = configuration.stabilizationMode.avStabilizationMode
+    }
+    guard connections.allSatisfy(session.canAddConnection) else {
+      throw CKAVCameraSessionError.cantConnectDevice
+    }
+    for connection in connections {
+      session.addConnection(connection)
+    }
+  }
+
+  func configureDevice() throws {
+    do {
+      try avDevice.lockForConfiguration()
+    } catch {
+      throw CKAVCameraSessionError.cantConfigureDevice(inner: error)
+    }
+    avDevice.activeFormat = avFormat
+    avDevice.videoZoomFactor = CGFloat(configuration.zoom)
+    avDevice.activeVideoMinFrameDuration = CMTime(value: 1, timescale: CMTimeScale(configuration.fps))
+    avDevice.activeVideoMaxFrameDuration = avDevice.activeVideoMinFrameDuration
+    avDevice.unlockForConfiguration()
+  }
 }

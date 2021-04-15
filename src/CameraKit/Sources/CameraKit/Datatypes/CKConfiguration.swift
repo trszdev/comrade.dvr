@@ -10,6 +10,8 @@ public struct CKConfiguration: CKConfigurationKind, Hashable {
     self.microphone = microphone
   }
 
+  public static let empty = CKConfiguration(cameras: [], microphone: nil)
+
   init(
     cameras: [CKDeviceID: CKDevice<CKCameraConfiguration>],
     microphone: CKDevice<CKMicrophoneConfiguration>?
@@ -25,6 +27,4 @@ public struct CKConfiguration: CKConfigurationKind, Hashable {
   func with(microphone: CKDevice<CKMicrophoneConfiguration>?) -> CKConfiguration {
     CKConfiguration(cameras: cameras, microphone: microphone)
   }
-
-  static let empty = CKConfiguration(cameras: [], microphone: nil)
 }

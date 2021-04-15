@@ -99,29 +99,27 @@ extension AVAudioSession.PolarPattern {
 
 extension CKCameraConfiguration {
   var assetWriterInput: AVAssetWriterInput {
-    let bitrate: Int
-    switch videoQuality {
-    case .min:
-      bitrate = 230_000
-    case .low:
-      bitrate = 230_000
-    case .medium:
-      bitrate = 230_000
-    case .high:
-      bitrate = 230_000
-    case .max:
-      bitrate = 230_000
-    }
+    let maxBitrate = size.width * size.height * fps * 8
+    let bitrate = max(Int(Double(maxBitrate) * videoQuality.doubleValue), 1)
     let result = AVAssetWriterInput(mediaType: .video, outputSettings: [
       AVVideoCodecKey: AVVideoCodecType.h264,
-      AVVideoWidthKey: size.width,
-      AVVideoHeightKey: size.height,
+      AVVideoWidthKey: isLandscape ? size.width : size.height,
+      AVVideoHeightKey: isLandscape ? size.height : size.width,
       AVVideoCompressionPropertiesKey: [
         AVVideoAverageBitRateKey: bitrate,
       ],
     ])
     result.expectsMediaDataInRealTime = true
     return result
+  }
+
+  var isLandscape: Bool {
+    switch orientation {
+    case .landscapeLeft, .landscapeRight:
+      return true
+    case .portrait, .portraitUpsideDown:
+      return false
+    }
   }
 }
 

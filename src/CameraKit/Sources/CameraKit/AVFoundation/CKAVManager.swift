@@ -49,10 +49,7 @@ public final class CKAVManager: CKManager {
   }
 
   public static let shared: CKAVManager = {
-    let container = AKHashContainer()
-    container.singleton.autoregister(AKLocator.self, value: container)
-    CKAVAssembly().assemble(container: container)
-    return container.resolve(Builder.self).makeManager(infoPlistBundle: .main)
+    CKAVAssembly().hashContainer.resolve(Builder.self).makeManager(infoPlistBundle: .main)
   }()
 
   private let permissionManager: CKPermissionManager
