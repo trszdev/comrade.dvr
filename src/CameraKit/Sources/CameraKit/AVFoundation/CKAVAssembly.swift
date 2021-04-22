@@ -20,7 +20,12 @@ public struct CKAVAssembly: AKAssembly {
     )
     container.transient.autoregister(
       CKSessionMaker.self,
-      construct: CKAVSessionMaker.init(configurationMapper:locator:)
+      construct: CKAVSessionMaker.init(
+        configurationMapper:
+        cameraSessionBuilder:
+        microphoneSessionBuilder:
+        nearestConfigurationPickerBuilder:
+      )
     )
     container.transient.autoregister(
       CKMediaChunkMaker.self,
@@ -30,6 +35,18 @@ public struct CKAVAssembly: AKAssembly {
       CKAVCameraRecorder.self,
       construct: CKAVCameraRecorderImpl.init(mapper:mediaChunkMaker:)
     )
-    container.transient.autoregister(construct: CKAVSingleCameraSession.Builder.init(mapper:recorder:))
+    container.transient.autoregister(
+      CKAVCameraRecorderBuilder.self,
+      construct: CKAVCameraRecorderBuilderImpl.init(locator:)
+    )
+    container.transient.autoregister(construct: CKAVCameraSession.Builder.init(mapper:recorderBuilder:))
+    container.transient.autoregister(construct: CKAVNearestConfigurationPicker.Builder.init(multiCameraPickerBuilder:))
+    container.transient.autoregister(
+      construct: CKAVNearestMultiCameraConfigurationPicker.Builder.init(multicamSetsProvider:)
+    )
+    container.transient.autoregister(
+      CKAVMulticamSetsProvider.self,
+      construct: CKAVMulticamSetsProviderImpl.init(mapper:discovery:)
+    )
   }
 }

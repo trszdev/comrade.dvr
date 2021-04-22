@@ -10,5 +10,9 @@ class CKTestCase: XCTestCase {
     super.perform(run)
   }
 
+  func notImplemented() -> Never {
+    fatalError("Not implemented")
+  }
+
   lazy var avLocator: AKLocator = CKAVAssembly().hashContainer
 }

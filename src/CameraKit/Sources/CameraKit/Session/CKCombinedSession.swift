@@ -32,6 +32,10 @@ final class CKCombinedSession: CKSession {
 }
 
 extension CKCombinedSession: CKSessionDelegate {
+  func sessionDidChangePressureLevel() {
+    delegate?.sessionDidChangePressureLevel()
+  }
+
   func sessionDidOutput(mediaChunk: CKMediaChunk) {
     delegate?.sessionDidOutput(mediaChunk: mediaChunk)
   }

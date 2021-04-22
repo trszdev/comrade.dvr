@@ -15,6 +15,9 @@ opt_in_rules:
   - redundant_nil_coalescing
   - collection_alignment
 
+type_name:
+  max_length: 60
+
 conditional_returns_on_newline:
   if_only: true
 

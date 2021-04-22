@@ -18,9 +18,16 @@ final class LogViewModelImpl: LogViewModel {
   private var mutableLog: NSMutableString = ""
 
   func log(_ value: String) {
-    mutableLog.append(">>> ")
-    mutableLog.append(value)
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "hh:mm:ss"
+    let timestamp = dateFormatter.string(from: Date())
+    let logline = ">>> [\(timestamp)] \(value)"
+    mutableLog.append(logline)
     mutableLog.append("\n")
-    log = mutableLog as String
+    print(logline)
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else { return }
+      self.log = self.mutableLog as String
+    }
   }
 }

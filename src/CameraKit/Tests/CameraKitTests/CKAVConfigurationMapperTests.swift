@@ -29,6 +29,7 @@ private final class CKAVDiscoveryMock: CKAVDiscovery {
     case backCameras
     case frontCameras
     case audioInputs
+    case multiCameraDeviceSets
   }
 
   let calls = CallLogger(Table.self)
@@ -45,6 +46,11 @@ private final class CKAVDiscoveryMock: CKAVDiscovery {
 
   var audioInputs: [AVAudioSessionPortDescription] {
     calls.log(.audioInputs)
+    return []
+  }
+
+  var multiCameraDeviceSets: [Set<AVCaptureDevice>] {
+    calls.log(.multiCameraDeviceSets)
     return []
   }
 }

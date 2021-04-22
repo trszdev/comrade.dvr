@@ -91,11 +91,11 @@ class CKManagerTests: CKTestCase {
   }
 
   open func makeManager() -> CKManager {
-    fatalError("Not implemented")
+    notImplemented()
   }
 
   open func makeManager(mock: CKPermissionManager) -> CKManager {
-    fatalError("Not implemented")
+    notImplemented()
   }
 
   private var cancellables = Set<AnyCancellable>()

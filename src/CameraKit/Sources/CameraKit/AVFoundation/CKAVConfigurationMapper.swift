@@ -16,6 +16,7 @@ protocol CKAVConfigurationMapper {
   func avCaptureDevice(_ key: CKAVMapperKey) -> AVCaptureDevice?
   func avFormat(_ key: CKAVMapperKey) -> AVCaptureDevice.Format?
   func id(_ device: AVCaptureDevice) -> CKAVMapperKey?
+  func camera(_ device: AVCaptureDevice) -> CKDevice<[CKAdjustableCameraConfiguration]>?
 
   func audioInput(_ key: CKAVMapperKey) -> AVAudioSessionPortDescription?
   func audioDataSource(_ key: CKAVMapperKey) -> AVAudioSessionDataSourceDescription?
@@ -48,6 +49,11 @@ final class CKAVConfigurationMapperImpl: CKAVConfigurationMapper {
     return reverseDeviceMap[device]
   }
 
+  func camera(_ device: AVCaptureDevice) -> CKDevice<[CKAdjustableCameraConfiguration]>? {
+    tryInitialize()
+    return cameras[device]
+  }
+
   func audioInput(_ key: CKAVMapperKey) -> AVAudioSessionPortDescription? {
     tryInitialize()
     return audioInputMap[key]
@@ -58,17 +64,23 @@ final class CKAVConfigurationMapperImpl: CKAVConfigurationMapper {
     return audioDataSourceMap[key]
   }
 
-  private func add(cameras: [AVCaptureDevice], deviceId: CKDeviceID) -> CKDevice<[CKAdjustableCameraConfiguration]>? {
-    let confs = cameras.flatMap { device in
-      device.formats.map { format in
-        let conf = adjustableCameraConfiguration(device: device, format: format)
-        let key = CKAVMapperKey(deviceId: deviceId, configurationId: conf.id)
-        formatMap[key] = format
-        deviceMap[key] = device
-        reverseDeviceMap[device] = key
-        return conf
-      } as [CKAdjustableCameraConfiguration]
+  private func add(camera: AVCaptureDevice, deviceId: CKDeviceID) -> [CKAdjustableCameraConfiguration] {
+    let result: [CKAdjustableCameraConfiguration] = camera.formats.map { format in
+      let conf = adjustableCameraConfiguration(device: camera, format: format)
+      let key = CKAVMapperKey(deviceId: deviceId, configurationId: conf.id)
+      formatMap[key] = format
+      deviceMap[key] = camera
+      reverseDeviceMap[camera] = key
+      return conf
     }
+    if !result.isEmpty {
+      cameras[camera] = CKDevice(id: deviceId, configuration: result)
+    }
+    return result
+  }
+
+  private func add(cameras: [AVCaptureDevice], deviceId: CKDeviceID) -> CKDevice<[CKAdjustableCameraConfiguration]>? {
+    let confs: [CKAdjustableCameraConfiguration] = cameras.flatMap { add(camera: $0, deviceId: deviceId) }
     return confs.isEmpty ? nil : CKDevice(id: deviceId, configuration: confs)
   }
 
@@ -123,11 +135,12 @@ final class CKAVConfigurationMapperImpl: CKAVConfigurationMapper {
     )
   }
 
-  private var audioInputMap: [CKAVMapperKey: AVAudioSessionPortDescription] = [:]
-  private var audioDataSourceMap: [CKAVMapperKey: AVAudioSessionDataSourceDescription] = [:]
-  private var deviceMap: [CKAVMapperKey: AVCaptureDevice] = [:]
-  private var formatMap: [CKAVMapperKey: AVCaptureDevice.Format] = [:]
-  private var reverseDeviceMap: [AVCaptureDevice: CKAVMapperKey] = [:]
+  private var audioInputMap = [CKAVMapperKey: AVAudioSessionPortDescription]()
+  private var audioDataSourceMap = [CKAVMapperKey: AVAudioSessionDataSourceDescription]()
+  private var deviceMap = [CKAVMapperKey: AVCaptureDevice]()
+  private var formatMap = [CKAVMapperKey: AVCaptureDevice.Format]()
+  private var reverseDeviceMap = [AVCaptureDevice: CKAVMapperKey]()
+  private var cameras = [AVCaptureDevice: CKDevice<[CKAdjustableCameraConfiguration]>]()
   private var initialized = false
   private var configuration: CKAdjustableConfiguration!
 

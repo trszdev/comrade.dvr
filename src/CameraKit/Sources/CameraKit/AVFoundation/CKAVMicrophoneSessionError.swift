@@ -3,6 +3,7 @@ import Foundation
 public enum CKAVMicrophoneSessionError: Error {
   case cantConfigureSession(inner: Error)
   case cantSetInputOrientation(inner: Error)
+  case invalidSettings
   case unknownRecordingError
   case recordingError(inner: Error)
   case failedToFinish
@@ -15,6 +16,8 @@ extension CKAVMicrophoneSessionError: LocalizedError {
       return "Can't configure session (\(error.localizedDescription))"
     case let .cantSetInputOrientation(error):
       return "Can't configure session (\(error.localizedDescription))"
+    case .invalidSettings:
+      return "Invalid settings"
     case .unknownRecordingError:
       return "Unknown recording error"
     case let .recordingError(error):

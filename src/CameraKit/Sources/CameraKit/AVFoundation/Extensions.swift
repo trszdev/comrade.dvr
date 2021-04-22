@@ -1,4 +1,5 @@
 import AVFoundation
+import VideoToolbox
 
 extension AVCaptureDevice.Format {
   var size: CKSize {
@@ -97,28 +98,52 @@ extension AVAudioSession.PolarPattern {
   }
 }
 
+extension CKQuality {
+  var videoQualityMultiplier: Double {
+    switch self {
+    case .min:
+      return 0.3
+    case .low:
+      return 0.4
+    case .medium:
+      return 0.6
+    case .high:
+      return 0.8
+    case .max:
+      return 1
+    }
+  }
+}
+
 extension CKCameraConfiguration {
-  var assetWriterInput: AVAssetWriterInput {
-    let maxBitrate = size.width * size.height * fps * 8
-    let bitrate = max(Int(Double(maxBitrate) * videoQuality.doubleValue), 1)
+  func assetWriterInput(bitsPerPixel: Int) -> AVAssetWriterInput {
+    let maxBitrate = size.width * size.height * fps * bitsPerPixel
+    let bitrate = max(Int(Double(maxBitrate) * videoQuality.videoQualityMultiplier), 1)
     let result = AVAssetWriterInput(mediaType: .video, outputSettings: [
-      AVVideoCodecKey: AVVideoCodecType.h264,
-      AVVideoWidthKey: isLandscape ? size.width : size.height,
-      AVVideoHeightKey: isLandscape ? size.height : size.width,
+      AVVideoCodecKey: VTIsHardwareDecodeSupported(kCMVideoCodecType_HEVC) ?
+        AVVideoCodecType.hevc :
+        AVVideoCodecType.h264,
+      AVVideoWidthKey: size.width,
+      AVVideoHeightKey: size.height,
       AVVideoCompressionPropertiesKey: [
         AVVideoAverageBitRateKey: bitrate,
       ],
     ])
+    result.transform = transform
     result.expectsMediaDataInRealTime = true
     return result
   }
 
-  var isLandscape: Bool {
+  var transform: CGAffineTransform {
     switch orientation {
-    case .landscapeLeft, .landscapeRight:
-      return true
-    case .portrait, .portraitUpsideDown:
-      return false
+    case .landscapeRight:
+      return .identity
+    case .landscapeLeft:
+      return CGAffineTransform(rotationAngle: .pi)
+    case .portrait:
+      return CGAffineTransform(rotationAngle: .pi / 2)
+    case .portraitUpsideDown:
+      return CGAffineTransform(rotationAngle: .pi / -2)
     }
   }
 }
@@ -160,36 +185,31 @@ extension CKQuality {
     switch self {
     case .min:
       return [
-        AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-        AVSampleRateKey: 12000,
+        AVFormatIDKey: kAudioFormatMPEG4AAC,
         AVNumberOfChannelsKey: 1,
         AVEncoderAudioQualityKey: AVAudioQuality.min.rawValue,
       ]
     case .low:
       return [
-        AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-        AVSampleRateKey: 24000,
+        AVFormatIDKey: kAudioFormatMPEG4AAC,
         AVNumberOfChannelsKey: 1,
         AVEncoderAudioQualityKey: AVAudioQuality.low.rawValue,
       ]
     case .medium:
       return [
-        AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-        AVSampleRateKey: 44100,
+        AVFormatIDKey: kAudioFormatMPEG4AAC,
         AVNumberOfChannelsKey: 2,
         AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue,
       ]
     case .high:
       return [
-        AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-        AVSampleRateKey: 48000,
+        AVFormatIDKey: kAudioFormatMPEG4AAC,
         AVNumberOfChannelsKey: 2,
         AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue,
       ]
     case .max:
       return [
-        AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-        AVSampleRateKey: 96000,
+        AVFormatIDKey: kAudioFormatMPEG4AAC,
         AVNumberOfChannelsKey: 2,
         AVEncoderAudioQualityKey: AVAudioQuality.max.rawValue,
       ]
@@ -228,4 +248,8 @@ extension CKMediaType {
       return .video
     }
   }
+}
+
+func clamp<T: Comparable>(lower: T, value: T, upper: T) -> T {
+  min(max(value, lower), upper)
 }

@@ -1,10 +1,23 @@
 import Foundation
 import AVFoundation
+import AutocontainerKit
 
 protocol CKAVCameraRecorder: AVCaptureVideoDataOutputSampleBufferDelegate, AnyObject {
   func requestMediaChunk()
   func setup(output: AVCaptureVideoDataOutput, camera: CKDevice<CKCameraConfiguration>) throws
   var sessionDelegate: CKSessionDelegate? { get set }
+}
+
+protocol CKAVCameraRecorderBuilder {
+  func makeRecorder() -> CKAVCameraRecorder
+}
+
+struct CKAVCameraRecorderBuilderImpl: CKAVCameraRecorderBuilder {
+  let locator: AKLocator
+
+  func makeRecorder() -> CKAVCameraRecorder {
+    locator.resolve(CKAVCameraRecorder.self)
+  }
 }
 
 final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
@@ -31,6 +44,7 @@ final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
       name: .AVCaptureSessionInterruptionEnded,
       object: nil
     )
+    output.tryChangePixelFormat(quality: camera.configuration.videoQuality)
     self.camera = camera
     try startRecording()
   }
@@ -42,7 +56,7 @@ final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
     let mediaChunk = mediaChunkMaker.makeMediaChunk(deviceId: camera.id, fileType: .mov)
     do {
       let videoWriter = try AVAssetWriter(outputURL: mediaChunk.url, fileType: .mov)
-      let videoWriterInput = camera.configuration.assetWriterInput
+      let videoWriterInput = camera.configuration.assetWriterInput(bitsPerPixel: bitsPerPixel)
       videoWriter.add(videoWriterInput)
       self.videoWriter = videoWriter
     } catch {
@@ -79,6 +93,7 @@ final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
     tryStartRecording()
   }
 
+  private var bitsPerPixel = 8
   private var mediaChunk: CKMediaChunk?
   private var finishingWriters = [CKMediaChunk: AVAssetWriter]()
   private var videoWriter: AVAssetWriter?

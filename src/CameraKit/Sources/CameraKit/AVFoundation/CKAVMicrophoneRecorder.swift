@@ -3,7 +3,7 @@ import AVFoundation
 
 protocol CKAVMicrophoneRecorder: AnyObject {
   func requestMediaChunk()
-  func setup(microphoneId: CKDeviceID, audioQuality: CKQuality) throws
+  func setup(microphone: CKDevice<CKMicrophoneConfiguration>) throws
   var sessionDelegate: CKSessionDelegate? { get set }
   func stop()
   func record()
@@ -16,6 +16,7 @@ final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
 
   func requestMediaChunk() {
     stop()
+    record()
   }
 
   func stop() {
@@ -34,28 +35,30 @@ final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
 
   weak var sessionDelegate: CKSessionDelegate?
 
-  func setup(microphoneId: CKDeviceID, audioQuality: CKQuality) throws {
+  func setup(microphone: CKDevice<CKMicrophoneConfiguration>) throws {
     NotificationCenter.default.addObserver(
       self,
       selector: #selector(wasInterrupted(notification:)),
       name: AVAudioSession.interruptionNotification,
       object: nil
     )
-    self.audioQuality = audioQuality
-    self.microphoneId = microphoneId
+    self.microphone = microphone
     try recordInternal()
   }
 
   private func recordInternal() throws {
     stop()
     do {
-      let mediaChunk = mediaChunkMaker.makeMediaChunk(deviceId: microphoneId, fileType: .m4a)
+      guard let microphone = microphone else { return }
+      let mediaChunk = mediaChunkMaker.makeMediaChunk(deviceId: microphone.id, fileType: .m4a)
       let recorder = try AVAudioRecorder(
         url: mediaChunk.url,
-        settings: audioQuality.avAudioRecorderSettings
+        settings: microphone.configuration.audioQuality.avAudioRecorderSettings
       )
       recorder.delegate = self
-      recorder.record()
+      if !recorder.record() {
+        throw CKAVMicrophoneSessionError.invalidSettings
+      }
       recorders[mediaChunk.url] = (recorder, mediaChunk)
     } catch {
       throw CKAVMicrophoneSessionError.cantConfigureSession(inner: error)
@@ -92,8 +95,7 @@ final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
 
   private var recorders = [URL: (AVAudioRecorder, CKMediaChunk)]()
   private let mediaChunkMaker: CKMediaChunkMaker
-  private var microphoneId = CKAVMicrophone.builtIn.value
-  private var audioQuality = CKQuality.medium
+  private var microphone: CKDevice<CKMicrophoneConfiguration>?
 }
 
 extension CKAVMicrophoneRecorderImpl: AVAudioRecorderDelegate {

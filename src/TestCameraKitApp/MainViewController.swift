@@ -26,16 +26,22 @@ final class MainViewController: UIViewController {
         .map { [weak self] sessionMaker in
           self?.startSession(sessionMaker: sessionMaker)
         }
+        .mapError { [weak self] (error: CKPermissionError) -> CKPermissionError in
+          self?.alert(message: error.localizedDescription)
+          return error
+        }
         .sinkAndStore()
     }
   }
 
+  // swiftlint:disable function_parameter_count
   private func addSessionTemplates(
     sessionMaker: CKSessionMaker,
     alertVc: UIAlertController,
     backCameraId: CKDeviceID?,
     frontCameraId: CKDeviceID?,
-    microphoneId: CKDeviceID?
+    microphoneId: CKDeviceID?,
+    isMulticamAvailable: Bool
   ) {
     if let backCameraId = backCameraId {
       addAction(
@@ -55,7 +61,7 @@ final class MainViewController: UIViewController {
         microphoneId: microphoneId
       )
     }
-    if let backCameraId = backCameraId, let frontCameraId = frontCameraId {
+    if isMulticamAvailable, let backCameraId = backCameraId, let frontCameraId = frontCameraId {
       addAction(
         alertVc: alertVc,
         title: microphoneId == nil ? "Back + front" : "Back + front + mic",
@@ -77,20 +83,27 @@ final class MainViewController: UIViewController {
       return
     }
     let alertVc = UIAlertController(title: "Choose preset", message: nil, preferredStyle: .alert)
+    let isMulticamAvailable = sessionMaker.adjustableConfiguration.ui.isMulticamAvailable
     addSessionTemplates(
       sessionMaker: sessionMaker,
       alertVc: alertVc,
       backCameraId: backCameraId,
       frontCameraId: frontCameraId,
-      microphoneId: microphoneId
+      microphoneId: microphoneId,
+      isMulticamAvailable: isMulticamAvailable
     )
     addSessionTemplates(
       sessionMaker: sessionMaker,
       alertVc: alertVc,
       backCameraId: backCameraId,
       frontCameraId: frontCameraId,
-      microphoneId: nil
+      microphoneId: nil,
+      isMulticamAvailable: isMulticamAvailable
     )
+    if !isMulticamAvailable {
+      alertVc.addAction(UIAlertAction(title: "Multicam N/A", style: .destructive) { _ in })
+      alertVc.actions.last?.isEnabled = false
+    }
     present(alertVc, animated: true, completion: nil)
   }
 
@@ -133,42 +146,42 @@ final class MainViewController: UIViewController {
     cameraIds: [CKDeviceID],
     microphoneId: CKDeviceID?
   ) throws -> CKSession {
-    let cameras = cameraIds.map { CKDevice(id: $0, configuration: sampleCameraConfiguration)}
+    let cameras = cameraIds.map { CKDevice(id: $0, configuration: sampleCameraConfiguration) }
     let microphone = microphoneId.flatMap { CKDevice(id: $0, configuration: sampleMicrophoneConfiguration) }
     let configuration = CKConfiguration(cameras: Set(cameras), microphone: microphone)
     return try sessionMaker.makeSession(configuration: configuration)
   }
 
-  private var sampleCameraConfiguration: CKCameraConfiguration {
+  private var currentOrientation: CKOrientation {
     let interfaceOrienation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation
-    let orientation: CKOrientation
     switch interfaceOrienation! {
     case .landscapeLeft:
-      orientation = .landscapeLeft
+      return .landscapeLeft
     case .landscapeRight:
-      orientation = .landscapeRight
+      return .landscapeRight
     case .portraitUpsideDown:
-      orientation = .portraitUpsideDown
+      return .portraitUpsideDown
     default:
-      orientation = .portrait
+      return .portrait
     }
-    return CKCameraConfiguration(
-      size: CKSize(width: 1920, height: 1080),
-      zoom: 1,
-      fps: 60,
-      fieldOfView: 107,
-      orientation: orientation,
-      autoFocus: .phaseDetection,
-      stabilizationMode: .auto,
-      videoGravity: .resizeAspect,
-      videoQuality: .medium
-    )
   }
 
-  private var sampleMicrophoneConfiguration = CKMicrophoneConfiguration(
-    orientation: .portrait,
+  private lazy var sampleCameraConfiguration = CKCameraConfiguration(
+    size: CKSize(width: 1920, height: 1080),
+    zoom: 1,
+    fps: 30,
+    fieldOfView: 107,
+    orientation: currentOrientation,
+    autoFocus: .phaseDetection,
+    stabilizationMode: .auto,
+    videoGravity: .resizeAspect,
+    videoQuality: .medium
+  )
+
+  private lazy var sampleMicrophoneConfiguration = CKMicrophoneConfiguration(
+    orientation: currentOrientation,
     location: .unspecified,
-    polarPattern: .unspecified,
+    polarPattern: .stereo,
     duckOthers: false,
     useSpeaker: false,
     useBluetoothCompatibilityMode: false,

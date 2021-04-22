@@ -30,13 +30,22 @@ final class CameraKitViewModelImpl: CameraKitViewModel {
   let shareViewPresenter: ShareViewPresenter
 
   func requestMediaChunk() {
+    logger.log("request media chunk")
     session.requestMediaChunk()
   }
 }
 
 extension CameraKitViewModelImpl: CKSessionDelegate {
+  func sessionDidChangePressureLevel() {
+    logger.log("Pressure level changed")
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else { return }
+      self.pressureLevel = self.session.pressureLevel
+    }
+  }
+
   func sessionDidOutput(mediaChunk: CKMediaChunk) {
-    logger.log(String(describing: mediaChunk))
+    logger.log("Received chunk from \(mediaChunk.deviceId.value)")
     let url2 = mediaChunk.url.appendingPathExtension(mediaChunk.fileType.rawValue)
     try? FileManager.default.moveItem(at: mediaChunk.url, to: url2)
     shareViewPresenter.presentFile(url: url2)

@@ -1,6 +1,81 @@
 import AVFoundation
 
-let pixelFormats: [String: OSType] = [
+extension AVCaptureVideoDataOutput {
+  var availableVideoPixelFormatNames: [String] {
+    availableVideoPixelFormatTypes.map { pixelFormatsReversed[$0] ?? "Unknown" }
+  }
+
+  func setPixelFormat(_ format: OSType) {
+    videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: format]
+  }
+
+  func tryChangePixelFormat(quality: CKQuality) {
+    let desired: [[OSType]]
+    switch quality {
+    case .min:
+      desired = [bit8, bit10, bit16, bit20]
+    case .low:
+      desired = [bit10, bit8, bit16, bit20]
+    case .medium:
+      desired = [bit10, bit16, bit20, bit8]
+    case .high:
+      desired = [bit16, bit20, bit10, bit8]
+    case .max:
+      desired = [bit20, bit16, bit10, bit8]
+    }
+    let available = Set(availableVideoPixelFormatTypes)
+    for pixelFormats in desired {
+      for pixelFormat in pixelFormats where available.contains(pixelFormat) {
+        setPixelFormat(pixelFormat)
+        return
+      }
+    }
+  }
+}
+
+private var bit8: [OSType] {
+  [
+    kCVPixelFormatType_422YpCbCr8,
+    kCVPixelFormatType_444YpCbCr8,
+    kCVPixelFormatType_422YpCbCr8FullRange,
+    kCVPixelFormatType_420YpCbCr8PlanarFullRange,
+    kCVPixelFormatType_422YpCbCr8_yuvs,
+    kCVPixelFormatType_4444YpCbCrA8,
+    kCVPixelFormatType_4444YpCbCrA8R,
+    kCVPixelFormatType_4444AYpCbCr8,
+  ]
+}
+
+private var bit10: [OSType] {
+  [
+    kCVPixelFormatType_422YpCbCr10,
+    kCVPixelFormatType_444YpCbCr10,
+  ]
+}
+
+private var bit16: [OSType] {
+  [
+    kCVPixelFormatType_422YpCbCr16,
+    kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange,
+    kCVPixelFormatType_420YpCbCr8PlanarFullRange,
+    kCVPixelFormatType_420YpCbCr8BiPlanarFullRange,
+    kCVPixelFormatType_4444AYpCbCr16,
+    kCVPixelFormatType_422YpCbCr_4A_8BiPlanar,
+  ]
+}
+
+private var bit20: [OSType] {
+  [
+    kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange,
+    kCVPixelFormatType_422YpCbCr10BiPlanarVideoRange,
+    kCVPixelFormatType_444YpCbCr10BiPlanarVideoRange,
+    kCVPixelFormatType_420YpCbCr10BiPlanarFullRange,
+    kCVPixelFormatType_444YpCbCr10BiPlanarFullRange,
+    kCVPixelFormatType_422YpCbCr10BiPlanarFullRange,
+  ]
+}
+
+private let pixelFormats: [String: OSType] = [
   "kCVPixelFormatType_1Monochrome": kCVPixelFormatType_1Monochrome,
   "kCVPixelFormatType_2Indexed": kCVPixelFormatType_2Indexed,
   "kCVPixelFormatType_4Indexed": kCVPixelFormatType_4Indexed,
@@ -66,14 +141,4 @@ let pixelFormats: [String: OSType] = [
   "kCVPixelFormatType_DisparityFloat32": kCVPixelFormatType_DisparityFloat32,
 ]
 
-let pixelFormatsReversed = Dictionary(uniqueKeysWithValues: pixelFormats.map { ($0.value, $0.key) })
-
-extension AVCaptureVideoDataOutput {
-  var availableVideoPixelFormatNames: [String] {
-    availableVideoPixelFormatTypes.map { pixelFormatsReversed[$0] ?? "Unknown" }
-  }
-
-  func setPixelFormat(_ format: OSType) {
-    videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: format]
-  }
-}
+private let pixelFormatsReversed = Dictionary(uniqueKeysWithValues: pixelFormats.map { ($0.value, $0.key) })

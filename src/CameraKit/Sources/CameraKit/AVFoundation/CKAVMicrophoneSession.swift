@@ -56,7 +56,7 @@ final class CKAVMicrophoneSession: CKSession {
         try dataSource.setPreferredPolarPattern(polarPattern)
       }
     }
-    try recorder.setup(microphoneId: microphone.id, audioQuality: microphone.configuration.audioQuality)
+    try recorder.setup(microphone: microphone)
     self.microphone = CKAVMicrophoneDevice(device: microphone) { [weak self] isMuted in
       if isMuted {
         self?.recorder.stop()

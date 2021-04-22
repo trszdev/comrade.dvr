@@ -1,30 +1,28 @@
-import AutocontainerKit
-
 struct CKAVSessionMaker: CKSessionMaker {
   let configurationMapper: CKAVConfigurationMapper
-  let locator: AKLocator
+  let cameraSessionBuilder: CKAVCameraSession.Builder
+  let microphoneSessionBuilder: CKAVMicrophoneSession.Builder
+  let nearestConfigurationPickerBuilder: CKAVNearestConfigurationPicker.Builder
+
+  var configurationPicker: CKNearestConfigurationPicker {
+    nearestConfigurationPickerBuilder.makePicker(adjustableConfiguration: adjustableConfiguration)
+  }
 
   var adjustableConfiguration: CKAdjustableConfiguration {
     configurationMapper.currentConfiguration
   }
 
   func makeSession(configuration: CKConfiguration) throws -> CKSession {
-    let picker = CKAVNearestConfigurationPicker(adjustableConfiguration: adjustableConfiguration)
-    let nearestConf = picker.nearestConfiguration(for: configuration)
-    var cameraSession: CKSession?
-    var microphoneSession: CKSession?
-    if nearestConf.cameras.count < 2 {
-      let session = locator.resolve(CKAVSingleCameraSession.Builder.self).makeSession(configuration: nearestConf)
-      try session.start()
-      cameraSession = session
-    } else {
-      fatalError("N/A")
-    }
+    let nearestConf = configurationPicker.nearestConfiguration(for: configuration)
+    var sessions = [CKSession]()
+    let cameraSession = cameraSessionBuilder.makeSession(configuration: nearestConf)
+    try cameraSession.start()
+    sessions.append(cameraSession)
     if nearestConf.microphone != nil {
-      let session = locator.resolve(CKAVMicrophoneSession.Builder.self).makeSession(configuration: nearestConf)
+      let session = microphoneSessionBuilder.makeSession(configuration: nearestConf)
       try session.start()
-      microphoneSession = session
+      sessions.append(session)
     }
-    return CKCombinedSession(sessions: [cameraSession, microphoneSession].compactMap { $0 }, configuration: nearestConf)
+    return CKCombinedSession(sessions: sessions, configuration: nearestConf)
   }
 }
