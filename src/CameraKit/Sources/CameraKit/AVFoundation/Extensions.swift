@@ -116,34 +116,27 @@ extension CKQuality {
 }
 
 extension CKCameraConfiguration {
-  func assetWriterInput(bitsPerPixel: Int) -> AVAssetWriterInput {
-    let maxBitrate = size.width * size.height * fps * bitsPerPixel
-    let bitrate = max(Int(Double(maxBitrate) * videoQuality.videoQualityMultiplier), 1)
+  var assetWriterInput: AVAssetWriterInput {
     let result = AVAssetWriterInput(mediaType: .video, outputSettings: [
-      AVVideoCodecKey: VTIsHardwareDecodeSupported(kCMVideoCodecType_HEVC) ?
+      AVVideoCodecKey: useH265 && VTIsHardwareDecodeSupported(kCMVideoCodecType_HEVC) ?
         AVVideoCodecType.hevc :
         AVVideoCodecType.h264,
-      AVVideoWidthKey: size.width,
-      AVVideoHeightKey: size.height,
+      AVVideoWidthKey: isLandscape ? size.width : size.height,
+      AVVideoHeightKey: isLandscape ? size.height : size.width,
       AVVideoCompressionPropertiesKey: [
         AVVideoAverageBitRateKey: bitrate,
       ],
     ])
-    result.transform = transform
     result.expectsMediaDataInRealTime = true
     return result
   }
 
-  var transform: CGAffineTransform {
+  var isLandscape: Bool {
     switch orientation {
-    case .landscapeRight:
-      return .identity
-    case .landscapeLeft:
-      return CGAffineTransform(rotationAngle: .pi)
-    case .portrait:
-      return CGAffineTransform(rotationAngle: .pi / 2)
-    case .portraitUpsideDown:
-      return CGAffineTransform(rotationAngle: .pi / -2)
+    case .landscapeLeft, .landscapeRight:
+      return true
+    case .portrait, .portraitUpsideDown:
+      return false
     }
   }
 }

@@ -52,7 +52,9 @@ private struct MergedConfiguration: Comparable {
   var difference: Int {
     var result = 0
     if requested.size != adjustable.size {
-      result += 1000
+      let requestedScalar = requested.size.width * requested.size.height
+      let adjustableScalar = adjustable.size.width * adjustable.size.height
+      result += abs(requestedScalar - adjustableScalar)
     }
     if requested.fieldOfView != adjustable.fieldOfView {
       result += 100
@@ -69,8 +71,6 @@ private struct MergedConfiguration: Comparable {
     return result
   }
 
-  static let maxDifference = 2000
-
   func apply(deviceId: CKDeviceID) -> CKDevice<CKCameraConfiguration> {
     CKDevice(
       id: deviceId,
@@ -86,7 +86,9 @@ private struct MergedConfiguration: Comparable {
           requested.stabilizationMode :
           .auto,
         videoGravity: requested.videoGravity,
-        videoQuality: requested.videoQuality
+        videoQuality: requested.videoQuality,
+        useH265: requested.useH265,
+        bitrate: requested.bitrate
       )
     )
   }
@@ -96,11 +98,11 @@ private struct MergedSet: Comparable {
   let value: [CKDeviceID: MergedConfiguration]
 
   static func < (lhs: MergedSet, rhs: MergedSet) -> Bool {
-    let devicesCount = max(lhs.value.count, rhs.value.count)
-    var leftSum = lhs.value.reduce(into: 0) { acc, x in acc += x.value.difference }
-    leftSum += (devicesCount - lhs.value.count) * MergedConfiguration.maxDifference
-    var rightSum = rhs.value.reduce(into: 0) { acc, x in acc += x.value.difference }
-    rightSum += (devicesCount - rhs.value.count) * MergedConfiguration.maxDifference
+    guard lhs.value.count == rhs.value.count else {
+      return lhs.value.count > rhs.value.count
+    }
+    let leftSum = lhs.value.reduce(into: 0) { acc, x in acc += x.value.difference }
+    let rightSum = rhs.value.reduce(into: 0) { acc, x in acc += x.value.difference }
     return leftSum < rightSum
   }
 

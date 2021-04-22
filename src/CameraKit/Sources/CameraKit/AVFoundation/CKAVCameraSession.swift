@@ -161,6 +161,7 @@ private struct CKAVCameraConfigurator {
     }
     let connection = AVCaptureConnection(inputPorts: ports, output: output)
     let previewConnection = AVCaptureConnection(inputPort: ports[0], videoPreviewLayer: previewView.videoPreviewLayer)
+    connection.videoOrientation = configuration.orientation.avOrientation
     previewConnection.videoOrientation = configuration.orientation.avOrientation
     previewConnection.preferredVideoStabilizationMode = configuration.stabilizationMode.avStabilizationMode
     connection.preferredVideoStabilizationMode = configuration.stabilizationMode.avStabilizationMode

@@ -31,7 +31,9 @@ final class CKAVNearestMultiCameraConfigurationPickerTests: CKNearestConfigurati
             autoFocus: .phaseDetection,
             stabilizationMode: .auto,
             videoGravity: .resize,
-            videoQuality: .medium
+            videoQuality: .medium,
+            useH265: true,
+            bitrate: 1000
           )
         ),
       ],
@@ -53,7 +55,9 @@ final class CKAVNearestMultiCameraConfigurationPickerTests: CKNearestConfigurati
             autoFocus: .phaseDetection,
             stabilizationMode: .auto,
             videoGravity: .resize,
-            videoQuality: .medium
+            videoQuality: .medium,
+            useH265: true,
+            bitrate: 1000
           )
         ),
       ],
@@ -76,7 +80,9 @@ final class CKAVNearestMultiCameraConfigurationPickerTests: CKNearestConfigurati
             autoFocus: .phaseDetection,
             stabilizationMode: .auto,
             videoGravity: .resize,
-            videoQuality: .medium
+            videoQuality: .medium,
+            useH265: true,
+            bitrate: 1000
           )
         ),
       ],
@@ -140,7 +146,9 @@ final class CKAVNearestMultiCameraConfigurationPickerTests: CKNearestConfigurati
             autoFocus: .phaseDetection,
             stabilizationMode: .auto,
             videoGravity: .resize,
-            videoQuality: .medium
+            videoQuality: .medium,
+            useH265: true,
+            bitrate: 1000
           )
         ),
         CKDevice(
@@ -155,7 +163,9 @@ final class CKAVNearestMultiCameraConfigurationPickerTests: CKNearestConfigurati
             autoFocus: .phaseDetection,
             stabilizationMode: .auto,
             videoGravity: .resize,
-            videoQuality: .medium
+            videoQuality: .medium,
+            useH265: true,
+            bitrate: 1000
           )
         ),
       ],

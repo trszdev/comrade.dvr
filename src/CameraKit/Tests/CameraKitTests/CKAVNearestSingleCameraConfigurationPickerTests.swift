@@ -31,7 +31,9 @@ final class CKAVNearestSingleCameraConfigurationPickerTests: CKNearestConfigurat
             autoFocus: .phaseDetection,
             stabilizationMode: .auto,
             videoGravity: .resize,
-            videoQuality: .medium
+            videoQuality: .medium,
+            useH265: true,
+            bitrate: 1000
           )
         ),
       ],
@@ -53,7 +55,9 @@ final class CKAVNearestSingleCameraConfigurationPickerTests: CKNearestConfigurat
             autoFocus: .phaseDetection,
             stabilizationMode: .auto,
             videoGravity: .resize,
-            videoQuality: .medium
+            videoQuality: .medium,
+            useH265: true,
+            bitrate: 1000
           )
         ),
       ],
@@ -76,7 +80,9 @@ final class CKAVNearestSingleCameraConfigurationPickerTests: CKNearestConfigurat
             autoFocus: .phaseDetection,
             stabilizationMode: .auto,
             videoGravity: .resize,
-            videoQuality: .medium
+            videoQuality: .medium,
+            useH265: true,
+            bitrate: 1000
           )
         ),
       ],

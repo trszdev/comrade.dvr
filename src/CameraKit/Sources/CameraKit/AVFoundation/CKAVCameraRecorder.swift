@@ -56,7 +56,7 @@ final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
     let mediaChunk = mediaChunkMaker.makeMediaChunk(deviceId: camera.id, fileType: .mov)
     do {
       let videoWriter = try AVAssetWriter(outputURL: mediaChunk.url, fileType: .mov)
-      let videoWriterInput = camera.configuration.assetWriterInput(bitsPerPixel: bitsPerPixel)
+      let videoWriterInput = camera.configuration.assetWriterInput
       videoWriter.add(videoWriterInput)
       self.videoWriter = videoWriter
     } catch {
@@ -93,7 +93,6 @@ final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
     tryStartRecording()
   }
 
-  private var bitsPerPixel = 8
   private var mediaChunk: CKMediaChunk?
   private var finishingWriters = [CKMediaChunk: AVAssetWriter]()
   private var videoWriter: AVAssetWriter?

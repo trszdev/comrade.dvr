@@ -175,7 +175,9 @@ final class MainViewController: UIViewController {
     autoFocus: .phaseDetection,
     stabilizationMode: .auto,
     videoGravity: .resizeAspect,
-    videoQuality: .medium
+    videoQuality: .max,
+    useH265: true,
+    bitrate: 6_000_000
   )
 
   private lazy var sampleMicrophoneConfiguration = CKMicrophoneConfiguration(
