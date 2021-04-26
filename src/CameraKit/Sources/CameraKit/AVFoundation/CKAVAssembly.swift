@@ -7,11 +7,8 @@ public struct CKAVAssembly: AKAssembly {
     container.transient.autoregister(CKTimestampMaker.self, construct: CKTimestampMakerImpl.init)
     container.singleton.autoregister(value: FileManager.default)
     container.singleton.autoregister(value: AVAudioSession.sharedInstance())
-    container.transient.autoregister(
-      CKAVMicrophoneRecorder.self,
-      construct: CKAVMicrophoneRecorderImpl.init(mediaChunkMaker:)
-    )
-    container.transient.autoregister(construct: CKAVMicrophoneSession.Builder.init(mapper:session:recorder:))
+    container.transient.autoregister(construct: CKAVMicrophoneRecorderImpl.Builder.init(mediaChunkMaker:))
+    container.transient.autoregister(construct: CKAVMicrophoneSession.Builder.init(mapper:session:locator:))
     container.transient.autoregister(construct: CKAVManager.Builder.init(locator:))
     container.transient.autoregister(CKAVDiscovery.self, construct: CKAVDiscoveryImpl.init)
     container.transient.autoregister(
@@ -32,12 +29,8 @@ public struct CKAVAssembly: AKAssembly {
       construct: CKMediaChunkMakerImpl.init(timestampMaker:tempFileMaker:)
     )
     container.transient.autoregister(
-      CKAVCameraRecorder.self,
-      construct: CKAVCameraRecorderImpl.init(mapper:mediaChunkMaker:)
-    )
-    container.transient.autoregister(
       CKAVCameraRecorderBuilder.self,
-      construct: CKAVCameraRecorderBuilderImpl.init(locator:)
+      construct: CKAVCameraRecorderBuilderImpl.init(mapper:mediaChunkMaker:)
     )
     container.transient.autoregister(construct: CKAVCameraSession.Builder.init(mapper:recorderBuilder:))
     container.transient.autoregister(construct: CKAVNearestConfigurationPicker.Builder.init(multiCameraPickerBuilder:))

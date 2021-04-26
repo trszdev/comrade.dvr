@@ -1,17 +1,26 @@
 import Foundation
 import AVFoundation
+import Combine
 
 protocol CKAVMicrophoneRecorder: AnyObject {
   func requestMediaChunk()
   func setup(microphone: CKDevice<CKMicrophoneConfiguration>) throws
-  var sessionDelegate: CKSessionDelegate? { get set }
   func stop()
   func record()
 }
 
 final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
-  init(mediaChunkMaker: CKMediaChunkMaker) {
+  struct Builder {
+    let mediaChunkMaker: CKMediaChunkMaker
+
+    func makeRecorder(sessionPublisher: CKSessionPublisher) -> CKAVMicrophoneRecorder {
+      CKAVMicrophoneRecorderImpl(mediaChunkMaker: mediaChunkMaker, sessionPublisher: sessionPublisher)
+    }
+  }
+
+  init(mediaChunkMaker: CKMediaChunkMaker, sessionPublisher: CKSessionPublisher) {
     self.mediaChunkMaker = mediaChunkMaker
+    self.sessionPublisher = sessionPublisher
   }
 
   func requestMediaChunk() {
@@ -29,11 +38,9 @@ final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
     do {
       try recordInternal()
     } catch {
-      sessionDelegate?.sessionDidOutput(error: error)
+      sessionPublisher.outputPublisher.send(completion: .failure(error))
     }
   }
-
-  weak var sessionDelegate: CKSessionDelegate?
 
   func setup(microphone: CKDevice<CKMicrophoneConfiguration>) throws {
     NotificationCenter.default.addObserver(
@@ -93,6 +100,7 @@ final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
     record()
   }
 
+  private let sessionPublisher: CKSessionPublisher
   private var recorders = [URL: (AVAudioRecorder, CKMediaChunk)]()
   private let mediaChunkMaker: CKMediaChunkMaker
   private var microphone: CKDevice<CKMicrophoneConfiguration>?
@@ -100,19 +108,19 @@ final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
 
 extension CKAVMicrophoneRecorderImpl: AVAudioRecorderDelegate {
   func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {
+    var newError = CKAVMicrophoneSessionError.unknownRecordingError
     if let error = error {
-      sessionDelegate?.sessionDidOutput(error: CKAVMicrophoneSessionError.recordingError(inner: error))
-    } else {
-      sessionDelegate?.sessionDidOutput(error: CKAVMicrophoneSessionError.unknownRecordingError)
+      newError = CKAVMicrophoneSessionError.recordingError(inner: error)
     }
+    sessionPublisher.outputPublisher.send(completion: .failure(newError))
   }
 
   func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
     guard flag, let (_, mediaChunk) = recorders[recorder.url] else {
-      sessionDelegate?.sessionDidOutput(error: CKAVMicrophoneSessionError.failedToFinish)
+      sessionPublisher.outputPublisher.send(completion: .failure(CKAVMicrophoneSessionError.failedToFinish))
       return
     }
     recorders.removeValue(forKey: recorder.url)
-    sessionDelegate?.sessionDidOutput(mediaChunk: mediaChunk)
+    sessionPublisher.outputPublisher.send(mediaChunk)
   }
 }

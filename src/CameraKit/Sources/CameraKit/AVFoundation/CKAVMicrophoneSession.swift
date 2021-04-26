@@ -1,18 +1,22 @@
 import AVFoundation
 import Combine
+import AutocontainerKit
 
-final class CKAVMicrophoneSession: CKSession {
+final class CKAVMicrophoneSession: CKSession, CKSessionPublisherProvider {
   struct Builder {
     let mapper: CKAVConfigurationMapper
     let session: AVAudioSession
-    let recorder: CKAVMicrophoneRecorder
+    let locator: AKLocator
 
-    func makeSession(configuration: CKConfiguration) -> CKAVMicrophoneSession {
+    func makeSession(configuration: CKConfiguration, sessionPublisher: CKSessionPublisher) -> CKAVMicrophoneSession {
       CKAVMicrophoneSession(
         configuration: configuration,
         mapper: mapper,
         session: session,
-        recorder: recorder
+        recorder: locator
+          .resolve(CKAVMicrophoneRecorderImpl.Builder.self)
+          .makeRecorder(sessionPublisher: sessionPublisher),
+        sessionPublisher: sessionPublisher
       )
     }
   }
@@ -21,12 +25,14 @@ final class CKAVMicrophoneSession: CKSession {
     configuration: CKConfiguration,
     mapper: CKAVConfigurationMapper,
     session: AVAudioSession,
-    recorder: CKAVMicrophoneRecorder
+    recorder: CKAVMicrophoneRecorder,
+    sessionPublisher: CKSessionPublisher
   ) {
     self.configuration = configuration
     self.mapper = mapper
     self.session = session
     self.recorder = recorder
+    self.sessionPublisher = sessionPublisher
   }
 
   func requestMediaChunk() {
@@ -40,11 +46,7 @@ final class CKAVMicrophoneSession: CKSession {
   let mapper: CKAVConfigurationMapper
   let session: AVAudioSession
   var pressureLevel: CKPressureLevel { .nominal }
-  weak var delegate: CKSessionDelegate? {
-    didSet {
-      recorder.sessionDelegate = delegate
-    }
-  }
+  let sessionPublisher: CKSessionPublisher
 
   func start() throws {
     guard let microphone = configuration.microphone else { return }

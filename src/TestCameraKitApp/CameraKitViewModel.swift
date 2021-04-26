@@ -18,40 +18,47 @@ final class CameraKitViewModelImpl: CameraKitViewModel {
     self.shareViewPresenter = shareViewPresenter
     self.previews = Array(session.cameras.values.map { $0.previewView.eraseToAnyView() })
     self.pressureLevel = session.pressureLevel
-    session.delegate = self
   }
 
   @Published var pressureLevel: CKPressureLevel
   var pressureLevelPublished: Published<CKPressureLevel> { _pressureLevel }
   var pressureLevelPublisher: Published<CKPressureLevel>.Publisher { $pressureLevel }
   var previews: [IdentifiableAnyView]
-  let session: CKSession
-  let logger: Logger
-  let shareViewPresenter: ShareViewPresenter
 
   func requestMediaChunk() {
     logger.log("request media chunk")
     session.requestMediaChunk()
   }
-}
 
-extension CameraKitViewModelImpl: CKSessionDelegate {
-  func sessionDidChangePressureLevel() {
-    logger.log("Pressure level changed")
-    DispatchQueue.main.async { [weak self] in
-      guard let self = self else { return }
-      self.pressureLevel = self.session.pressureLevel
-    }
+  func setupHandlers() {
+    session.outputPublisher
+      .map(sessionDidOutput(mediaChunk:))
+      .mapError(sessionDidOutput(error:))
+      .sinkAndStore()
+    session.pressureLevelPublisher
+      .receive(on: DispatchQueue.main)
+      .map(sessionDidChangePressureLevel(pressureLevel:))
+      .sinkAndStore()
   }
 
-  func sessionDidOutput(mediaChunk: CKMediaChunk) {
+  private func sessionDidChangePressureLevel(pressureLevel: CKPressureLevel) {
+    logger.log("Pressure level changed")
+    self.pressureLevel = pressureLevel
+  }
+
+  private func sessionDidOutput(mediaChunk: CKMediaChunk) {
     logger.log("Received chunk from \(mediaChunk.deviceId.value)")
     let url2 = mediaChunk.url.appendingPathExtension(mediaChunk.fileType.rawValue)
     try? FileManager.default.moveItem(at: mediaChunk.url, to: url2)
     shareViewPresenter.presentFile(url: url2)
   }
 
-  func sessionDidOutput(error: Error) {
+  private func sessionDidOutput(error: Error) -> Error {
     logger.log("Received error: \(error.localizedDescription)")
+    return error
   }
+
+  private let session: CKSession
+  private let logger: Logger
+  private let shareViewPresenter: ShareViewPresenter
 }

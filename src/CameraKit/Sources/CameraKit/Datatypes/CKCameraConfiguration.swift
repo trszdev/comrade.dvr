@@ -38,7 +38,7 @@ public struct CKCameraConfiguration: Identifiable, Hashable {
     self.videoGravity = videoGravity
     self.videoQuality = videoQuality
     self.useH265 = useH265
-    self.bitrate = bitrate
+    self.bitrate = max(bitrate, 1)
   }
 
   init(
@@ -66,6 +66,6 @@ public struct CKCameraConfiguration: Identifiable, Hashable {
     self.videoGravity = videoGravity
     self.videoQuality = videoQuality
     self.useH265 = useH265
-    self.bitrate = bitrate
+    self.bitrate = max(bitrate, 1)
   }
 }

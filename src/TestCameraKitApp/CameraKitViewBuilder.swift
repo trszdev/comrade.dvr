@@ -12,9 +12,8 @@ struct CameraKitViewBuilderImpl: CameraKitViewBuilder {
 
   func makeView(session: CKSession) -> CameraKitView<CameraKitViewModelImpl, LogViewModelImpl> {
     logger.log("View created for session: \(session.configuration))")
-    return CameraKitView(
-      consoleView: consoleView,
-      viewModel: CameraKitViewModelImpl(session: session, logger: logger, shareViewPresenter: shareViewPresenter)
-    )
+    let viewModel = CameraKitViewModelImpl(session: session, logger: logger, shareViewPresenter: shareViewPresenter)
+    viewModel.setupHandlers()
+    return CameraKitView(consoleView: consoleView, viewModel: viewModel)
   }
 }

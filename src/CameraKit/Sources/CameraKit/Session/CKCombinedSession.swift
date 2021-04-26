@@ -1,16 +1,16 @@
 import Foundation
+import Combine
 
-final class CKCombinedSession: CKSession {
+final class CKCombinedSession: CKSession, CKSessionPublisherProvider {
   let startupInfo = CKSessionStartupInfo()
+  let sessionPublisher: CKSessionPublisher
 
-  init(sessions: [CKSession], configuration: CKConfiguration) {
+  init(sessions: [CKSession], sessionPublisher: CKSessionPublisher, configuration: CKConfiguration) {
     self.sessions = sessions
     self.cameras = sessions.reduce(into: [:]) { acc, x in acc.merge(x.cameras) { first, _ in first } }
     self.microphone = sessions.first { $0.microphone != nil }?.microphone
     self.configuration = configuration
-    for session in sessions {
-      session.delegate = self
-    }
+    self.sessionPublisher = sessionPublisher
   }
 
   let sessions: [CKSession]
@@ -26,21 +26,5 @@ final class CKCombinedSession: CKSession {
     for session in sessions {
       session.requestMediaChunk()
     }
-  }
-
-  weak var delegate: CKSessionDelegate?
-}
-
-extension CKCombinedSession: CKSessionDelegate {
-  func sessionDidChangePressureLevel() {
-    delegate?.sessionDidChangePressureLevel()
-  }
-
-  func sessionDidOutput(mediaChunk: CKMediaChunk) {
-    delegate?.sessionDidOutput(mediaChunk: mediaChunk)
-  }
-
-  func sessionDidOutput(error: Error) {
-    delegate?.sessionDidOutput(error: error)
   }
 }

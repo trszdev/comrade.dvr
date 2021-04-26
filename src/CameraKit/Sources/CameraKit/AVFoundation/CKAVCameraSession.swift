@@ -2,34 +2,38 @@ import AVFoundation
 import Combine
 import Foundation
 
-final class CKAVCameraSession: NSObject, CKSession {
+final class CKAVCameraSession: NSObject, CKSession, CKSessionPublisherProvider {
   struct Builder {
     let mapper: CKAVConfigurationMapper
     let recorderBuilder: CKAVCameraRecorderBuilder
 
-    func makeSession(configuration: CKConfiguration) -> CKAVCameraSession {
-      CKAVCameraSession(configuration: configuration, mapper: mapper, recorderBuilder: recorderBuilder)
+    func makeSession(configuration: CKConfiguration, sessionPublisher: CKSessionPublisher) -> CKAVCameraSession {
+      CKAVCameraSession(
+        configuration: configuration,
+        mapper: mapper,
+        recorderBuilder: recorderBuilder,
+        sessionPublisher: sessionPublisher
+      )
     }
   }
 
-  init(configuration: CKConfiguration, mapper: CKAVConfigurationMapper, recorderBuilder: CKAVCameraRecorderBuilder) {
+  init(
+    configuration: CKConfiguration,
+    mapper: CKAVConfigurationMapper,
+    recorderBuilder: CKAVCameraRecorderBuilder,
+    sessionPublisher: CKSessionPublisher
+  ) {
     self.configuration = configuration
     self.mapper = mapper
     self.recorderBuilder = recorderBuilder
-  }
-
-  weak var delegate: CKSessionDelegate? {
-    didSet {
-      for recorder in recorders {
-        recorder.sessionDelegate = delegate
-      }
-    }
+    self.sessionPublisher = sessionPublisher
   }
 
   private(set) var cameras = [CKDeviceID: CKCameraDevice]()
   var microphone: CKMicrophoneDevice? { nil }
   let startupInfo = CKSessionStartupInfo()
   let configuration: CKConfiguration
+  let sessionPublisher: CKSessionPublisher
 
   func requestMediaChunk() {
     for recorder in recorders {
@@ -77,9 +81,9 @@ final class CKAVCameraSession: NSObject, CKSession {
     }
     switch error.code {
     case .sessionHardwareCostOverage:
-      delegate?.sessionDidOutput(error: CKAVCameraSessionError.hardwareCostExceeded)
+      sessionPublisher.outputPublisher.send(completion: .failure(CKAVCameraSessionError.hardwareCostExceeded))
     default:
-      delegate?.sessionDidOutput(error: CKAVCameraSessionError.runtimeError(inner: error))
+      sessionPublisher.outputPublisher.send(completion: .failure(CKAVCameraSessionError.runtimeError(inner: error)))
     }
   }
 
@@ -90,7 +94,7 @@ final class CKAVCameraSession: NSObject, CKSession {
     else {
       throw CKAVCameraSessionError.cantAddDevice
     }
-    let recorder = recorderBuilder.makeRecorder()
+    let recorder = recorderBuilder.makeRecorder(sessionPublisher: sessionPublisher)
     let output = AVCaptureVideoDataOutput()
     output.setSampleBufferDelegate(recorder, queue: videoQueue)
     let configurator = CKAVCameraConfigurator(
@@ -109,8 +113,8 @@ final class CKAVCameraSession: NSObject, CKSession {
     recorders.append(recorder)
     let ckPreviewView = CKCameraPreviewView(configurator.previewView)
     cameras[camera.id] = CKAVCameraDevice(device: camera, previewView: ckPreviewView)
-    observations.append(avDevice.observe(\.systemPressureState, options: .new) { [weak self] _, _ in
-      self?.delegate?.sessionDidChangePressureLevel()
+    observations.append(avDevice.observe(\.systemPressureState, options: .new) { [weak self] device, _ in
+      self?.sessionPublisher.pressureLevelPublisher.send(device.ckPressureLevel)
     })
   }
 

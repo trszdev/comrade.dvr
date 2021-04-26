@@ -5,25 +5,26 @@ import AutocontainerKit
 protocol CKAVCameraRecorder: AVCaptureVideoDataOutputSampleBufferDelegate, AnyObject {
   func requestMediaChunk()
   func setup(output: AVCaptureVideoDataOutput, camera: CKDevice<CKCameraConfiguration>) throws
-  var sessionDelegate: CKSessionDelegate? { get set }
 }
 
 protocol CKAVCameraRecorderBuilder {
-  func makeRecorder() -> CKAVCameraRecorder
+  func makeRecorder(sessionPublisher: CKSessionPublisher) -> CKAVCameraRecorder
 }
 
 struct CKAVCameraRecorderBuilderImpl: CKAVCameraRecorderBuilder {
-  let locator: AKLocator
+  let mapper: CKAVConfigurationMapper
+  let mediaChunkMaker: CKMediaChunkMaker
 
-  func makeRecorder() -> CKAVCameraRecorder {
-    locator.resolve(CKAVCameraRecorder.self)
+  func makeRecorder(sessionPublisher: CKSessionPublisher) -> CKAVCameraRecorder {
+    CKAVCameraRecorderImpl(mapper: mapper, mediaChunkMaker: mediaChunkMaker, sessionPublisher: sessionPublisher)
   }
 }
 
 final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
-  init(mapper: CKAVConfigurationMapper, mediaChunkMaker: CKMediaChunkMaker) {
+  init(mapper: CKAVConfigurationMapper, mediaChunkMaker: CKMediaChunkMaker, sessionPublisher: CKSessionPublisher) {
     self.mapper = mapper
     self.mediaChunkMaker = mediaChunkMaker
+    self.sessionPublisher = sessionPublisher
   }
 
   func requestMediaChunk() {
@@ -49,7 +50,7 @@ final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
     try startRecording()
   }
 
-  weak var sessionDelegate: CKSessionDelegate?
+  private let sessionPublisher: CKSessionPublisher
 
   private func startRecording() throws {
     guard let camera = camera else { return }
@@ -69,7 +70,7 @@ final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
     do {
       try startRecording()
     } catch {
-      sessionDelegate?.sessionDidOutput(error: error)
+      sessionPublisher.outputPublisher.send(completion: .failure(error))
     }
   }
 
@@ -81,7 +82,7 @@ final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
     videoWriter.finishWriting { [weak self] in
       guard let self = self else { return }
       self.finishingWriters.removeValue(forKey: mediaChunk)
-      self.sessionDelegate?.sessionDidOutput(mediaChunk: mediaChunk)
+      self.sessionPublisher.outputPublisher.send(mediaChunk)
     }
   }
 
