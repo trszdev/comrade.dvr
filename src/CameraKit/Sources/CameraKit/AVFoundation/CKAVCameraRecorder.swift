@@ -2,7 +2,7 @@ import Foundation
 import AVFoundation
 import AutocontainerKit
 
-protocol CKAVCameraRecorder: AVCaptureVideoDataOutputSampleBufferDelegate, AnyObject {
+protocol CKAVCameraRecorder: AVCaptureVideoDataOutputSampleBufferDelegate {
   func requestMediaChunk()
   func setup(output: AVCaptureVideoDataOutput, camera: CKDevice<CKCameraConfiguration>) throws
 }
