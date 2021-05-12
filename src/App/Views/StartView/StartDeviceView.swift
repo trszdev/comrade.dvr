@@ -1,31 +1,28 @@
 import SwiftUI
 
 struct StartDeviceView: View {
-  let onTap: () -> Void
   @Environment(\.theme) var theme: Theme
-  @State var titleText: String
-  @State var detailsText: [String]
+  @State var device: StartViewModelDevice
+  let onTap: () -> Void
 
   var body: some View {
-    return GeometryReader { geometry in
+    GeometryReader { geometry in
       let width = geometry.size.width
-      let cornerRadius = width / 10
-
       ZStack(alignment: .topLeading) {
-        RoundedRectangle(cornerRadius: cornerRadius)
+        RoundedRectangle(cornerRadius: geometry.defaultCornerRadius)
           .fill(isHovered ? theme.accentColorHover : theme.mainBackgroundColor)
-          .animation(.easeInOut)
-        RoundedRectangle(cornerRadius: cornerRadius)
+          .defaultAnimation
+        RoundedRectangle(cornerRadius: geometry.defaultCornerRadius)
           .strokeBorder(style: StrokeStyle(lineWidth: 7))
           .foregroundColor(theme.accentColor)
         VStack(alignment: .leading) {
-          Text(titleText)
+          Text(device.name)
             .bold()
             .font(.title2)
             .foregroundColor(theme.accentColor)
             .lineLimit(1)
-          ForEach(0..<detailsText.count) { index in
-            Text(detailsText[index])
+          ForEach(device.details, id: \.self) { detailsText in
+            Text(detailsText)
               .font(.footnote)
               .foregroundColor(theme.textColor)
               .minimumScaleFactor(0.15)
@@ -38,24 +35,24 @@ struct StartDeviceView: View {
     }
     .onTapGesture(perform: onTap)
     .simultaneousGesture(HoverGesture.from { isHovered in self.isHovered = isHovered })
+    .aspectRatio(1, contentMode: .fill)
   }
 
   @State private var isHovered = false
 }
 
 struct StartDeviceAddView: View {
-  let onTap: () -> Void
   @Environment(\.theme) var theme: Theme
+  let onTap: () -> Void
 
   var body: some View {
     GeometryReader { geometry in
       let width = geometry.size.width
-      let cornerRadius = width / 10
       let backgroundColor = isHovered ? theme.accentColorHover : theme.mainBackgroundColor
       ZStack {
-        RoundedRectangle(cornerRadius: cornerRadius)
+        RoundedRectangle(cornerRadius: geometry.defaultCornerRadius)
           .fill(backgroundColor)
-        RoundedRectangle(cornerRadius: cornerRadius)
+        RoundedRectangle(cornerRadius: geometry.defaultCornerRadius)
           .strokeBorder(style: StrokeStyle(lineWidth: 7))
           .foregroundColor(theme.textColor)
         Rectangle()
@@ -72,9 +69,10 @@ struct StartDeviceAddView: View {
           .foregroundColor(theme.textColor)
       }
     }
-    .animation(.easeIn(duration: 0.25))
+    .defaultAnimation
     .onTapGesture(perform: onTap)
     .simultaneousGesture(HoverGesture.from { isHovered in self.isHovered = isHovered })
+    .aspectRatio(1, contentMode: .fill)
   }
 
   @State private var isHovered = false
@@ -92,9 +90,11 @@ struct StartDeviceViewPreview: PreviewProvider {
     ForEach(0..<previewLayouts.count) { index in
       let layout = previewLayouts[index]
       StartDeviceView(
-        onTap: {},
-        titleText: "Front camera",
-        detailsText: ["1920x1080", "30fps", "30kbit/s"]
+        device: StartViewModelDevice(
+          name: "Front camera",
+          details: ["1920x1080", "30fps", "30kbit/s"]
+        ),
+        onTap: {}
       )
       .background(Color.pink).previewLayout(layout)
       StartDeviceAddView(onTap: {}).background(Color.pink).previewLayout(layout)

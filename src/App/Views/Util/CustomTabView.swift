@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 struct CustomTabView: UIViewControllerRepresentable {
   let views: [AnyView]
@@ -19,8 +18,24 @@ struct CustomTabView: UIViewControllerRepresentable {
   }
 
   func makeUIViewController(context: Context) -> UITabBarController {
-    let tabVc = UITabBarController()
+    let tabVc = CustomTabBarController()
     tabVc.viewControllers = views.map(UIHostingController.init(rootView:))
+    tabVc.delegate = tabVc
     return tabVc
+  }
+}
+
+private class CustomTabBarController: UITabBarController, UITabBarControllerDelegate {
+  override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+    super.viewWillTransition(to: size, with: coordinator)
+    var hostingVcs = viewControllers?.compactMap { $0 as? UIHostingController<AnyView> } ?? []
+    for index in 0..<hostingVcs.count where index != selectedIndex {
+      hostingVcs[index] = UIHostingController(rootView: hostingVcs[index].rootView)
+    }
+    setViewControllers(hostingVcs, animated: false)
+  }
+
+  func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
+    viewController.navigationController?.isNavigationBarHidden = true
   }
 }

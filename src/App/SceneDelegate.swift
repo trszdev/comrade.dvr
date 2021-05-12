@@ -13,7 +13,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     let window = UIWindow(windowScene: windowScene)
     let mainView = MainView(viewModel: PreviewMainViewModel()).environment(\.theme, DarkTheme())
     window.rootViewController = UIHostingController(rootView: mainView)
-    window.rootViewController?.view.backgroundColor = .red
     self.window = window
     window.makeKeyAndVisible()
   }

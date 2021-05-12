@@ -8,6 +8,8 @@ protocol Theme {
   var textColor: Color { get }
   var startIcon: Image { get }
   var startHeaderBackgroundColor: Color { get }
+  var destructiveTextColor: Color { get }
+  var disabledTextColor: Color { get }
 }
 
 struct WhiteTheme: Theme {
@@ -18,6 +20,8 @@ struct WhiteTheme: Theme {
   let textColor = Color("TextColor")
   let startIcon = Image("StartIcon")
   let startHeaderBackgroundColor = Color.white
+  let destructiveTextColor = Color.red
+  let disabledTextColor = Color("TextColor").opacity(0.6)
 }
 
 struct DarkTheme: Theme {
@@ -28,4 +32,6 @@ struct DarkTheme: Theme {
   let textColor = Color("TextColorDark")
   let startIcon = Image("StartIconDark")
   let startHeaderBackgroundColor = Color.black
+  let destructiveTextColor = Color.red
+  let disabledTextColor = Color("TextColorDark").opacity(0.4)
 }

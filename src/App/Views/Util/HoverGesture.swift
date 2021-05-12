@@ -1,17 +1,5 @@
 import SwiftUI
 
-extension TapGesture {
-  static func from(tapGesture: @escaping () -> Void) -> some Gesture {
-    TapGesture().onEnded(tapGesture)
-  }
-}
-
-extension View {
-  func onHoverGesture(hoverGesture: @escaping (Bool) -> Void) -> some View {
-    gesture(HoverGesture.from(hoverGesture: hoverGesture))
-  }
-}
-
 struct HoverGesture: Gesture {
   let onHover: (Bool) -> Void
 
