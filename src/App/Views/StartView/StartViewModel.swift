@@ -13,6 +13,8 @@ protocol StartViewModel: ObservableObject {
   func presentConfigureDeviceScreen(for device: StartViewModelDevice)
 }
 
+#if DEBUG
+
 final class PreviewStartViewModel: StartViewModel {
   init(
     devices: [Bool] = [true, false, false],
@@ -49,3 +51,5 @@ final class PreviewStartViewModel: StartViewModel {
   private let presentAddNewDeviceScreenStub: () -> Void
   private let presentConfigureDeviceScreenStub: (_ device: StartViewModelDevice) -> Void
 }
+
+#endif

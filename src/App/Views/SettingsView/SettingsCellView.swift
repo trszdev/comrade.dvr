@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SettingsCellView: View {
   @Environment(\.theme) var theme: Theme
-  @Environment(\.safeAreaInsets) var safeAreaInsets: EdgeInsets
+  @Environment(\.geometry) var geometry: Geometry
   let text: String
   var rightText = ""
   let sfSymbol: SFSymbol
@@ -14,7 +14,7 @@ struct SettingsCellView: View {
     HStack(spacing: 0) {
       Image(sfSymbol: sfSymbol).frame(width: 40)
         .frame(maxHeight: .infinity)
-        .padding(.leading, safeAreaInsets.leading)
+        .padding(.leading, geometry.safeAreaInsets.leading)
         .foregroundColor(theme.textColor)
       HStack {
         Text(text)
@@ -22,7 +22,7 @@ struct SettingsCellView: View {
         Text(rightText)
       }
       .frame(maxHeight: .infinity)
-      .padding(.trailing, safeAreaInsets.trailing + 15)
+      .padding(.trailing, geometry.safeAreaInsets.trailing + 15)
       .border(width: isLast ? 0 : 0.5, edges: [.bottom], color: theme.textColor)
       .foregroundColor(isDisabled ? theme.disabledTextColor : theme.textColor)
     }
@@ -31,7 +31,7 @@ struct SettingsCellView: View {
     .if(!isDisabled) { view in
       view
         .defaultAnimation
-        .onHoverGesture { isHovered in self.isHovered = isHovered }
+        .onHoverGesture($isHovered)
     }
   }
 

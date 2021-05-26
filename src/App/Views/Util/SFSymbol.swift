@@ -12,6 +12,13 @@ enum SFSymbol: String {
   case usedSpace = "tray.full.fill"
   case language = "textformat.abc"
   case theme = "square.righthalf.fill"
+  case calendar
+  case selectDevice = "camera.on.rectangle.fill"
+  case trash
+  case export = "square.stack.3d.up"
+  case share = "arrowshape.turn.up.right"
+  case camera
+  case mic
 }
 
 extension Image {

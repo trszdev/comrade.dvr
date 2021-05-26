@@ -1,0 +1,25 @@
+"DURATION" = "Duration";
+"SIZE" = "Size";
+"PLAY" = "Play";
+"DELETE" = "Delete";
+"SHARE" = "Share";
+
+"ASSETS_LIMIT" = "Total file size";
+"ASSET_LENGTH" = "Max. file length";
+"USED_SPACE" = "Used space";
+"CLEAR_ASSETS" = "Clear all recordings";
+
+"SYSTEM" = "System";
+"LANGUAGE" = "Language";
+"THEME" = "Theme";
+
+"CONTACT_US" = "Contact us";
+"RATE_APP" = "Rate app";
+
+"RECORD" = "Record";
+"HISTORY" = "History";
+"SETTINGS" = "Settings";
+"START_RECORDING" = "Start recording";
+
+"LAST_CAPTURE" = "Last capture";
+"UPDATED_AT" = "Updated at";

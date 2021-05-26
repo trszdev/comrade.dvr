@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CustomScrollView<Content: View>: UIViewRepresentable {
-  let isVertical: Bool
+  var isVertical = true
   @ViewBuilder let content: () -> Content
 
   func makeUIView(context: Context) -> UIScrollView {

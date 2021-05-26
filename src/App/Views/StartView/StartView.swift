@@ -3,13 +3,14 @@ import SwiftUI
 struct StartView<ViewModel: StartViewModel>: View {
   @Environment(\.theme) var theme: Theme
   @StateObject var viewModel: ViewModel
+  @Environment(\.locale) var locale: Locale
 
   var body: some View {
     GeometryReader { geometry in
       ZStack {
         theme.mainBackgroundColor
         VStack(spacing: 0) {
-          CustomScrollView(isVertical: true) {
+          CustomScrollView {
             devicesView()
           }
           startHeaderView()
@@ -45,10 +46,10 @@ struct StartView<ViewModel: StartViewModel>: View {
       HStack(spacing: 10) {
         theme.startIcon
         VStack(alignment: .leading) {
-          Text("ComradeDVR v1.0.0").foregroundColor(theme.textColor).font(.caption2)
-          Text("Last capture: 10.12.2021 15:00").foregroundColor(theme.textColor).font(.caption2)
-          Text("Last update: 10.03.2021 14:88").foregroundColor(theme.textColor).font(.caption2)
-          Text("Used space: 100mb / 10gb [100%]").foregroundColor(theme.textColor).font(.caption2)
+          Text(locale.fullAppName).foregroundColor(theme.textColor).font(.caption2)
+          Text("\(locale.lastCaptureString): 10.12.2021 15:00").foregroundColor(theme.textColor).font(.caption2)
+          Text("\(locale.updatedAtString): 10.03.2021 14:88").foregroundColor(theme.textColor).font(.caption2)
+          Text("\(locale.usedSpaceString): 100mb / 10gb [100%]").foregroundColor(theme.textColor).font(.caption2)
         }
         Spacer()
       }

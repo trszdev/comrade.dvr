@@ -40,6 +40,8 @@ identifier_name:
     - ids
     - x
     - y
+    - en
+    - ru
 
 custom_rules:
   prohibited_symbols:

@@ -1,15 +1,25 @@
 import SwiftUI
 
 struct ThemeEnvironmentKey: EnvironmentKey {
-  static let defaultValue: Theme = WhiteTheme()
+  static let defaultValue: Theme = Default.theme
 }
 
-struct SafeAreaInsetsKey: EnvironmentKey {
-  static var defaultValue: EdgeInsets {
+struct GeometryKey: EnvironmentKey {
+  static var defaultValue: Geometry {
     guard let keyWindow = UIApplication.shared.windows.first(where: \.isKeyWindow) else {
-      return EdgeInsets()
+      return Geometry(size: CGSize(), safeAreaInsets: EdgeInsets())
     }
     let insets = keyWindow.safeAreaInsets
-    return EdgeInsets(top: insets.top, leading: insets.left, bottom: insets.bottom, trailing: insets.right)
+    let safeAreaInsets = EdgeInsets(
+      top: insets.top,
+      leading: insets.left,
+      bottom: insets.bottom,
+      trailing: insets.right
+    )
+    return Geometry(size: keyWindow.bounds.size, safeAreaInsets: safeAreaInsets)
   }
+}
+
+struct LocaleKey: EnvironmentKey {
+  static let defaultValue: Locale = Default.locale
 }

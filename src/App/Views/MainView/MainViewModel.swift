@@ -27,16 +27,15 @@ struct PreviewMainViewModel: MainViewModel {
           }
         }
       })
-    let startView = StartView(viewModel: startViewModel)
-    return AnyView(startView)
+    return StartView(viewModel: startViewModel).eraseToAnyView()
   }
 
   var historyView: AnyView {
-    AnyView(Color.blue.ignoresSafeArea())
+    HistoryView().eraseToAnyView()
   }
 
   var settingsView: AnyView {
-    AnyView(SettingsView())
+    SettingsView(viewModel: PreviewSettingsViewModel()).eraseToAnyView()
   }
 }
 
@@ -48,7 +47,7 @@ private final class CustomNavigationController: UINavigationController, UINaviga
   }
 
   required init?(coder aDecoder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
+    notImplemented()
   }
 
   override func viewDidAppear(_ animated: Bool) {

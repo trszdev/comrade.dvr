@@ -6,7 +6,13 @@ extension EnvironmentValues {
     set { self[ThemeEnvironmentKey.self] = newValue }
   }
 
-  var safeAreaInsets: EdgeInsets {
-    self[SafeAreaInsetsKey.self]
+  var geometry: Geometry {
+    get { self[GeometryKey.self] }
+    set { self[GeometryKey.self] = newValue }
+  }
+
+  var locale: Locale {
+    get { self[LocaleKey.self] }
+    set { self[LocaleKey.self] = newValue }
   }
 }

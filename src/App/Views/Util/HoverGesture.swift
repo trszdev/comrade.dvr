@@ -12,4 +12,8 @@ struct HoverGesture: Gesture {
   static func from(hoverGesture: @escaping (Bool) -> Void) -> some Gesture {
     HoverGesture(onHover: hoverGesture)
   }
+
+  static func bind(_ binding: Binding<Bool>) -> some Gesture {
+    HoverGesture { isHovered in binding.wrappedValue = isHovered }
+  }
 }

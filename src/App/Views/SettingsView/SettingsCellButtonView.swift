@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SettingsCellButtonView: View {
   @Environment(\.theme) var theme: Theme
-  @Environment(\.safeAreaInsets) var safeAreaInsets: EdgeInsets
+  @Environment(\.geometry) var geometry: Geometry
   let text: String
 
   var body: some View {
@@ -14,14 +14,14 @@ struct SettingsCellButtonView: View {
         Spacer()
       }
       .frame(maxHeight: .infinity)
-      .padding(.trailing, safeAreaInsets.trailing)
+      .padding(.trailing, geometry.safeAreaInsets.trailing)
       .border(width: 0.5, edges: [.top], color: theme.textColor)
     }
     .foregroundColor(theme.destructiveTextColor)
     .background(backgroundColor.ignoresSafeArea())
     .frame(height: 40)
     .defaultAnimation
-    .onHoverGesture { isHovered in self.isHovered = isHovered }
+    .onHoverGesture($isHovered)
   }
 
   @State private var isHovered = false

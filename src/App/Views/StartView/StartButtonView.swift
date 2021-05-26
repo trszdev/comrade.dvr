@@ -2,6 +2,7 @@ import SwiftUI
 
 struct StartButtonView: View {
   @Environment(\.theme) var theme: Theme
+  @Environment(\.locale) var locale: Locale
 
   var body: some View {
     GeometryReader { geometry in
@@ -9,13 +10,13 @@ struct StartButtonView: View {
       ZStack {
         Rectangle().foregroundColor(theme.startHeaderBackgroundColor)
         RoundedRectangle(cornerRadius: geometry.defaultCornerRadius).foregroundColor(backgroundColor)
-        Text("Hello world")
+        Text(locale.startRecordingString)
           .foregroundColor(theme.startHeaderBackgroundColor)
           .font(.title3)
           .minimumScaleFactor(0.5)
       }
-      .onHoverGesture { isHovered in self.isHovered = isHovered }
-      .animation(.easeIn(duration: 0.25))
+      .onHoverGesture($isHovered)
+      .defaultAnimation
     }
   }
 

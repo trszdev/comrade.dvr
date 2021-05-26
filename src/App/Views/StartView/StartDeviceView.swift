@@ -34,7 +34,7 @@ struct StartDeviceView: View {
       }
     }
     .onTapGesture(perform: onTap)
-    .simultaneousGesture(HoverGesture.from { isHovered in self.isHovered = isHovered })
+    .simultaneousGesture(HoverGesture.bind($isHovered))
     .aspectRatio(1, contentMode: .fill)
   }
 
@@ -62,8 +62,7 @@ struct StartDeviceAddView: View {
           .fill(backgroundColor)
           .frame(width: width / 3, height: width)
         Image(sfSymbol: .plus)
-          .resizable()
-          .aspectRatio(contentMode: .fit)
+          .fitResizable
           .frame(maxWidth: 80)
           .padding(width < 100 ? 10 : 20)
           .foregroundColor(theme.textColor)
@@ -71,7 +70,7 @@ struct StartDeviceAddView: View {
     }
     .defaultAnimation
     .onTapGesture(perform: onTap)
-    .simultaneousGesture(HoverGesture.from { isHovered in self.isHovered = isHovered })
+    .simultaneousGesture(HoverGesture.bind($isHovered))
     .aspectRatio(1, contentMode: .fill)
   }
 

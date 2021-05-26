@@ -1,23 +1,29 @@
 import SwiftUI
 
 struct MainView: View {
+  @Environment(\.locale) var locale: Locale
   let viewModel: MainViewModel
 
   var body: some View {
-    CustomNavigationView(navigationViewController: viewModel.navigationViewController) {
-      CustomTabView(
-        views: [
-          viewModel.startView,
-          viewModel.historyView,
-          viewModel.settingsView,
-        ],
-        labels: [
-          (.play, "Start"),
-          (.history, "History"),
-          (.settings, "Settings"),
-        ]
-      ).ignoresSafeArea()
-    }.ignoresSafeArea()
+    GeometryReader { geometry in
+      CustomNavigationView(navigationViewController: viewModel.navigationViewController) {
+        CustomTabView(
+          views: [
+            viewModel.startView,
+            viewModel.historyView,
+            viewModel.settingsView,
+          ],
+          labels: [
+            (.play, locale.recordString),
+            (.history, locale.historyString),
+            (.settings, locale.settingsString),
+          ]
+        )
+        .ignoresSafeArea()
+      }
+      .ignoresSafeArea()
+      .environment(\.geometry, Geometry(size: geometry.size, safeAreaInsets: geometry.safeAreaInsets))
+    }
   }
 }
 

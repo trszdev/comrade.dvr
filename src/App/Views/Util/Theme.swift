@@ -12,6 +12,12 @@ protocol Theme {
   var disabledTextColor: Color { get }
 }
 
+extension Default {
+  static var theme: Theme {
+    WhiteTheme()
+  }
+}
+
 struct WhiteTheme: Theme {
   let headerBackgroundColor = Color("HeaderBackgroundColor")
   let mainBackgroundColor = Color("MainBackgroundColor")
