@@ -50,7 +50,7 @@ final class HistoryCellView: UITableViewCell {
     }
   }
 
-  var locale: Locale = Default.locale {
+  var locale: AppLocale = Default.appLocale {
     didSet {
       updateLabels()
     }

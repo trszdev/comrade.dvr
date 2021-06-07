@@ -3,7 +3,7 @@ import SwiftUI
 struct StartView<ViewModel: StartViewModel>: View {
   @Environment(\.theme) var theme: Theme
   @StateObject var viewModel: ViewModel
-  @Environment(\.locale) var locale: Locale
+  @Environment(\.appLocale) var appLocale: AppLocale
 
   var body: some View {
     GeometryReader { geometry in
@@ -46,10 +46,10 @@ struct StartView<ViewModel: StartViewModel>: View {
       HStack(spacing: 10) {
         theme.startIcon
         VStack(alignment: .leading) {
-          Text(locale.fullAppName).foregroundColor(theme.textColor).font(.caption2)
-          Text("\(locale.lastCaptureString): 10.12.2021 15:00").foregroundColor(theme.textColor).font(.caption2)
-          Text("\(locale.updatedAtString): 10.03.2021 14:88").foregroundColor(theme.textColor).font(.caption2)
-          Text("\(locale.usedSpaceString): 100mb / 10gb [100%]").foregroundColor(theme.textColor).font(.caption2)
+          Text(appLocale.fullAppName).foregroundColor(theme.textColor).font(.caption2)
+          Text("\(appLocale.lastCaptureString): 10.12.2021 15:00").foregroundColor(theme.textColor).font(.caption2)
+          Text("\(appLocale.updatedAtString): 10.03.2021 14:88").foregroundColor(theme.textColor).font(.caption2)
+          Text("\(appLocale.usedSpaceString): 100mb / 10gb [100%]").foregroundColor(theme.textColor).font(.caption2)
         }
         Spacer()
       }

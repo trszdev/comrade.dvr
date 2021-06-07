@@ -20,6 +20,6 @@ struct GeometryKey: EnvironmentKey {
   }
 }
 
-struct LocaleKey: EnvironmentKey {
-  static let defaultValue: Locale = Default.locale
+struct AppLocaleKey: EnvironmentKey {
+  static let defaultValue: AppLocale = Default.appLocale
 }

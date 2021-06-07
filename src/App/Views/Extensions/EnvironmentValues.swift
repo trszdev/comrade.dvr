@@ -11,8 +11,8 @@ extension EnvironmentValues {
     set { self[GeometryKey.self] = newValue }
   }
 
-  var locale: Locale {
-    get { self[LocaleKey.self] }
-    set { self[LocaleKey.self] = newValue }
+  var appLocale: AppLocale {
+    get { self[AppLocaleKey.self] }
+    set { self[AppLocaleKey.self] = newValue }
   }
 }

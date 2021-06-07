@@ -1,8 +1,11 @@
 import Foundation
 
-protocol Locale {
+protocol AppLocale {
+  var currentLocale: Locale? { get }
+  func themeName(_ themeSetting: ThemeSetting) -> String
+  func languageName(_ languageSetting: LanguageSetting) -> String
   func timeOnly(date: Date) -> String
-  func assetSize(_ fileSize: FileSize) -> String
+  func assetSize(_ fileSize: FileSize?) -> String
   func assetDuration(_ timeInterval: TimeInterval) -> String
   var durationString: String { get }
   var sizeString: String { get }
@@ -25,15 +28,18 @@ protocol Locale {
   var lastCaptureString: String { get }
   var updatedAtString: String { get }
   var fullAppName: String { get }
+  var okString: String { get }
+  var cancelString: String { get }
+  var appContactEmail: String { get }
 }
 
 extension Default {
-  static var locale: Locale {
+  static var appLocale: AppLocale {
     LocaleImpl()
   }
 }
 
-struct LocaleImpl: Locale {
+struct LocaleImpl: AppLocale {
   enum LanguageCode: String {
     case en
     case ru
@@ -46,25 +52,52 @@ struct LocaleImpl: Locale {
       return
     }
     self.bundle = Bundle(path: path)
-    self.languageCode = languageCode
+    self.currentLocale = Locale(identifier: languageCode.rawValue)
+  }
+
+  var currentLocale: Locale?
+
+  func themeName(_ themeSetting: ThemeSetting) -> String {
+    switch themeSetting {
+    case .system:
+      return systemString
+    case .dark:
+      return localizedString("DARK_THEME")
+    case .light:
+      return localizedString("LIGHT_THEME")
+    }
+  }
+
+  func languageName(_ languageSetting: LanguageSetting) -> String {
+    switch languageSetting {
+    case .system:
+      return systemString
+    case .english:
+      return localizedString("LANGUAGE_EN")
+    case .russian:
+      return localizedString("LANGUAGE_RU")
+    }
   }
 
   func timeOnly(date: Date) -> String {
     let dateFormatter = DateFormatter()
-    dateFormatter.locale = locale
+    dateFormatter.locale = currentLocale
     dateFormatter.timeStyle = .medium
     dateFormatter.dateStyle = .none
     return dateFormatter.string(from: date)
   }
 
-  func assetSize(_ fileSize: FileSize) -> String {
+  func assetSize(_ fileSize: FileSize?) -> String {
+    guard let fileSize = fileSize else {
+      return "∞"
+    }
     let unitFormatter = MeasurementFormatter()
     unitFormatter.unitStyle = .short
-    unitFormatter.locale = locale
+    unitFormatter.locale = currentLocale
     let numberFormatter = NumberFormatter()
     numberFormatter.minimumFractionDigits = 0
     numberFormatter.maximumFractionDigits = 3
-    numberFormatter.locale = locale
+    numberFormatter.locale = currentLocale
     unitFormatter.numberFormatter = numberFormatter
     let units: [UnitInformationStorage] = [.bytes, .kilobytes, .megabytes, .gigabytes, .terabytes]
     let log = fileSize.bytes > 0 ? Int(log2(Double(fileSize.bytes)) / 10) : 0
@@ -103,6 +136,9 @@ struct LocaleImpl: Locale {
   var lastCaptureString: String { localizedString("LAST_CAPTURE") }
   var updatedAtString: String { localizedString("UPDATED_AT") }
   var fullAppName: String { "ComradeDVR v1.0.0" }
+  var okString: String { localizedString("OK") }
+  var cancelString: String { localizedString("CANCEL") }
+  var appContactEmail: String { "help@comradedvr.app" }
 
   private func localizedString(_ key: String) -> String {
     if let bundle = bundle {
@@ -111,16 +147,12 @@ struct LocaleImpl: Locale {
     return NSLocalizedString(key, comment: "")
   }
 
-  private var bundle: Bundle?
-  private var languageCode: LanguageCode?
-
   private var calendar: Calendar {
     var calendar = Calendar.current
-    calendar.locale = locale
+    calendar.locale = currentLocale
     return calendar
   }
 
-  private var locale: Foundation.Locale? {
-    languageCode.flatMap { Foundation.Locale.init(identifier: $0.rawValue) }
-  }
+  private var bundle: Bundle?
+  private var languageCode: LanguageCode?
 }

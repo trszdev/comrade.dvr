@@ -5,4 +5,8 @@ extension UINavigationController: ViewPresenter {
     let hostingVc = UIHostingController(rootView: content())
     pushViewController(hostingVc, animated: animated)
   }
+
+  func presentViewController(animated: Bool, viewController: UIViewController) {
+    pushViewController(viewController, animated: animated)
+  }
 }

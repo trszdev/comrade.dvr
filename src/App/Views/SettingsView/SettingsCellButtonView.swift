@@ -21,7 +21,7 @@ struct SettingsCellButtonView: View {
     .background(backgroundColor.ignoresSafeArea())
     .frame(height: 40)
     .defaultAnimation
-    .onHoverGesture($isHovered)
+    .simultaneousGesture(HoverGesture.bind($isHovered))
   }
 
   @State private var isHovered = false

@@ -6,8 +6,9 @@ struct SettingsCellView: View {
   let text: String
   var rightText = ""
   let sfSymbol: SFSymbol
-  var isLast = false
+  var separator = [Edge.bottom]
   var isDisabled = false
+  var onTap: () -> Void = {}
 
   var body: some View {
     let backgroundColor = isHovered ? theme.accentColorHover : theme.mainBackgroundColor
@@ -21,9 +22,10 @@ struct SettingsCellView: View {
         Spacer()
         Text(rightText)
       }
+      .animation(nil)
       .frame(maxHeight: .infinity)
       .padding(.trailing, geometry.safeAreaInsets.trailing + 15)
-      .border(width: isLast ? 0 : 0.5, edges: [.bottom], color: theme.textColor)
+      .border(width: 0.5, edges: separator, color: theme.textColor)
       .foregroundColor(isDisabled ? theme.disabledTextColor : theme.textColor)
     }
     .background(backgroundColor.ignoresSafeArea())
@@ -31,8 +33,13 @@ struct SettingsCellView: View {
     .if(!isDisabled) { view in
       view
         .defaultAnimation
-        .onHoverGesture($isHovered)
+        .onTapGesture(perform: onTap)
+        .simultaneousGesture(HoverGesture.bind($isHovered))
     }
+  }
+
+  func with(onTap: @escaping () -> Void) -> SettingsCellView {
+    SettingsCellView(text: text, sfSymbol: sfSymbol, separator: separator, isDisabled: isDisabled, onTap: onTap)
   }
 
   @State private var isHovered = false

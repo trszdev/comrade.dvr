@@ -46,7 +46,7 @@ private struct HistoryMenuButtonView: View {
       .foregroundColor(color)
       .defaultAnimation
       .mask(view)
-      .onHoverGesture($isHovered)
+      .simultaneousGesture(HoverGesture.bind($isHovered))
       .aspectRatio(contentMode: .fit)
       .background(view)
   }

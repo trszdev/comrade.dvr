@@ -2,16 +2,25 @@ import SwiftUI
 
 struct CustomScrollView<Content: View>: UIViewRepresentable {
   var isVertical = true
+  var bounces = true
   @ViewBuilder let content: () -> Content
 
   func makeUIView(context: Context) -> UIScrollView {
-    SimultaneousScrollView()
+    let result = SimultaneousScrollView()
+    if isVertical {
+      result.alwaysBounceVertical = bounces
+    } else {
+      result.alwaysBounceHorizontal = bounces
+    }
+    return result
   }
 
   func updateUIView(_ uiView: UIScrollView, context: Context) {
     let hosting = UIHostingController(rootView: content())
     hosting.view.backgroundColor = .clear
-    uiView.subviews.first?.removeFromSuperview()
+    for view in uiView.subviews {
+      view.removeFromSuperview()
+    }
     uiView.addSubview(hosting.view)
     hosting.view.translatesAutoresizingMaskIntoConstraints = false
     uiView.addConstraints([

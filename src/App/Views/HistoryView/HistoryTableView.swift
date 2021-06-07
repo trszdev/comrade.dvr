@@ -2,7 +2,7 @@ import SwiftUI
 
 struct HistoryTableView: UIViewRepresentable {
   @Environment(\.theme) var theme: Theme
-  @Environment(\.locale) var locale: Locale
+  @Environment(\.appLocale) var appLocale: AppLocale
 
   func makeUIView(context: Context) -> UITableView {
     let tableView = CustomTableView()
@@ -18,7 +18,7 @@ struct HistoryTableView: UIViewRepresentable {
     uiView.reloadData()
     guard let customTableView = uiView as? CustomTableView else { return }
     customTableView.theme = theme
-    customTableView.locale = locale
+    customTableView.locale = appLocale
     customTableView.backgroundColor = UIColor(theme.mainBackgroundColor)
     customTableView.separatorColor = UIColor(theme.disabledTextColor)
   }
@@ -26,7 +26,7 @@ struct HistoryTableView: UIViewRepresentable {
 
 private class CustomTableView: UITableView {
   var theme: Theme = Default.theme
-  var locale: Locale = Default.locale
+  var locale: AppLocale = Default.appLocale
 }
 
 extension CustomTableView: UITableViewDelegate {
@@ -91,7 +91,7 @@ struct HistoryTableViewPreview: PreviewProvider {
   static var previews: some View {
     HistoryTableView()
       .environment(\.theme, DarkTheme())
-      .environment(\.locale, LocaleImpl(languageCode: .ru))
+      .environment(\.appLocale, LocaleImpl(languageCode: .ru))
   }
 }
 

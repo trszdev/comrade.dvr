@@ -23,3 +23,12 @@
 
 "LAST_CAPTURE" = "Последний запуск";
 "UPDATED_AT" = "Обновлено";
+
+"OK" = "ОК";
+"CANCEL" = "Отмена";
+
+"DARK_THEME" = "Темная";
+"LIGHT_THEME" = "Светлая";
+
+"LANGUAGE_EN" = "Английский";
+"LANGUAGE_RU" = "Русский";

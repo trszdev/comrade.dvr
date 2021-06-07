@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct SettingsClearAssetsCellView: View {
-  @Environment(\.locale) var locale: Locale
+  @Environment(\.appLocale) var appLocale: AppLocale
 
   var body: some View {
-    SettingsCellButtonView(text: locale.clearAssetsString)
+    SettingsCellButtonView(text: appLocale.clearAssetsString)
   }
 }

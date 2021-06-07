@@ -28,6 +28,10 @@ struct CustomTabView: UIViewControllerRepresentable {
 private class CustomTabBarController: UITabBarController, UITabBarControllerDelegate {
   override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
     super.viewWillTransition(to: size, with: coordinator)
+    updateAllTabsExceptCurrent()
+  }
+
+  func updateAllTabsExceptCurrent() {
     var hostingVcs = viewControllers?.compactMap { $0 as? UIHostingController<AnyView> } ?? []
     for index in 0..<hostingVcs.count where index != selectedIndex {
       hostingVcs[index] = UIHostingController(rootView: hostingVcs[index].rootView)

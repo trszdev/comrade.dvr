@@ -23,3 +23,12 @@
 
 "LAST_CAPTURE" = "Last capture";
 "UPDATED_AT" = "Updated at";
+
+"OK" = "ОК";
+"CANCEL" = "Cancel";
+
+"DARK_THEME" = "Dark";
+"LIGHT_THEME" = "Light";
+
+"LANGUAGE_EN" = "English";
+"LANGUAGE_RU" = "Russian";

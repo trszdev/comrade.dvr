@@ -1,6 +1,6 @@
 import Foundation
 
-struct FileSize: CustomStringConvertible {
+struct FileSize: CustomStringConvertible, Codable, Hashable {
   let bytes: Int
 
   var description: String {
