@@ -11,7 +11,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   ) {
     guard let windowScene = scene as? UIWindowScene else { return }
     let window = UIWindow(windowScene: windowScene)
-    let mainView = PreviewLocator.default.makeMainView()
+    let container = AppAssembly(isPreview: false).hashContainer
+    let mainView = container.resolve(MainViewBuilder.self).makeView()
     window.rootViewController = UIHostingController(rootView: mainView)
     self.window = window
     window.makeKeyAndVisible()

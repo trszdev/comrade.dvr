@@ -1,0 +1,2 @@
+protocol SettingValue: Codable, Hashable {
+}

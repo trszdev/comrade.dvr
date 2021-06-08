@@ -1,7 +1,7 @@
 import Combine
 import Foundation
 
-final class TempSetting<Value: Codable>: Setting {
+final class TempSetting<Value: SettingValue>: Setting {
   init(value: Value) {
     self.value = value
     self.currentValueSubject = CurrentValueSubject<Value, Never>(value)

@@ -6,21 +6,15 @@ struct StartView<ViewModel: StartViewModel>: View {
   @Environment(\.appLocale) var appLocale: AppLocale
 
   var body: some View {
-    GeometryReader { geometry in
-      ZStack {
-        theme.mainBackgroundColor
-        VStack(spacing: 0) {
-          CustomScrollView {
-            devicesView()
-          }
-          startHeaderView()
-            .padding(.bottom, geometry.safeAreaInsets.bottom)
-            .padding(.leading, geometry.safeAreaInsets.leading)
-            .padding(.trailing, geometry.safeAreaInsets.trailing)
-            .background(theme.startHeaderBackgroundColor)
+    ZStack {
+      theme.mainBackgroundColor.ignoresSafeArea()
+      VStack(spacing: 0) {
+        CustomScrollView {
+          devicesView()
         }
+        startHeaderView()
+          .background(theme.startHeaderBackgroundColor.ignoresSafeArea())
       }
-      .ignoresSafeArea()
     }
   }
 
@@ -63,7 +57,7 @@ struct StartView<ViewModel: StartViewModel>: View {
 
 struct StartViewPreview: PreviewProvider {
   static var previews: some View {
-    let viewModel = PreviewStartViewModel(devices: [true, false, false], canAddNewDevice: true)
+    let viewModel = StartViewModelImpl(devices: [true, false, false], canAddNewDevice: true)
     StartView(viewModel: viewModel)
       .environment(\.theme, DarkTheme())
   }

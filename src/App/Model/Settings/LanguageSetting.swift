@@ -1,6 +1,4 @@
-import Foundation
-
-enum LanguageSetting: String, Codable, CaseIterable {
+enum LanguageSetting: String, SettingValue, CaseIterable {
   case system
   case english
   case russian

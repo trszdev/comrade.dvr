@@ -1,6 +1,9 @@
 import SwiftUI
 
-extension UINavigationController: ViewPresenter {
+protocol NavigationViewPresenter: ViewPresenter {
+}
+
+extension UINavigationController: NavigationViewPresenter {
   func presentView<Content: View>(animated: Bool, @ViewBuilder content: () -> Content) {
     let hostingVc = UIHostingController(rootView: content())
     pushViewController(hostingVc, animated: animated)

@@ -1,6 +1,9 @@
 import SwiftUI
 
-struct ModalViewPresenter: ViewPresenter {
+protocol ModalViewPresenter: ViewPresenter {
+}
+
+struct ModalViewPresenterImpl: ModalViewPresenter {
   func presentView<Content>(animated: Bool, @ViewBuilder content: @escaping () -> Content) where Content: View {
     guard let modalView = content() as? ModalView else { return }
     let hostingVc = UIHostingController(rootView: modalView)
@@ -109,18 +112,6 @@ private struct ModalViewButtonStyle: ButtonStyle {
 #if DEBUG
 
 struct ModalViewPreview: PreviewProvider {
-  private struct PreviewUIAlertView: UIViewControllerRepresentable {
-    func updateUIViewController(_ uiViewController: UIAlertController, context: Context) {
-    }
-
-    func makeUIViewController(context: Context) -> UIAlertController {
-      let alert = UIAlertController(title: "Alert", message: "Message", preferredStyle: .alert)
-      alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-      alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-      return alert
-    }
-  }
-
   static var previews: some View {
     VStack(alignment: .leading, spacing: 10) {
       VStack(spacing: 0) {
@@ -145,6 +136,18 @@ struct ModalViewPreview: PreviewProvider {
       }
       .padding(.vertical, 18)
       .padding(.horizontal, 10)
+    }
+  }
+
+  private struct PreviewUIAlertView: UIViewControllerRepresentable {
+    func updateUIViewController(_ uiViewController: UIAlertController, context: Context) {
+    }
+
+    func makeUIViewController(context: Context) -> UIAlertController {
+      let alert = UIAlertController(title: "Alert", message: "Message", preferredStyle: .alert)
+      alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+      alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+      return alert
     }
   }
 }

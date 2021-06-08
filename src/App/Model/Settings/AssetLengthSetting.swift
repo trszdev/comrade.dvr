@@ -1,5 +1,5 @@
 import Foundation
 
-struct AssetLengthSetting: Codable, Hashable {
+struct AssetLengthSetting: SettingValue {
   let value: TimeInterval
 }

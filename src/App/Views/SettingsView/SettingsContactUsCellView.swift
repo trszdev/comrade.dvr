@@ -2,8 +2,16 @@ import SwiftUI
 import MessageUI
 
 struct SettingsContactUsCellView: View {
+  struct Builder {
+    let navigationViewPresenter: NavigationViewPresenter
+
+    func makeView() -> SettingsContactUsCellView {
+      SettingsContactUsCellView(navigationViewPresenter: navigationViewPresenter)
+    }
+  }
+
+  let navigationViewPresenter: NavigationViewPresenter
   @Environment(\.appLocale) var appLocale: AppLocale
-  let viewPresenter: ViewPresenter
 
   var body: some View {
     SettingsCellView(
@@ -21,7 +29,7 @@ struct SettingsContactUsCellView: View {
     let mail = MFMailComposeViewController()
     mail.setToRecipients([appLocale.appContactEmail])
     mail.setMessageBody("Feedback: \(appLocale.fullAppName)", isHTML: false)
-    viewPresenter.presentViewController(viewController: mail)
+    navigationViewPresenter.presentViewController(viewController: mail)
   }
 
   private func tryOpenMailtoURL() {

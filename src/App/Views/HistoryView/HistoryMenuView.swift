@@ -56,7 +56,7 @@ private struct HistoryMenuButtonView: View {
 
 #if DEBUG
 
-struct HistoryMenuViewPreviews: PreviewProvider {
+struct HistoryMenuViewPreview: PreviewProvider {
   static var previews: some View {
     let smallGeometry = Geometry(size: CGSize(width: 0, height: 200), safeAreaInsets: EdgeInsets())
     VStack {

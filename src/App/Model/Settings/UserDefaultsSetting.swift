@@ -1,11 +1,11 @@
 import Combine
 import Foundation
 
-final class UserDefaultsSetting<Value: Codable>: Setting {
+final class UserDefaultsSetting<Value: SettingValue>: Setting {
   init(key: String, userDefaults: UserDefaults, value: Value) {
     self.key = key
     self.userDefaults = userDefaults
-    self.value = value
+    self.value = userDefaults.object(Value.self, key: key) ?? value
     self.currentValueSubject = CurrentValueSubject<Value, Never>(value)
   }
 
@@ -25,4 +25,11 @@ final class UserDefaultsSetting<Value: Codable>: Setting {
   private let currentValueSubject: CurrentValueSubject<Value, Never>
   private let key: String
   private let userDefaults: UserDefaults
+}
+
+private extension UserDefaults {
+  func object<Value: SettingValue>(_ type: Value.Type, key: String) -> Value? {
+    guard let object = data(forKey: key) else { return nil }
+    return try? object.decodeJson(type)
+  }
 }

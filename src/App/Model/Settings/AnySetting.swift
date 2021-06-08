@@ -1,6 +1,6 @@
 import Combine
 
-struct AnySetting<Value>: Setting {
+struct AnySetting<Value: SettingValue>: Setting {
   init<CustomSetting: Setting>(_ setting: CustomSetting) where CustomSetting.Value == Value {
     valueGetter = { setting.value }
     publisherGetter = { setting.publisher }

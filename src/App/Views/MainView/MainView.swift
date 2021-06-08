@@ -1,12 +1,22 @@
 import SwiftUI
 
+struct MainViewBuilder {
+  let viewModel: MainViewModelImpl
+  let customNavigationViewBuilder: CustomNavigationViewBuilder
+
+  func makeView() -> AnyView {
+    MainView(viewModel: viewModel, customNavigationViewBuilder: customNavigationViewBuilder).eraseToAnyView()
+  }
+}
+
 struct MainView<ViewModel: MainViewModel>: View {
   @ObservedObject var viewModel: ViewModel
+  let customNavigationViewBuilder: CustomNavigationViewBuilder
   @Environment(\.colorScheme) var colorScheme: ColorScheme
 
   var body: some View {
     GeometryReader { geometry in
-      CustomNavigationView {
+      customNavigationViewBuilder.makeView {
         CustomTabView(
           views: [
             viewModel.startView,
@@ -36,7 +46,7 @@ struct MainView<ViewModel: MainViewModel>: View {
 
 struct MainViewPreview: PreviewProvider {
   static var previews: some View {
-    PreviewLocator.default.makeMainView()
+    locator.resolve(MainViewBuilder.self).makeView()
   }
 }
 

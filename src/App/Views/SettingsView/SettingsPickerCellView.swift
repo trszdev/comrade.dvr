@@ -1,9 +1,31 @@
 import SwiftUI
 
-struct SettingsPickerCellView<ViewModel: SettingsCellViewModel>: View where ViewModel.Value: Hashable {
+struct SettingsPickerCellViewBuilder<Value: SettingValue> {
+  let viewModel: SettingsCellViewModelImpl<Value>
+  let modalViewPresenter: ModalViewPresenter
+
+  func makeView(
+    title: @escaping (AppLocale) -> String,
+    rightText: @escaping (AppLocale, Value) -> String,
+    sfSymbol: SFSymbol,
+    availableOptions: [Value]
+  ) -> AnyView {
+    SettingsPickerCellView(
+      viewModel: viewModel,
+      modalViewPresenter: modalViewPresenter,
+      title: title,
+      rightText: rightText,
+      sfSymbol: sfSymbol,
+      availableOptions: availableOptions
+    )
+    .eraseToAnyView()
+  }
+}
+
+struct SettingsPickerCellView<ViewModel: SettingsCellViewModel>: View {
   @Environment(\.appLocale) var appLocale: AppLocale
   @ObservedObject var viewModel: ViewModel
-  let viewPresenter: ViewPresenter
+  let modalViewPresenter: ModalViewPresenter
   let title: (AppLocale) -> String
   let rightText: (AppLocale, ViewModel.Value) -> String
   let sfSymbol: SFSymbol
@@ -11,14 +33,14 @@ struct SettingsPickerCellView<ViewModel: SettingsCellViewModel>: View where View
 
   init(
     viewModel: ViewModel,
-    viewPresenter: ViewPresenter,
+    modalViewPresenter: ModalViewPresenter,
     title: @escaping (AppLocale) -> String,
     rightText: @escaping (AppLocale, ViewModel.Value) -> String,
     sfSymbol: SFSymbol,
     availableOptions: [ViewModel.Value]
   ) {
     self.viewModel = viewModel
-    self.viewPresenter = viewPresenter
+    self.modalViewPresenter = modalViewPresenter
     self.title = title
     self.rightText = rightText
     self.sfSymbol = sfSymbol
@@ -32,7 +54,7 @@ struct SettingsPickerCellView<ViewModel: SettingsCellViewModel>: View where View
       rightText: rightText(appLocale, viewModel.value),
       sfSymbol: sfSymbol,
       onTap: {
-        viewPresenter.presentView { modalView() }
+        modalViewPresenter.presentView { modalView() }
       }
     )
   }
@@ -65,9 +87,10 @@ struct SettingsPickerCellView<ViewModel: SettingsCellViewModel>: View where View
 
 struct SettingsPickerCellViewPreview: PreviewProvider {
   static var previews: some View {
+    let builder = locator.resolve(SettingsPickerCellViewBuilder<ThemeSetting>.self)!
     let cellView = SettingsPickerCellView(
-      viewModel: PreviewLocator.default.settingsCellViewModel(ThemeSetting.self),
-      viewPresenter: ModalViewPresenter(),
+      viewModel: builder.viewModel,
+      modalViewPresenter: builder.modalViewPresenter,
       title: { $0.themeString },
       rightText: { $0.themeName($1) },
       sfSymbol: .theme,

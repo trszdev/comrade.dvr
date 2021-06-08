@@ -1,3 +1,3 @@
-struct AssetLimitSetting: Codable, Hashable {
+struct AssetLimitSetting: SettingValue {
   let value: FileSize?
 }

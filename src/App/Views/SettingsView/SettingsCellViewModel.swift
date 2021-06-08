@@ -2,14 +2,14 @@ import SwiftUI
 import Combine
 
 protocol SettingsCellViewModel: ObservableObject {
-  associatedtype Value: Codable
+  associatedtype Value: SettingValue
   var value: Value { get }
   var valuePublished: Published<Value> { get }
   var valuePublisher: Published<Value>.Publisher { get }
   func update(newValue: Value)
 }
 
-final class SettingsCellViewModelImpl<Value: Codable>: SettingsCellViewModel {
+final class SettingsCellViewModelImpl<Value: SettingValue>: SettingsCellViewModel {
   init(setting: AnySetting<Value>) {
     self.setting = setting
     self.value = setting.value

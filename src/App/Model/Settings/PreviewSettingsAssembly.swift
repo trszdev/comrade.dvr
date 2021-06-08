@@ -9,7 +9,7 @@ struct PreviewSettingsAssembly: AKAssembly {
     registerSetting(container: container, AssetLengthSetting(value: .from(minutes: 2)))
   }
 
-  private func registerSetting<Value: Codable>(container: AKContainer, _ value: Value) {
+  private func registerSetting<Value: SettingValue>(container: AKContainer, _ value: Value) {
     let setting = AnySetting(TempSetting(value: value))
     container.singleton.autoregister(value: setting)
   }

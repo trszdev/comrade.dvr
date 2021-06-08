@@ -1,6 +1,14 @@
 import SwiftUI
 
 struct SettingsView: View {
+  struct Builder {
+    let viewModel: SettingsViewModel
+
+    func makeView() -> AnyView {
+      SettingsView(viewModel: viewModel).eraseToAnyView()
+    }
+  }
+
   @Environment(\.theme) var theme: Theme
   @Environment(\.geometry) var geometry: Geometry
   let viewModel: SettingsViewModel
@@ -40,7 +48,7 @@ struct SettingsView: View {
 
 struct SettingsViewPreview: PreviewProvider {
   static var previews: some View {
-    SettingsView(viewModel: PreviewSettingsViewModel())
+    locator.resolve(SettingsView.Builder.self).makeView()
   }
 }
 

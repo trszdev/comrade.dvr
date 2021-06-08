@@ -17,8 +17,6 @@ protocol MainViewModel: ObservableObject {
   func systemColorSchemeChanged(to colorScheme: ColorScheme)
 }
 
-#if DEBUG
-
 final class MainViewModelImpl: MainViewModel {
   @Published private(set) var theme: Theme
   var themePublished: Published<Theme> { _theme }
@@ -28,15 +26,22 @@ final class MainViewModelImpl: MainViewModel {
   var appLocalePublished: Published<AppLocale> { _appLocale }
   var appLocalePublisher: Published<AppLocale>.Publisher { $appLocale }
 
-  init(themeSetting: AnySetting<ThemeSetting>, languageSetting: AnySetting<LanguageSetting>) {
+  init(
+    themeSetting: AnySetting<ThemeSetting>,
+    languageSetting: AnySetting<LanguageSetting>,
+    navigationController: UINavigationController,
+    settingsViewBuilder: SettingsView.Builder
+  ) {
+    self.navigationController = navigationController
     self.themeSetting = themeSetting.value
-    theme = themeSetting.value.theme
-    appLocale = languageSetting.value.appLocale
+    self.settingsView = settingsViewBuilder.makeView()
+    self.theme = themeSetting.value.isDark ? DarkTheme() : WhiteTheme()
+    self.appLocale = languageSetting.value.appLocale
     themeSetting.publisher
       .sink { [weak self] newThemeSetting in
         guard let self = self else { return }
         self.themeSetting = newThemeSetting
-        self.theme = themeSetting.value.theme
+        self.changeTheme(isDark: newThemeSetting.isDark)
       }
       .store(in: &cancellables)
     languageSetting.publisher
@@ -52,14 +57,14 @@ final class MainViewModelImpl: MainViewModel {
   }
 
   var startView: AnyView {
-    let startViewModel = PreviewStartViewModel(
-      presentAddNewDeviceScreenStub: {
-        PreviewLocator.default.locator.resolve(UINavigationController.self).presentView {
+    let startViewModel = StartViewModelImpl(
+      presentAddNewDeviceScreenStub: { [navigationController] in
+        navigationController?.presentView {
           Color.red.ignoresSafeArea()
         }
       },
-      presentConfigureDeviceScreenStub: { device in
-        PreviewLocator.default.locator.resolve(UINavigationController.self).presentView {
+      presentConfigureDeviceScreenStub: { [navigationController] device in
+        navigationController?.presentView {
           ZStack {
             Color.purple.ignoresSafeArea()
             Text(device.name)
@@ -73,30 +78,36 @@ final class MainViewModelImpl: MainViewModel {
     HistoryView().eraseToAnyView()
   }
 
-  var settingsView: AnyView {
-    SettingsView(viewModel: PreviewSettingsViewModel()).eraseToAnyView()
-  }
+  let settingsView: AnyView
 
   func systemColorSchemeChanged(to colorScheme: ColorScheme) {
     guard themeSetting == .system else {
       return
     }
-    theme = colorScheme == .dark ? DarkTheme() : WhiteTheme()
+    changeTheme(isDark: colorScheme == .dark)
+  }
+
+  private func changeTheme(isDark: Bool) {
+    for window in UIApplication.shared.windows {
+      window.overrideUserInterfaceStyle = isDark ? .dark : .light
+    }
+    theme = isDark ? DarkTheme() : WhiteTheme()
   }
 
   private var themeSetting: ThemeSetting
   private var cancellables = Set<AnyCancellable>()
+  private weak var navigationController: UINavigationController?
 }
 
 private extension ThemeSetting {
-  var theme: Theme {
+  var isDark: Bool {
     switch self {
     case .dark:
-      return DarkTheme()
+      return true
     case .light:
-      return WhiteTheme()
+      return false
     case .system:
-      return UITraitCollection.current.userInterfaceStyle == .dark ? DarkTheme() : WhiteTheme()
+      return UITraitCollection.current.userInterfaceStyle == .dark
     }
   }
 }
@@ -113,5 +124,3 @@ private extension LanguageSetting {
     }
   }
 }
-
-#endif
