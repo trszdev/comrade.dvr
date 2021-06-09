@@ -17,6 +17,7 @@ struct AppAssembly: AKAssembly {
     SettingsViewAssembly(),
     MainViewAssembly(),
     UtilAssembly(),
+    RootViewAssembly(),
   ]
 
   private let previewAssemblies = [

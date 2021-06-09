@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MainViewBuilder {
-  let viewModel: MainViewModelImpl
+  let viewModel: MainViewModel
   let customNavigationViewBuilder: CustomNavigationViewBuilder
 
   func makeView() -> AnyView {
@@ -9,10 +9,9 @@ struct MainViewBuilder {
   }
 }
 
-struct MainView<ViewModel: MainViewModel>: View {
-  @ObservedObject var viewModel: ViewModel
+struct MainView: View {
+  let viewModel: MainViewModel
   let customNavigationViewBuilder: CustomNavigationViewBuilder
-  @Environment(\.colorScheme) var colorScheme: ColorScheme
 
   var body: some View {
     GeometryReader { geometry in
@@ -24,20 +23,15 @@ struct MainView<ViewModel: MainViewModel>: View {
             viewModel.settingsView,
           ],
           labels: [
-            (.play, viewModel.appLocale.recordString),
-            (.history, viewModel.appLocale.historyString),
-            (.settings, viewModel.appLocale.settingsString),
+            (.play, { $0.playString }),
+            (.history, { $0.historyString }),
+            (.settings, { $0.settingsString }),
           ]
         )
         .ignoresSafeArea()
       }
       .ignoresSafeArea()
       .environment(\.geometry, Geometry(size: geometry.size, safeAreaInsets: geometry.safeAreaInsets))
-      .environment(\.appLocale, viewModel.appLocale)
-      .environment(\.theme, viewModel.theme)
-      .onChange(of: colorScheme) { newColorScheme in
-        viewModel.systemColorSchemeChanged(to: newColorScheme)
-      }
     }
   }
 }

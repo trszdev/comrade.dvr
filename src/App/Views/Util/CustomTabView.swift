@@ -2,8 +2,9 @@ import SwiftUI
 
 struct CustomTabView: UIViewControllerRepresentable {
   let views: [AnyView]
-  @State var labels: [(SFSymbol, String)]
+  let labels: [(SFSymbol, (AppLocale) -> String)]
   @Environment(\.theme) var theme: Theme
+  @Environment(\.appLocale) var appLocale: AppLocale
 
   func updateUIViewController(_ uiViewController: UITabBarController, context: Context) {
     uiViewController.tabBar.barTintColor = UIColor(theme.mainBackgroundColor)
@@ -12,7 +13,7 @@ struct CustomTabView: UIViewControllerRepresentable {
     let vcs = uiViewController.viewControllers ?? []
     for (tag, (hostingVc, (sfSymbol, text))) in zip(vcs, labels).enumerated() {
       let image = UIImage(systemName: sfSymbol.rawValue)
-      let tabBarItem = UITabBarItem(title: text, image: image, tag: tag)
+      let tabBarItem = UITabBarItem(title: text(appLocale), image: image, tag: tag)
       hostingVc.tabBarItem = tabBarItem
     }
   }

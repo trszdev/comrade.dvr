@@ -5,20 +5,21 @@ final class UserDefaultsSetting<Value: SettingValue>: Setting {
   init(key: String, userDefaults: UserDefaults, value: Value) {
     self.key = key
     self.userDefaults = userDefaults
-    self.value = userDefaults.object(Value.self, key: key) ?? value
-    self.currentValueSubject = CurrentValueSubject<Value, Never>(value)
+    let storedValueOrDefault = userDefaults.object(Value.self, key: key) ?? value
+    self.currentValueSubject = CurrentValueSubject<Value, Never>(storedValueOrDefault)
   }
 
-  private(set) var value: Value
+  var value: Value {
+    currentValueSubject.value
+  }
 
   var publisher: AnyPublisher<Value, Never> {
     currentValueSubject.eraseToAnyPublisher()
   }
 
   func update(newValue: Value) throws {
-    let options = try value.jsonData()
-    value = newValue
-    userDefaults.set(options, forKey: key)
+    let encoded = try newValue.jsonData()
+    userDefaults.set(encoded, forKey: key)
     currentValueSubject.send(newValue)
   }
 
@@ -29,7 +30,7 @@ final class UserDefaultsSetting<Value: SettingValue>: Setting {
 
 private extension UserDefaults {
   func object<Value: SettingValue>(_ type: Value.Type, key: String) -> Value? {
-    guard let object = data(forKey: key) else { return nil }
-    return try? object.decodeJson(type)
+    guard let data = data(forKey: key) else { return nil }
+    return try? data.decodeJson(type)
   }
 }
