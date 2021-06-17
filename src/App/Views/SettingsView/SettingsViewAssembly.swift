@@ -23,7 +23,7 @@ struct SettingsViewAssembly: AKAssembly {
   private func registerSetting<Value: SettingValue>(container: AKContainer, _ valueType: Value.Type) {
     container.singleton.autoregister(construct: SettingsCellViewModelImpl<Value>.init(setting:))
     container.transient.autoregister(
-      construct: SettingsPickerCellViewBuilder<Value>.init(viewModel:modalViewPresenter:)
+      construct: SettingsPickerCellViewBuilder<Value>.init(viewModel:tablePickerCellViewBuilder:)
     )
   }
 }

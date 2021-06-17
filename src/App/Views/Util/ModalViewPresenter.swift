@@ -1,32 +1,75 @@
 import SwiftUI
+import Combine
 
 protocol ModalViewPresenter: ViewPresenter {
+  var submitPublisher: AnyPublisher<Void, Never> { get }
+  var cancelPublisher: AnyPublisher<Void, Never> { get }
+  func updateModal()
 }
 
-struct ModalViewPresenterImpl: ModalViewPresenter {
+final class ModalViewPresenterImpl: ModalViewPresenter {
   func presentView<Content>(animated: Bool, @ViewBuilder content: @escaping () -> Content) where Content: View {
-    guard let modalView = content() as? ModalView else { return }
+    let observableUnit = ObservableUnit()
+    let modalView = ModalView(
+      onSubmit: onSubmit,
+      onCancel: onCancel,
+      observableUnit: observableUnit,
+      content: content
+    )
     let hostingVc = UIHostingController(rootView: modalView)
     hostingVc.view.backgroundColor = .clear
     hostingVc.modalPresentationStyle = .overCurrentContext
-    modalView.hostingVc.value = hostingVc
     guard let topViewController = UIApplication.shared.windows.first?.topViewController else { return }
+    self.hostingVc = hostingVc
+    self.observableUnit = observableUnit
     topViewController.present(hostingVc, animated: false, completion: nil)
   }
 
   func presentViewController(animated: Bool, viewController: UIViewController) {
     notImplemented()
   }
+
+  var submitPublisher: AnyPublisher<Void, Never> { submitPublisherInternal.eraseToAnyPublisher() }
+  var cancelPublisher: AnyPublisher<Void, Never> { cancelPublisherInternal.eraseToAnyPublisher() }
+
+  func updateModal() {
+    observableUnit?.update()
+  }
+
+  private func onSubmit() {
+    submitPublisherInternal.send()
+    dismissVc()
+  }
+
+  private func onCancel() {
+    cancelPublisherInternal.send()
+    dismissVc()
+  }
+
+  private func dismissVc() {
+    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(250)) { [hostingVc] in
+      hostingVc?.dismiss(animated: false, completion: nil)
+    }
+  }
+
+  private let submitPublisherInternal = PassthroughSubject<Void, Never>()
+  private let cancelPublisherInternal = PassthroughSubject<Void, Never>()
+  private weak var hostingVc: UIViewController?
+  private weak var observableUnit: ObservableUnit?
 }
 
 struct ModalView: View {
   init<Content: View>(
     isVisible: Bool = false,
     onSubmit: @escaping () -> Void = {},
-    @ViewBuilder content: () -> Content
+    onCancel: @escaping () -> Void = {},
+    observableUnit: ObservableUnit = ObservableUnit(),
+    @ViewBuilder content: @escaping () -> Content
   ) {
-    self.content = content().eraseToAnyView()
     self.onSubmit = onSubmit
+    self.onCancel = onCancel
+    self._observableUnit = StateObject(wrappedValue: observableUnit)
+    self.content = { content().eraseToAnyView() }
     self.opacity = isVisible ? 1 : 0
     self.isVisible = isVisible
   }
@@ -56,10 +99,13 @@ struct ModalView: View {
 
   private var modalBody: some View {
     VStack(spacing: 0) {
-      content
+      content()
       dividerView
       HStack(spacing: 0) {
-        buttonView(text: Text(appLocale.cancelString).bold(), action: close)
+        buttonView(text: Text(appLocale.cancelString).bold(), action: {
+          self.close()
+          self.onCancel()
+        })
         dividerView
         buttonView(text: Text(appLocale.okString), action: {
           self.close()
@@ -91,9 +137,6 @@ struct ModalView: View {
       opacity = 0
       scaleMultiplier = 1
     }
-    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(250)) {
-      self.hostingVc.value?.dismiss(animated: false, completion: nil)
-    }
   }
 
   private func buttonView(text: Text, action: @escaping () -> Void) -> some View {
@@ -101,12 +144,13 @@ struct ModalView: View {
       .buttonStyle(ModalViewButtonStyle(isDark: isDark))
   }
 
-  fileprivate let hostingVc = WeakRef<UIViewController>()
+  @StateObject private var observableUnit: ObservableUnit
   @State private var isVisible = false
   @State private var opacity = 1.0
   @State private var scaleMultiplier: CGFloat = 1.0
-  private let content: AnyView
+  private let content: () -> AnyView
   private let onSubmit: () -> Void
+  private let onCancel: () -> Void
 }
 
 private extension VisualEffectView {

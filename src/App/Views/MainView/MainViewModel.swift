@@ -10,10 +10,12 @@ protocol MainViewModel {
 final class MainViewModelImpl: MainViewModel {
   init(
     navigationController: UINavigationController,
-    settingsViewBuilder: SettingsView.Builder
+    settingsViewBuilder: SettingsView.Builder,
+    configureCameraView: ConfigureCameraView
   ) {
     self.navigationController = navigationController
     self.settingsView = settingsViewBuilder.makeView()
+    self.configureCameraView = configureCameraView
   }
 
   var startView: AnyView {
@@ -23,12 +25,9 @@ final class MainViewModelImpl: MainViewModel {
           Color.red.ignoresSafeArea()
         }
       },
-      presentConfigureDeviceScreenStub: { [navigationController] device in
+      presentConfigureDeviceScreenStub: { [navigationController, configureCameraView] _ in
         navigationController?.presentView {
-          ZStack {
-            Color.purple.ignoresSafeArea()
-            Text(device.name)
-          }
+          configureCameraView
         }
       })
     return StartView(viewModel: startViewModel).eraseToAnyView()
@@ -40,5 +39,6 @@ final class MainViewModelImpl: MainViewModel {
 
   let settingsView: AnyView
 
+  private let configureCameraView: ConfigureCameraView
   private weak var navigationController: UINavigationController?
 }

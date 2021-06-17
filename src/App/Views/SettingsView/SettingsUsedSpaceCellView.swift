@@ -4,9 +4,9 @@ struct SettingsUsedSpaceCellView: View {
   @Environment(\.appLocale) var appLocale: AppLocale
 
   var body: some View {
-    SettingsCellView(
-      text: appLocale.usedSpaceString,
-      rightText: "1,2Gb",
+    TableCellView(
+      centerView: Text(appLocale.usedSpaceString).eraseToAnyView(),
+      rightView: Text("1,2Gb").eraseToAnyView(),
       sfSymbol: .usedSpace,
       separator: [],
       isDisabled: true

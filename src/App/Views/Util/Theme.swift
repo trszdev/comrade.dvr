@@ -27,7 +27,7 @@ struct WhiteTheme: Theme {
   let startIcon = Image("StartIcon")
   let startHeaderBackgroundColor = Color.white
   let destructiveTextColor = Color.red
-  let disabledTextColor = Color("TextColor").opacity(0.6)
+  let disabledTextColor = Color("DisabledTextColor")
 }
 
 struct DarkTheme: Theme {
@@ -39,5 +39,5 @@ struct DarkTheme: Theme {
   let startIcon = Image("StartIconDark")
   let startHeaderBackgroundColor = Color.black
   let destructiveTextColor = Color.red
-  let disabledTextColor = Color("TextColorDark").opacity(0.4)
+  let disabledTextColor = Color("DisabledTextColorDark")
 }

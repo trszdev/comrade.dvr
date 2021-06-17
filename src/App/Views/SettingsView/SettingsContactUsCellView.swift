@@ -14,12 +14,12 @@ struct SettingsContactUsCellView: View {
   @Environment(\.appLocale) var appLocale: AppLocale
 
   var body: some View {
-    SettingsCellView(
-      text: appLocale.contactUsString,
-      rightText: appLocale.appContactEmail,
-      sfSymbol: .contactUs,
-      onTap: onTap
+    TableCellView(
+      centerView: Text(appLocale.contactUsString).eraseToAnyView(),
+      rightView: Text(appLocale.appContactEmail).eraseToAnyView(),
+      sfSymbol: .contactUs
     )
+    .onTapGesture(perform: onTap)
   }
 
   private func onTap() {

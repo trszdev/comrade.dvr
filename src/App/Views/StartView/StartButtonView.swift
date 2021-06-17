@@ -15,7 +15,7 @@ struct StartButtonView: View {
           .font(.title3)
           .minimumScaleFactor(0.5)
       }
-      .simultaneousGesture(HoverGesture.bind($isHovered))
+      .touchdownOverlay(isHovered: $isHovered)
       .defaultAnimation
     }
   }

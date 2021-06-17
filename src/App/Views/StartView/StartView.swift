@@ -9,8 +9,10 @@ struct StartView<ViewModel: StartViewModel>: View {
     ZStack {
       theme.mainBackgroundColor.ignoresSafeArea()
       VStack(spacing: 0) {
-        CustomScrollView {
-          devicesView()
+        GeometryReader { geometry in
+          ScrollView {
+            devicesView(viewHeight: geometry.size.height)
+          }
         }
         startHeaderView()
           .background(theme.startHeaderBackgroundColor.ignoresSafeArea())
@@ -18,18 +20,15 @@ struct StartView<ViewModel: StartViewModel>: View {
     }
   }
 
-  func devicesView() -> some View {
-    let columns = [GridItem(.adaptive(minimum: 100, maximum: 200), spacing: 10)]
+  func devicesView(viewHeight: CGFloat) -> some View {
+    let columns = [GridItem(.adaptive(minimum: min(viewHeight, 120), maximum: 300))]
     return LazyVGrid(columns: columns, alignment: .center) {
       ForEach(viewModel.devices) { device in
-        StartDeviceView(device: device) {
-          viewModel.presentConfigureDeviceScreen(for: device)
-        }
-      }
-      if viewModel.canAddNewDevice {
-        StartDeviceAddView {
-          viewModel.presentAddNewDeviceScreen()
-        }
+        StartDeviceView(viewModel: device)
+          .padding(7)
+          .simultaneousGesture(TapGesture.from {
+            viewModel.presentConfigureDeviceScreen(for: device)
+          })
       }
     }
     .padding(10)
@@ -57,7 +56,7 @@ struct StartView<ViewModel: StartViewModel>: View {
 
 struct StartViewPreview: PreviewProvider {
   static var previews: some View {
-    let viewModel = StartViewModelImpl(devices: [true, false, false], canAddNewDevice: true)
+    let viewModel = StartViewModelImpl(devices: [true, false, false])
     StartView(viewModel: viewModel)
       .environment(\.theme, DarkTheme())
   }

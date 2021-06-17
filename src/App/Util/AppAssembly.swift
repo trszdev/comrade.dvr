@@ -18,6 +18,8 @@ struct AppAssembly: AKAssembly {
     MainViewAssembly(),
     UtilAssembly(),
     RootViewAssembly(),
+    TableViewAssembly(),
+    ConfigureDeviceViewAssembly(),
   ]
 
   private let previewAssemblies = [

@@ -34,16 +34,6 @@ struct HistoryView: View {
 
   func historyView(bottomPadding: CGFloat) -> some View {
     HistoryTableView()
-//    CustomScrollView {
-//      LazyVStack(spacing: 0) {
-//        ForEach(items) { item in
-//          HistoryCellView(date: item.title, description: item.description)
-//        }
-//      }
-//      .edgesIgnoringSafeArea(.bottom)
-//      // .padding(.bottom, bottomPadding)
-//    }
-//    .edgesIgnoringSafeArea(.bottom)
   }
 
   func playerView(height: CGFloat) -> some View {

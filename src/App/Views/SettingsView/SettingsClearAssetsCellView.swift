@@ -5,9 +5,9 @@ struct SettingsClearAssetsCellView: View {
 
   var body: some View {
     SettingsCellButtonView(text: appLocale.clearAssetsString)
-      .simultaneousGesture(TapGesture.from {
+      .onTapGesture {
         showAlert = true
-      })
+      }
       .alert(isPresented: $showAlert, content: {
         Alert(
           title: Text(appLocale.warningString),
