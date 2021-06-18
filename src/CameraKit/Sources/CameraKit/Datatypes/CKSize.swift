@@ -1,4 +1,4 @@
-public struct CKSize: Hashable {
+public struct CKSize: Hashable, Codable {
   public let width: Int
   public let height: Int
 

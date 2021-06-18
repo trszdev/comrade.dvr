@@ -22,11 +22,14 @@ struct AppAssembly: AKAssembly {
     ConfigureDeviceViewAssembly(),
   ]
 
-  private let previewAssemblies = [
+  private let previewAssemblies: [AKAssembly]  = [
     PreviewSettingsAssembly(),
+    DevicesAssembly(isPreview: true),
   ]
 
-  private let releaseAssemblies = [
+  private let releaseAssemblies: [AKAssembly]  = [
     SettingsAssembly(),
+    // TODO
+    DevicesAssembly(isPreview: true),
   ]
 }

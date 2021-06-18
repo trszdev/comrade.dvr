@@ -1,4 +1,4 @@
-public enum CKOrientation {
+public enum CKOrientation: String, Codable {
   case landscapeRight
   case landscapeLeft
   case portrait

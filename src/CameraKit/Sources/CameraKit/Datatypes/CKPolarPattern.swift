@@ -1,4 +1,4 @@
-public enum CKPolarPattern: Hashable {
+public enum CKPolarPattern: String, Hashable, Codable {
   case unspecified
   case cardioid
   case stereo

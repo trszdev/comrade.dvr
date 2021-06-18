@@ -20,18 +20,16 @@ final class MainViewController: UIViewController {
       responsivenessView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
       responsivenessView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
     ])
-    DispatchQueue.main.asyncAfter(deadline: .now()) {
-      CKAVManager.shared.sessionMakerPublisher
-        .receive(on: DispatchQueue.main)
-        .map { [weak self] sessionMaker in
-          self?.startSession(sessionMaker: sessionMaker)
-        }
-        .mapError { [weak self] (error: CKPermissionError) -> CKPermissionError in
-          self?.alert(message: error.localizedDescription)
-          return error
-        }
-        .sinkAndStore()
-    }
+    CKAVManager.shared.sessionMakerPublisher
+      .receive(on: DispatchQueue.main)
+      .map { [weak self] sessionMaker in
+        self?.startSession(sessionMaker: sessionMaker)
+      }
+      .mapError { [weak self] (error: CKPermissionError) -> CKPermissionError in
+        self?.alert(message: error.localizedDescription)
+        return error
+      }
+      .sinkAndStore()
   }
 
   // swiftlint:disable function_parameter_count
@@ -72,18 +70,22 @@ final class MainViewController: UIViewController {
     }
   }
 
+  private var adjustableConfiguration: CKAdjustableConfiguration {
+    CKAVManager.shared.adjustableConfiguration
+  }
+
   private func startSession(sessionMaker: CKSessionMaker) {
-    let backCameraId = sessionMaker.adjustableConfiguration.camera(.back)?.id
-    let frontCameraId = sessionMaker.adjustableConfiguration.camera(.front)?.id
-    let microphoneId = sessionMaker.adjustableConfiguration.microphone?.id
+    let backCameraId = adjustableConfiguration.camera(.back)?.id
+    let frontCameraId = adjustableConfiguration.camera(.front)?.id
+    let microphoneId = CKAVManager.shared.adjustableConfiguration.microphone?.id
     print("Available configuration:")
-    dump(sessionMaker.adjustableConfiguration.ui)
+    dump(adjustableConfiguration.ui)
     guard backCameraId != nil, frontCameraId != nil else {
       alert(message: "No default cameras found")
       return
     }
     let alertVc = UIAlertController(title: "Choose preset", message: nil, preferredStyle: .alert)
-    let isMulticamAvailable = sessionMaker.adjustableConfiguration.ui.isMulticamAvailable
+    let isMulticamAvailable = adjustableConfiguration.ui.isMulticamAvailable
     addSessionTemplates(
       sessionMaker: sessionMaker,
       alertVc: alertVc,

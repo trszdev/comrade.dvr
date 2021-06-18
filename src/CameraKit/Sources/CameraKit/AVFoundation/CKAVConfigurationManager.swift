@@ -21,7 +21,7 @@ struct CKAVConfigurationManager: CKConfigurationManager {
   var adjustableConfiguration: CKAdjustableConfiguration {
     configurationMapper.currentConfiguration
   }
-  
+
   let configurationMapper: CKAVConfigurationMapper
   let configurationPickerBuilder: CKAVNearestConfigurationPicker.Builder
   let shouldPickNearest: Bool

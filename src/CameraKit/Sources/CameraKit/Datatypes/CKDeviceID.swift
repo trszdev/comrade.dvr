@@ -1,3 +1,3 @@
-public struct CKDeviceID: Hashable {
+public struct CKDeviceID: Hashable, Codable {
   public let value: String
 }

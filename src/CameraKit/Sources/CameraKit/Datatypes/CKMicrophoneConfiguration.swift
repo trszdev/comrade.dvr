@@ -1,6 +1,6 @@
 import Foundation
 
-public struct CKMicrophoneConfiguration: Identifiable, Hashable {
+public struct CKMicrophoneConfiguration: Identifiable, Hashable, Codable {
   public let id: CKDeviceConfigurationID
   public let orientation: CKOrientation
   public let location: CKDeviceLocation

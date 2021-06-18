@@ -1,6 +1,6 @@
 import Foundation
 
-public struct CKCameraConfiguration: Identifiable, Hashable {
+public struct CKCameraConfiguration: Identifiable, Hashable, Codable {
   public let id: CKDeviceConfigurationID
   public let size: CKSize
   public let zoom: Double
