@@ -11,6 +11,10 @@ struct CKAVNearestConfigurationPicker: CKNearestConfigurationPicker {
         multiCameraPicker: multiCameraPickerBuilder.makePicker(adjustableConfiguration: adjustableConfiguration)
       )
     }
+
+    func identityPicker() -> CKNearestConfigurationPicker {
+      CKIdentityConfigurationPicker()
+    }
   }
 
   let microphonePicker: CKNearestConfigurationPicker
@@ -26,5 +30,11 @@ struct CKAVNearestConfigurationPicker: CKNearestConfigurationPicker {
     }
     conf = microphonePicker.nearestConfiguration(for: conf)
     return conf
+  }
+}
+
+private struct CKIdentityConfigurationPicker: CKNearestConfigurationPicker {
+  func nearestConfiguration(for configuration: CKConfiguration) -> CKConfiguration {
+    configuration
   }
 }

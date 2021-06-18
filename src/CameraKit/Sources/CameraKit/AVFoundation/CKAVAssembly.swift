@@ -9,20 +9,13 @@ public struct CKAVAssembly: AKAssembly {
     container.singleton.autoregister(value: AVAudioSession.sharedInstance())
     container.transient.autoregister(construct: CKAVMicrophoneRecorderImpl.Builder.init(mediaChunkMaker:))
     container.transient.autoregister(construct: CKAVMicrophoneSession.Builder.init(mapper:session:locator:))
-    container.transient.autoregister(construct: CKAVManager.Builder.init(locator:))
     container.transient.autoregister(CKAVDiscovery.self, construct: CKAVDiscoveryImpl.init)
     container.transient.autoregister(
       CKAVConfigurationMapper.self,
       construct: CKAVConfigurationMapperImpl.init(discovery:)
     )
     container.transient.autoregister(
-      CKSessionMaker.self,
-      construct: CKAVSessionMaker.init(
-        configurationMapper:
-        cameraSessionBuilder:
-        microphoneSessionBuilder:
-        nearestConfigurationPickerBuilder:
-      )
+      construct: CKAVSessionMaker.Builder.init(cameraSessionBuilder:microphoneSessionBuilder:)
     )
     container.transient.autoregister(
       CKMediaChunkMaker.self,
@@ -40,6 +33,16 @@ public struct CKAVAssembly: AKAssembly {
     container.transient.autoregister(
       CKAVMulticamSetsProvider.self,
       construct: CKAVMulticamSetsProviderImpl.init(mapper:discovery:)
+    )
+    container.transient.autoregister(
+      construct: CKAVConfigurationManager.Builder.init(configurationMapper:configurationPickerBuilder:)
+    )
+    container.transient.autoregister(
+      CKManagerBuilder.self,
+      construct: CKAVManager.Builder.init(configurationManagerBuilder:sessionMakerBuilder:)
+    )
+    container.transient.autoregister(
+      construct: CKAVManager.Builder.init(configurationManagerBuilder:sessionMakerBuilder:)
     )
   }
 }

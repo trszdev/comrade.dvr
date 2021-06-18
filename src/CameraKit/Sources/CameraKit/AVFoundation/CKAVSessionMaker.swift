@@ -1,16 +1,20 @@
 struct CKAVSessionMaker: CKSessionMaker {
-  let configurationMapper: CKAVConfigurationMapper
+  struct Builder {
+    let cameraSessionBuilder: CKAVCameraSession.Builder
+    let microphoneSessionBuilder: CKAVMicrophoneSession.Builder
+
+    func makeSessionMaker(configurationPicker: CKNearestConfigurationPicker) -> CKSessionMaker {
+      CKAVSessionMaker(
+        cameraSessionBuilder: cameraSessionBuilder,
+        microphoneSessionBuilder: microphoneSessionBuilder,
+        configurationPicker: configurationPicker
+      )
+    }
+  }
+
   let cameraSessionBuilder: CKAVCameraSession.Builder
   let microphoneSessionBuilder: CKAVMicrophoneSession.Builder
-  let nearestConfigurationPickerBuilder: CKAVNearestConfigurationPicker.Builder
-
-  var configurationPicker: CKNearestConfigurationPicker {
-    nearestConfigurationPickerBuilder.makePicker(adjustableConfiguration: adjustableConfiguration)
-  }
-
-  var adjustableConfiguration: CKAdjustableConfiguration {
-    configurationMapper.currentConfiguration
-  }
+  let configurationPicker: CKNearestConfigurationPicker
 
   func makeSession(configuration: CKConfiguration) throws -> CKSession {
     let nearestConf = configurationPicker.nearestConfiguration(for: configuration)

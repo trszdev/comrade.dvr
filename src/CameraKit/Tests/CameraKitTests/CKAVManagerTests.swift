@@ -7,10 +7,10 @@ final class CKAVManagerTests: CKManagerTests {
   override var isAbstractTestCase: Bool { false }
 
   override func makeManager() -> CKManager {
-    avLocator.resolve(CKAVManager.Builder.self).makeManager(infoPlistBundle: nil)
+    avLocator.resolve(CKManagerBuilder.self).makeManager(infoPlistBundle: nil, shouldPickNearest: true)
   }
 
   override func makeManager(mock: CKPermissionManager) -> CKManager {
-    CKAVManager(permissionManager: mock, locator: avLocator)
+    avLocator.resolve(CKAVManager.Builder.self).makeManager(mock: mock)
   }
 }

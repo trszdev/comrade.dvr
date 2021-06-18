@@ -4,22 +4,40 @@ import Foundation
 import AVFoundation
 import AutocontainerKit
 
-public final class CKAVManager: CKManager {
-  public struct Builder {
-    public let locator: AKLocator
+public struct CKAVManager: CKManager {
+  struct Builder: CKManagerBuilder {
+    let configurationManagerBuilder: CKAVConfigurationManager.Builder
+    let sessionMakerBuilder: CKAVSessionMaker.Builder
 
-    public init(locator: AKLocator) {
-      self.locator = locator
+    func makeManager(infoPlistBundle: Bundle?, shouldPickNearest: Bool) -> CKManager {
+      makeManager(
+        permissionManager: CKAVPermissionManager(infoPlistBundle: infoPlistBundle),
+        shouldPickNearest: shouldPickNearest
+      )
     }
 
-    func makeManager(infoPlistBundle: Bundle?) -> CKAVManager {
-      CKAVManager(permissionManager: CKAVPermissionManager(infoPlistBundle: infoPlistBundle), locator: locator)
+    func makeManager(mock: CKPermissionManager) -> CKManager {
+      makeManager(permissionManager: mock, shouldPickNearest: true)
+    }
+
+    private func makeManager(permissionManager: CKPermissionManager, shouldPickNearest: Bool) -> CKManager {
+      let manager = configurationManagerBuilder.makeManager(shouldPickNearest: shouldPickNearest)
+      return CKAVManager(
+        permissionManager: permissionManager,
+        configurationManager: manager,
+        sessionMaker: sessionMakerBuilder.makeSessionMaker(configurationPicker: manager.configurationPicker)
+      )
     }
   }
 
-  public init(permissionManager: CKPermissionManager, locator: AKLocator) {
+  public init(
+    permissionManager: CKPermissionManager,
+    configurationManager: CKConfigurationManager,
+    sessionMaker: CKSessionMaker
+  ) {
     self.permissionManager = permissionManager
-    self.locator = locator
+    self.configurationManager = configurationManager
+    self.sessionMaker = sessionMaker
   }
 
   public func permissionStatus(for mediaType: CKMediaType) -> AnyPublisher<Bool?, Never> {
@@ -40,18 +58,24 @@ public final class CKAVManager: CKManager {
       .eraseToAnyPublisher()
   }
 
+  public var configurationPicker: CKNearestConfigurationPicker { configurationManager.configurationPicker }
+  public var adjustableConfiguration: CKAdjustableConfiguration { configurationManager.adjustableConfiguration }
+
   public var sessionMakerPublisher: AnyPublisher<CKSessionMaker, CKPermissionError> {
     requestPermission(for: .audio)
       .append(requestPermission(for: .video))
       .collect()
-      .map { _ in self.locator.resolve(CKSessionMaker.self) }
+      .map { _ in sessionMaker }
       .eraseToAnyPublisher()
   }
 
-  public static let shared: CKAVManager = {
-    CKAVAssembly().hashContainer.resolve(Builder.self).makeManager(infoPlistBundle: .main)
+  public static let shared: CKManager = {
+    CKAVAssembly().hashContainer
+      .resolve(CKManagerBuilder.self)
+      .makeManager(infoPlistBundle: .main, shouldPickNearest: true)
   }()
 
   private let permissionManager: CKPermissionManager
-  private let locator: AKLocator
+  private let configurationManager: CKConfigurationManager
+  private let sessionMaker: CKSessionMaker
 }
