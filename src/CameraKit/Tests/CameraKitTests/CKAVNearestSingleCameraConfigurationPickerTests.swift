@@ -33,7 +33,7 @@ final class CKAVNearestSingleCameraConfigurationPickerTests: CKNearestConfigurat
             videoGravity: .resize,
             videoQuality: .medium,
             useH265: true,
-            bitrate: 1000
+            bitrate: CKBitrate(bitsPerSecond: 1000)
           )
         ),
       ],
@@ -57,7 +57,7 @@ final class CKAVNearestSingleCameraConfigurationPickerTests: CKNearestConfigurat
             videoGravity: .resize,
             videoQuality: .medium,
             useH265: true,
-            bitrate: 1000
+            bitrate: CKBitrate(bitsPerSecond: 1000)
           )
         ),
       ],
@@ -82,7 +82,7 @@ final class CKAVNearestSingleCameraConfigurationPickerTests: CKNearestConfigurat
             videoGravity: .resize,
             videoQuality: .medium,
             useH265: true,
-            bitrate: 1000
+            bitrate: CKBitrate(bitsPerSecond: 1000)
           )
         ),
       ],

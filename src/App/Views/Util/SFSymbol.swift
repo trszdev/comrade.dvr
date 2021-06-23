@@ -30,6 +30,7 @@ enum SFSymbol: String {
   case hare
   case ear
   case polarPattern = "timelapse"
+  case deviceLocation = "skew"
 }
 
 extension Image {

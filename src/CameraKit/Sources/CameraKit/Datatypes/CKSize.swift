@@ -6,4 +6,8 @@ public struct CKSize: Hashable, Codable {
     self.width = width
     self.height = height
   }
+
+  public var scalar: Int {
+    width * height
+  }
 }

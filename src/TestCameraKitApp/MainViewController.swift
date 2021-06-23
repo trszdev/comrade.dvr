@@ -179,7 +179,7 @@ final class MainViewController: UIViewController {
     videoGravity: .resizeAspect,
     videoQuality: .max,
     useH265: true,
-    bitrate: 6_000_000
+    bitrate: CKBitrate(bitsPerSecond: 6_000_000)
   )
 
   private lazy var sampleMicrophoneConfiguration = CKMicrophoneConfiguration(

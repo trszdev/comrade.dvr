@@ -36,3 +36,39 @@
 "WARNING" = "Внимание";
 "CLEAR_ALL_ASSETS_ASK" = "Вы действительно хотите удалить все записи?";
 "CLEAR_ALL_ASSETS_CONFIRM" = "Да, удалить все записи";
+
+"DEVICE_ENABLED" = "Использовать устройство";
+"RESOLUTION" = "Разрешение";
+"FPS" = "Частота кадров";
+"QUALITY" = "Качество";
+"USE_H265" = "Использовать кодек H.265";
+"BITRATE" = "Битрейт";
+"ZOOM" = "Оптическое масштабирование";
+"FIELD_OF_VIEW" = "Угол обзора";
+"AUTOFOCUS" = "Автофокус";
+
+"QUALITY_MIN" = "Минимальное";
+"QUALITY_LOW" = "Низкое";
+"QUALITY_MEDIUM" = "Среднее";
+"QUALITY_HIGH" = "Высокое";
+"QUALITY_MAX" = "Максимальное";
+
+"AUTOFOCUS_NONE" = "Отсутствует";
+"AUTOFOCUS_CONTRAST" = "Контрастный";
+"AUTOFOCUS_PHASE" = "Фазовый";
+
+"DEVICE_LOCATION" = "Расположение";
+"DEVICE_LOCATION_BACK" = "Сзади";
+"DEVICE_LOCATION_BOTTOM" = "Снизу";
+"DEVICE_LOCATION_FRONT" = "Спереди";
+"DEVICE_LOCATION_LEFT" = "Слева";
+"DEVICE_LOCATION_RIGHT" = "Справа";
+"DEVICE_LOCATION_TOP" = "Сверху";
+"DEVICE_LOCATION_UNSPECIFIED" = "По умолчанию";
+
+"POLAR_PATTERN" = "Полярная диаграмма";
+"POLAR_PATTERN_CARDIOID" = "Кардиоид";
+"POLAR_PATTERN_OMNIDIRECTIONAL" = "Всенаправленная";
+"POLAR_PATTERN_STEREO" = "Стерео";
+"POLAR_PATTERN_SUBCARDIOID" = "Субкардиоид";
+"POLAR_PATTERN_UNSPECIFIED" = "По умолчанию";

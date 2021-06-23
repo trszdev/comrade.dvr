@@ -84,12 +84,7 @@ struct TableSliderCellView<Value: BinaryFloatingPoint>: View where Value.Stride:
     VStack(spacing: 0) {
       Text(title(appLocale))
       Text(rightText(appLocale, modalSelected.value)).padding(.top, 18)
-      HStack {
-        Text(String(describing: range.lowerBound))
-        Slider(value: $modalSelected.value, in: range)
-        Text(String(describing: range.upperBound))
-      }
-      .padding(.vertical, 10)
+      Slider(value: $modalSelected.value, in: range).padding(.vertical, 10)
     }
     .padding(.top, 18)
     .padding(.horizontal, 10)

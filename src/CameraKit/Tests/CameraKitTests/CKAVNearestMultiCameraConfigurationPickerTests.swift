@@ -33,7 +33,7 @@ final class CKAVNearestMultiCameraConfigurationPickerTests: CKNearestConfigurati
             videoGravity: .resize,
             videoQuality: .medium,
             useH265: true,
-            bitrate: 1000
+            bitrate: CKBitrate(bitsPerSecond: 1000)
           )
         ),
       ],
@@ -57,7 +57,7 @@ final class CKAVNearestMultiCameraConfigurationPickerTests: CKNearestConfigurati
             videoGravity: .resize,
             videoQuality: .medium,
             useH265: true,
-            bitrate: 1000
+            bitrate: CKBitrate(bitsPerSecond: 1000)
           )
         ),
       ],
@@ -82,7 +82,7 @@ final class CKAVNearestMultiCameraConfigurationPickerTests: CKNearestConfigurati
             videoGravity: .resize,
             videoQuality: .medium,
             useH265: true,
-            bitrate: 1000
+            bitrate: CKBitrate(bitsPerSecond: 1000)
           )
         ),
       ],
@@ -148,7 +148,7 @@ final class CKAVNearestMultiCameraConfigurationPickerTests: CKNearestConfigurati
             videoGravity: .resize,
             videoQuality: .medium,
             useH265: true,
-            bitrate: 1000
+            bitrate: CKBitrate(bitsPerSecond: 1000)
           )
         ),
         CKDevice(
@@ -165,7 +165,7 @@ final class CKAVNearestMultiCameraConfigurationPickerTests: CKNearestConfigurati
             videoGravity: .resize,
             videoQuality: .medium,
             useH265: true,
-            bitrate: 1000
+            bitrate: CKBitrate(bitsPerSecond: 1000)
           )
         ),
       ],

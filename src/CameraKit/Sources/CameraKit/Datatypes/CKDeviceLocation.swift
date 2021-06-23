@@ -1,4 +1,4 @@
-public enum CKDeviceLocation: String, Hashable, Codable {
+public enum CKDeviceLocation: String, Hashable, Codable, CaseIterable {
   case unspecified
   case top
   case bottom

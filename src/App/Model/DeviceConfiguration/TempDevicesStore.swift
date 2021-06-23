@@ -24,7 +24,7 @@ struct TempDevicesStore: DevicesStore {
       videoGravity: .resizeAspectFill,
       videoQuality: .medium,
       useH265: true,
-      bitrate: 30
+      bitrate: CKBitrate(bitsPerSecond: 30)
     )
   }
 
@@ -40,7 +40,7 @@ struct TempDevicesStore: DevicesStore {
       videoGravity: .resizeAspectFill,
       videoQuality: .high,
       useH265: true,
-      bitrate: 30
+      bitrate: CKBitrate(bitsPerSecond: 30)
     )
   }
 

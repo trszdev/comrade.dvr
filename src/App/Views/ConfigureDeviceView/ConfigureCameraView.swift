@@ -1,107 +1,139 @@
 import SwiftUI
+import CameraKit
 
-struct ConfigureCameraView: View {
+struct ConfigureCameraViewBuilder {
   let tablePickerCellViewBuilder: TablePickerCellViewBuilder
   let tableSliderCellViewBuilder: TableSliderCellViewBuilder
+  let configureCameraBitrateCellViewBuilder: ConfigureCameraBitrateCellViewBuilder
+
+  func makeView() -> AnyView {
+    ConfigureCameraView(
+      viewModel: ConfigureCameraViewModelImpl.sample,
+      tablePickerCellViewBuilder: tablePickerCellViewBuilder,
+      tableSliderCellViewBuilder: tableSliderCellViewBuilder,
+      configureCameraBitrateCellViewBuilder: configureCameraBitrateCellViewBuilder
+    )
+    .eraseToAnyView()
+  }
+}
+
+struct ConfigureCameraView<ViewModel: ConfigureCameraViewModel>: View {
+  @Environment(\.appLocale) var appLocale: AppLocale
+  @ObservedObject var viewModel: ViewModel
+  let tablePickerCellViewBuilder: TablePickerCellViewBuilder
+  let tableSliderCellViewBuilder: TableSliderCellViewBuilder
+  let configureCameraBitrateCellViewBuilder: ConfigureCameraBitrateCellViewBuilder
 
   var body: some View {
     TableView(sections: [
       [
-        TableSwitchCellView(isOn: $isEnabled, sfSymbol: .checkmark, text: "Enabled").eraseToAnyView(),
+        TableSwitchCellView(
+          isOn: Binding(get: { viewModel.isEnabled }, set: { viewModel.isEnabled = $0 }),
+          sfSymbol: .checkmark,
+          text: appLocale.deviceEnabledString
+        )
+        .eraseToAnyView(),
       ],
       [
         tablePickerCellViewBuilder.makeView(
-          selected: $size,
-          title: { _ in "Resolution" },
-          rightText: { _, value in value },
+          selected: Binding(get: { viewModel.resolution }, set: { viewModel.resolution = $0 }),
+          title: { $0.resolutionString },
+          rightText: { $0.size($1) },
           sfSymbol: .photo,
-          availableOptions: ["1920x1080", "1920x1080", "1920x1080"],
-          isDisabled: !isEnabled
+          availableOptions: viewModel.adjustableConfiguration.sizes.sorted { $0.scalar > $1.scalar },
+          isDisabled: isDisabled
         )
         .eraseToAnyView(),
         tablePickerCellViewBuilder.makeView(
-          selected: $fps,
-          title: { _ in "FPS" },
-          rightText: { _, value in value },
+          selected: Binding(get: { viewModel.fps }, set: { viewModel.fps = $0 }),
+          title: { $0.fpsString },
+          rightText: { _, value in "\(value)FPS" },
           sfSymbol: .camera,
-          availableOptions: ["60FPS", "30FPS", "90FPS"],
-          isDisabled: !isEnabled
+          availableOptions: viewModel.fpsRange,
+          isDisabled: isDisabled
         )
         .eraseToAnyView(),
         tablePickerCellViewBuilder.makeView(
-          selected: $quality,
-          title: { _ in "Video quality" },
-          rightText: { _, value in value },
+          selected: Binding(get: { viewModel.quality }, set: { viewModel.quality = $0 }),
+          title: { $0.qualityString },
+          rightText: { $0.quality($1) },
           sfSymbol: .eye,
-          availableOptions: ["min", "low", "medium", "high", "max"],
-          isDisabled: !isEnabled
+          availableOptions: CKQuality.allCases,
+          isDisabled: isDisabled
         )
         .eraseToAnyView(),
         TableSwitchCellView(
-          isOn: $useH265,
+          isOn: Binding(get: { viewModel.useH265 }, set: { viewModel.useH265 = $0 }),
           sfSymbol: .video,
-          text: "H.265 Codec",
-          isDisabled: !isEnabled
+          text: appLocale.useH265String,
+          isDisabled: isDisabled
         )
         .eraseToAnyView(),
-        tableSliderCellViewBuilder.makeView(
-          selected: $bitrateKbits,
-          title: { _ in "Bitrate" },
-          rightText: { _, value in "\(value)Kbit/s" },
+        configureCameraBitrateCellViewBuilder.makeView(
+          selected: Binding(get: { viewModel.bitrate }, set: { viewModel.bitrate = $0 }),
+          resolution: viewModel.resolution,
+          title: { $0.bitrateString },
           sfSymbol: .speedometer,
-          range: 0.1...100,
-          isDisabled: !isEnabled
+          isDisabled: isDisabled
         )
         .eraseToAnyView(),
       ],
       [
-        tablePickerCellViewBuilder.makeView(
-          selected: $zoom,
-          title: { _ in "Zoom" },
-          rightText: { _, value in value },
+        tableSliderCellViewBuilder.makeView(
+          selected: Binding(get: { viewModel.zoom }, set: { viewModel.zoom = $0 }),
+          title: { $0.zoomString },
+          rightText: { $0.zoom($1) },
           sfSymbol: .zoom,
-          availableOptions: ["1x", "1.5x", "2x"],
-          isDisabled: !isEnabled
+          range: viewModel.zoomRange,
+          isDisabled: isDisabled
         )
         .eraseToAnyView(),
         tablePickerCellViewBuilder.makeView(
-          selected: $fov,
-          title: { _ in "Field of view" },
-          rightText: { _, value in value },
+          selected: Binding(get: { viewModel.fov }, set: { viewModel.fov = $0 }),
+          title: { $0.fieldOfViewString },
+          rightText: { _, value in "\(value)°" },
           sfSymbol: .fov,
-          availableOptions: ["45deg", "50deg", "90deg"],
-          isDisabled: !isEnabled
+          availableOptions: viewModel.fovRange,
+          isDisabled: isDisabled
         )
         .eraseToAnyView(),
         tablePickerCellViewBuilder.makeView(
-          selected: $autofocus,
-          title: { _ in "Autofocus" },
-          rightText: { _, value in value },
+          selected: Binding(get: { viewModel.autofocus }, set: { viewModel.autofocus = $0 }),
+          title: { $0.autofocusString },
+          rightText: { $0.autofocus($1) },
           sfSymbol: .hare,
-          availableOptions: ["None", "Contrast", "Phase"],
-          isDisabled: !isEnabled
+          availableOptions: CKAutoFocus.allCases,
+          isDisabled: isDisabled
         )
         .eraseToAnyView(),
       ],
     ])
   }
 
-  @State private var size = "1920x1080"
-  @State private var zoom = "1x"
-  @State private var fps = "60FPS"
-  @State private var fov = "45deg"
-  @State private var autofocus = "Contrast"
-  @State private var quality = "min"
-  @State private var useH265 = true
-  @State private var bitrateKbits = 1.0
-  @State private var isEnabled = true
+  private var isDisabled: Bool {
+    !viewModel.isEnabled
+  }
+}
+
+private extension ConfigureCameraViewModel {
+  var fovRange: [Int] {
+    Array(adjustableConfiguration.minFieldOfView...adjustableConfiguration.maxFieldOfView)
+  }
+
+  var fpsRange: [Int] {
+    Array(adjustableConfiguration.minFps...adjustableConfiguration.maxFps)
+  }
+
+  var zoomRange: ClosedRange<Double> {
+    adjustableConfiguration.minZoom...adjustableConfiguration.maxZoom
+  }
 }
 
 #if DEBUG
 
 struct ConfigureCameraViewPreview: PreviewProvider {
   static var previews: some View {
-    locator.resolve(ConfigureCameraView.self)
+    locator.resolve(ConfigureCameraViewBuilder.self).makeView()
   }
 }
 

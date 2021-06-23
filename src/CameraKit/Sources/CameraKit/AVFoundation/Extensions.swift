@@ -124,7 +124,7 @@ extension CKCameraConfiguration {
       AVVideoWidthKey: isLandscape ? size.width : size.height,
       AVVideoHeightKey: isLandscape ? size.height : size.width,
       AVVideoCompressionPropertiesKey: [
-        AVVideoAverageBitRateKey: bitrate,
+        AVVideoAverageBitRateKey: bitrate.bitsPerSecond,
       ],
     ])
     result.expectsMediaDataInRealTime = true

@@ -12,7 +12,7 @@ public struct CKCameraConfiguration: Identifiable, Hashable, Codable {
   public let videoGravity: CKVideoGravity
   public let videoQuality: CKQuality
   public let useH265: Bool
-  public let bitrate: Int
+  public let bitrate: CKBitrate
 
   public init(
     size: CKSize,
@@ -25,7 +25,7 @@ public struct CKCameraConfiguration: Identifiable, Hashable, Codable {
     videoGravity: CKVideoGravity,
     videoQuality: CKQuality,
     useH265: Bool,
-    bitrate: Int
+    bitrate: CKBitrate
   ) {
     self.id = CKDeviceConfigurationID(value: UUID().uuidString)
     self.size = size
@@ -38,7 +38,7 @@ public struct CKCameraConfiguration: Identifiable, Hashable, Codable {
     self.videoGravity = videoGravity
     self.videoQuality = videoQuality
     self.useH265 = useH265
-    self.bitrate = max(bitrate, 1)
+    self.bitrate = bitrate
   }
 
   init(
@@ -53,7 +53,7 @@ public struct CKCameraConfiguration: Identifiable, Hashable, Codable {
     videoGravity: CKVideoGravity,
     videoQuality: CKQuality,
     useH265: Bool,
-    bitrate: Int
+    bitrate: CKBitrate
   ) {
     self.id = id
     self.size = size
@@ -66,6 +66,6 @@ public struct CKCameraConfiguration: Identifiable, Hashable, Codable {
     self.videoGravity = videoGravity
     self.videoQuality = videoQuality
     self.useH265 = useH265
-    self.bitrate = max(bitrate, 1)
+    self.bitrate = bitrate
   }
 }

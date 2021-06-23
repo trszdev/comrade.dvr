@@ -8,6 +8,28 @@ public struct CKUIAdjustableCameraConfiguration: Hashable {
   public let maxFieldOfView: Int
   public let supportedStabilizationModes: Set<CKStabilizationMode>
   public let isMulticamAvailable: Bool
+
+  public init(
+    sizes: Set<CKSize>,
+    minZoom: Double,
+    maxZoom: Double,
+    minFps: Int,
+    maxFps: Int,
+    minFieldOfView: Int,
+    maxFieldOfView: Int,
+    supportedStabilizationModes: Set<CKStabilizationMode>,
+    isMulticamAvailable: Bool
+  ) {
+    self.sizes = sizes
+    self.minZoom = minZoom
+    self.maxZoom = maxZoom
+    self.minFps = minFps
+    self.maxFps = maxFps
+    self.minFieldOfView = minFieldOfView
+    self.maxFieldOfView = maxFieldOfView
+    self.supportedStabilizationModes = supportedStabilizationModes
+    self.isMulticamAvailable = isMulticamAvailable
+  }
 }
 
 public extension Array where Element == CKAdjustableCameraConfiguration {

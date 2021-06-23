@@ -36,3 +36,39 @@
 "WARNING" = "Warning";
 "CLEAR_ALL_ASSETS_ASK" = "Do you really want to delete all recordings?";
 "CLEAR_ALL_ASSETS_CONFIRM" = "Yes, delete all recordings";
+
+"DEVICE_ENABLED" = "Device enabled";
+"RESOLUTION" = "Resolution";
+"FPS" = "Frames per second";
+"QUALITY" = "Quality";
+"USE_H265" = "Use H.265 codec";
+"BITRATE" = "Bitrate";
+"ZOOM" = "Zoom";
+"FIELD_OF_VIEW" = "Field of view";
+"AUTOFOCUS" = "Autofocus";
+
+"QUALITY_MIN" = "Min";
+"QUALITY_LOW" = "Low";
+"QUALITY_MEDIUM" = "Medium";
+"QUALITY_HIGH" = "High";
+"QUALITY_MAX" = "Max";
+
+"AUTOFOCUS_NONE" = "None";
+"AUTOFOCUS_CONTRAST" = "Contrast";
+"AUTOFOCUS_PHASE" = "Phase";
+
+"DEVICE_LOCATION" = "Device location";
+"DEVICE_LOCATION_BACK" = "Back";
+"DEVICE_LOCATION_BOTTOM" = "Bottom";
+"DEVICE_LOCATION_FRONT" = "Front";
+"DEVICE_LOCATION_LEFT" = "Left";
+"DEVICE_LOCATION_RIGHT" = "Right";
+"DEVICE_LOCATION_TOP" = "Top";
+"DEVICE_LOCATION_UNSPECIFIED" = "Default";
+
+"POLAR_PATTERN" = "Polar pattern";
+"POLAR_PATTERN_CARDIOID" = "Cardioid";
+"POLAR_PATTERN_OMNIDIRECTIONAL" = "Omnidirectional";
+"POLAR_PATTERN_STEREO" = "Stereo";
+"POLAR_PATTERN_SUBCARDIOID" = "Subcardioid";
+"POLAR_PATTERN_UNSPECIFIED" = "Default";

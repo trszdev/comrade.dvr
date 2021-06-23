@@ -1,44 +1,75 @@
 import SwiftUI
+import CameraKit
 
-struct ConfigureMicrophoneView: View {
+struct ConfigureMicrophoneViewBuilder {
+  let tablePickerCellViewBuilder: TablePickerCellViewBuilder
+
+  func makeView() -> AnyView {
+    ConfigureMicrophoneView(
+      viewModel: ConfigureMicrophoneViewModelImpl.sample,
+      tablePickerCellViewBuilder: tablePickerCellViewBuilder
+    )
+    .eraseToAnyView()
+  }
+}
+
+struct ConfigureMicrophoneView<ViewModel: ConfigureMicrophoneViewModel>: View {
+  @Environment(\.appLocale) var appLocale: AppLocale
+  @ObservedObject var viewModel: ViewModel
   let tablePickerCellViewBuilder: TablePickerCellViewBuilder
 
   var body: some View {
     TableView(sections: [
       [
-        TableSwitchCellView(isOn: $isEnabled, sfSymbol: .checkmark, text: "Enabled").eraseToAnyView(),
+        TableSwitchCellView(
+          isOn: Binding(get: { viewModel.isEnabled }, set: { viewModel.isEnabled = $0 }),
+          sfSymbol: .checkmark,
+          text: appLocale.deviceEnabledString
+        )
+        .eraseToAnyView(),
       ],
       [
         tablePickerCellViewBuilder.makeView(
-          selected: $polarPattern,
-          title: { _ in "Polar pattern" },
-          rightText: { _, value in value },
-          sfSymbol: .polarPattern,
-          availableOptions: ["unspecified", "cardioid", "stereo", "subcardioid", "omnidirectional"]
+          selected: Binding(get: { viewModel.location }, set: { viewModel.location = $0 }),
+          title: { $0.deviceLocationString },
+          rightText: { $0.deviceLocation($1) },
+          sfSymbol: .deviceLocation,
+          availableOptions: Array(viewModel.adjustableConfiguration.locations),
+          isDisabled: isDisabled
         )
         .eraseToAnyView(),
         tablePickerCellViewBuilder.makeView(
-          selected: $quality,
-          title: { _ in "Audio quality" },
-          rightText: { _, value in value },
+          selected: Binding(get: { viewModel.polarPattern }, set: { viewModel.polarPattern = $0 }),
+          title: { $0.polarPatternString },
+          rightText: { $0.polarPattern($1) },
+          sfSymbol: .polarPattern,
+          availableOptions: Array(viewModel.adjustableConfiguration.polarPatterns),
+          isDisabled: isDisabled
+        )
+        .eraseToAnyView(),
+        tablePickerCellViewBuilder.makeView(
+          selected: Binding(get: { viewModel.quality }, set: { viewModel.quality = $0 }),
+          title: { $0.qualityString },
+          rightText: { $0.quality($1) },
           sfSymbol: .ear,
-          availableOptions: ["min", "low", "medium", "high", "max"]
+          availableOptions: CKQuality.allCases,
+          isDisabled: isDisabled
         )
         .eraseToAnyView(),
       ],
     ])
   }
 
-  @State private var isEnabled = true
-  @State private var polarPattern = "unspecified"
-  @State private var quality = "medium"
+  private var isDisabled: Bool {
+    !viewModel.isEnabled
+  }
 }
 
 #if DEBUG
 
 struct ConfigureMicrophoneViewPreview: PreviewProvider {
   static var previews: some View {
-    locator.resolve(ConfigureMicrophoneView.self)
+    locator.resolve(ConfigureMicrophoneViewBuilder.self).makeView()
   }
 }
 

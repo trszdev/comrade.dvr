@@ -140,8 +140,11 @@ struct ModalView: View {
   }
 
   private func buttonView(text: Text, action: @escaping () -> Void) -> some View {
-    Button(action: action, label: { text })
-      .buttonStyle(ModalViewButtonStyle(isDark: isDark))
+    Button(
+      action: action,
+      label: { text.frame(maxWidth: .infinity).padding(12) }
+    )
+    .buttonStyle(ModalViewButtonStyle(isDark: isDark))
   }
 
   @StateObject private var observableUnit: ObservableUnit
@@ -159,16 +162,15 @@ private extension VisualEffectView {
   }
 }
 
-private struct ModalViewButtonStyle: ButtonStyle {
+struct ModalViewButtonStyle: ButtonStyle {
   var isDark = false
 
   func makeBody(configuration: Configuration) -> some View {
-    ZStack {
+    configuration.label.foregroundColor(.accentColor).background(
       configuration.isPressed ?
-        VisualEffectView(isDark: isDark).opacity(0.15).eraseToAnyView() :
+        VisualEffectView(isDark: !isDark).opacity(0.15).eraseToAnyView() :
         Color.clear.contentShape(Rectangle()).eraseToAnyView()
-      configuration.label.foregroundColor(.accentColor)
-    }
+    )
   }
 }
 

@@ -52,9 +52,7 @@ private struct MergedConfiguration: Comparable {
   var difference: Int {
     var result = 0
     if requested.size != adjustable.size {
-      let requestedScalar = requested.size.width * requested.size.height
-      let adjustableScalar = adjustable.size.width * adjustable.size.height
-      result += abs(requestedScalar - adjustableScalar)
+      result += abs(requested.size.scalar - adjustable.size.scalar)
     }
     if requested.fieldOfView != adjustable.fieldOfView {
       result += 100

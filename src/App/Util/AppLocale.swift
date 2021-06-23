@@ -1,7 +1,16 @@
 import Foundation
+import CameraKit
 
 protocol AppLocale {
   var currentLocale: Locale? { get }
+  func size(_ size: CKSize) -> String
+  func fps(_ fps: Int) -> String
+  func quality(_ quality: CKQuality) -> String
+  func bitrate(_ bitrate: CKBitrate) -> String
+  func autofocus(_ autofocus: CKAutoFocus) -> String
+  func zoom(_ zoom: Double) -> String
+  func deviceLocation(_ deviceLocation: CKDeviceLocation) -> String
+  func polarPattern(_ polarPattern: CKPolarPattern) -> String
   func themeName(_ themeSetting: ThemeSetting) -> String
   func languageName(_ languageSetting: LanguageSetting) -> String
   func timeOnly(date: Date) -> String
@@ -34,6 +43,17 @@ protocol AppLocale {
   var warningString: String { get }
   var clearAllAssetsAskString: String { get }
   var clearAllAssetsConfirmString: String { get }
+  var deviceEnabledString: String { get }
+  var resolutionString: String { get }
+  var fpsString: String { get }
+  var qualityString: String { get }
+  var useH265String: String { get }
+  var bitrateString: String { get }
+  var zoomString: String { get }
+  var fieldOfViewString: String { get }
+  var autofocusString: String { get }
+  var deviceLocationString: String { get }
+  var polarPatternString: String { get }
 }
 
 extension Default {
@@ -59,6 +79,102 @@ struct LocaleImpl: AppLocale {
   }
 
   var currentLocale: Locale?
+
+  func size(_ size: CKSize) -> String {
+    "\(size.width)x\(size.height)"
+  }
+
+  func fps(_ fps: Int) -> String {
+    "\(fps)FPS"
+  }
+
+  func quality(_ quality: CKQuality) -> String {
+    switch quality {
+    case .min:
+      return localizedString("QUALITY_MIN")
+    case .low:
+      return localizedString("QUALITY_LOW")
+    case .medium:
+      return localizedString("QUALITY_MEDIUM")
+    case .high:
+      return localizedString("QUALITY_HIGH")
+    case .max:
+      return localizedString("QUALITY_MAX")
+    }
+  }
+
+  func bitrate(_ bitrate: CKBitrate) -> String {
+    let unitFormatter = MeasurementFormatter()
+    unitFormatter.unitStyle = .medium
+    unitFormatter.locale = currentLocale
+    let numberFormatter = NumberFormatter()
+    numberFormatter.minimumFractionDigits = 0
+    numberFormatter.maximumFractionDigits = 3
+    numberFormatter.locale = currentLocale
+    unitFormatter.numberFormatter = numberFormatter
+    let units: [UnitInformationStorage] = [.bits, .kilobits, .megabits, .gigabits, .terabits]
+    let log = bitrate.bitsPerSecond > 0 ? Int(log10(Double(bitrate.bitsPerSecond)) / 3) : 0
+    let unitIndex = min(units.count - 1, max(0, log))
+    let size = Decimal(bitrate.bitsPerSecond) / pow(1000, unitIndex)
+    let sizeDouble = NSDecimalNumber(decimal: size).doubleValue
+    let bitrateString = unitFormatter.string(from: Measurement(value: sizeDouble, unit: units[unitIndex]))
+    unitFormatter.unitStyle = .short
+    let secondString = unitFormatter.string(from: UnitDuration.seconds)
+    return "\(bitrateString)/\(secondString)"
+  }
+
+  func autofocus(_ autofocus: CKAutoFocus) -> String {
+    switch autofocus {
+    case .none:
+      return localizedString("AUTOFOCUS_NONE")
+    case .contrastDetection:
+      return localizedString("AUTOFOCUS_CONTRAST")
+    case .phaseDetection:
+      return localizedString("AUTOFOCUS_PHASE")
+    }
+  }
+
+  func zoom(_ zoom: Double) -> String {
+    let numberFormatter = NumberFormatter()
+    numberFormatter.minimumFractionDigits = 0
+    numberFormatter.maximumFractionDigits = 2
+    let value = numberFormatter.string(from: NSNumber(value: zoom)) ?? ""
+    return value.appending("x")
+  }
+
+  func deviceLocation(_ deviceLocation: CKDeviceLocation) -> String {
+    switch deviceLocation {
+    case .back:
+      return localizedString("DEVICE_LOCATION_BACK")
+    case .bottom:
+      return localizedString("DEVICE_LOCATION_BOTTOM")
+    case .front:
+      return localizedString("DEVICE_LOCATION_FRONT")
+    case .left:
+      return localizedString("DEVICE_LOCATION_LEFT")
+    case .right:
+      return localizedString("DEVICE_LOCATION_RIGHT")
+    case .top:
+      return localizedString("DEVICE_LOCATION_TOP")
+    case .unspecified:
+      return localizedString("DEVICE_LOCATION_UNSPECIFIED")
+    }
+  }
+
+  func polarPattern(_ polarPattern: CKPolarPattern) -> String {
+    switch polarPattern {
+    case .cardioid:
+      return localizedString("POLAR_PATTERN_CARDIOID")
+    case .omnidirectional:
+      return localizedString("POLAR_PATTERN_OMNIDIRECTIONAL")
+    case .stereo:
+      return localizedString("POLAR_PATTERN_STEREO")
+    case .subcardioid:
+      return localizedString("POLAR_PATTERN_SUBCARDIOID")
+    case .unspecified:
+      return localizedString("POLAR_PATTERN_UNSPECIFIED")
+    }
+  }
 
   func themeName(_ themeSetting: ThemeSetting) -> String {
     switch themeSetting {
@@ -145,6 +261,17 @@ struct LocaleImpl: AppLocale {
   var warningString: String { localizedString("WARNING") }
   var clearAllAssetsAskString: String { localizedString("CLEAR_ALL_ASSETS_ASK") }
   var clearAllAssetsConfirmString: String { localizedString("CLEAR_ALL_ASSETS_CONFIRM") }
+  var deviceEnabledString: String { localizedString("DEVICE_ENABLED") }
+  var resolutionString: String { localizedString("RESOLUTION") }
+  var fpsString: String { localizedString("FPS") }
+  var qualityString: String { localizedString("QUALITY") }
+  var useH265String: String { localizedString("USE_H265") }
+  var bitrateString: String { localizedString("BITRATE") }
+  var zoomString: String { localizedString("ZOOM") }
+  var fieldOfViewString: String { localizedString("FIELD_OF_VIEW") }
+  var autofocusString: String { localizedString("AUTOFOCUS") }
+  var deviceLocationString: String { localizedString("DEVICE_LOCATION") }
+  var polarPatternString: String { localizedString("POLAR_PATTERN") }
 
   private func localizedString(_ key: String) -> String {
     if let bundle = bundle {

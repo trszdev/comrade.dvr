@@ -11,7 +11,7 @@ final class MainViewModelImpl: MainViewModel {
   init(
     navigationController: UINavigationController,
     settingsViewBuilder: SettingsView.Builder,
-    configureCameraView: ConfigureCameraView
+    configureCameraView: ConfigureMicrophoneViewBuilder
   ) {
     self.navigationController = navigationController
     self.settingsView = settingsViewBuilder.makeView()
@@ -27,7 +27,7 @@ final class MainViewModelImpl: MainViewModel {
       },
       presentConfigureDeviceScreenStub: { [navigationController, configureCameraView] _ in
         navigationController?.presentView {
-          configureCameraView
+          configureCameraView.makeView()
         }
       })
     return StartView(viewModel: startViewModel).eraseToAnyView()
@@ -39,6 +39,6 @@ final class MainViewModelImpl: MainViewModel {
 
   let settingsView: AnyView
 
-  private let configureCameraView: ConfigureCameraView
+  private let configureCameraView: ConfigureMicrophoneViewBuilder
   private weak var navigationController: UINavigationController?
 }

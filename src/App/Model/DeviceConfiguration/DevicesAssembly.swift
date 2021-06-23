@@ -9,6 +9,6 @@ struct DevicesAssembly: AKAssembly {
     } else {
 
     }
-    container.transient.autoregister(DevicesModel.self, construct: DevicesModelImpl.init(devicesStore:))
+    container.singleton.autoregister(DevicesModel.self, construct: DevicesModelImpl.init(devicesStore:))
   }
 }
