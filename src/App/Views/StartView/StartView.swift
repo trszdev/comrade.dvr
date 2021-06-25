@@ -41,7 +41,6 @@ struct StartView<ViewModel: StartViewModel>: View {
         VStack(alignment: .leading) {
           Text(appLocale.fullAppName).foregroundColor(theme.textColor).font(.caption2)
           Text("\(appLocale.lastCaptureString): 10.12.2021 15:00").foregroundColor(theme.textColor).font(.caption2)
-          Text("\(appLocale.updatedAtString): 10.03.2021 14:88").foregroundColor(theme.textColor).font(.caption2)
           Text("\(appLocale.usedSpaceString): 100mb / 10gb [100%]").foregroundColor(theme.textColor).font(.caption2)
         }
         Spacer()

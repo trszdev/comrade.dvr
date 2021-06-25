@@ -32,7 +32,8 @@ struct ConfigureMicrophoneView<ViewModel: ConfigureMicrophoneViewModel>: View {
         TableSwitchCellView(
           isOn: Binding(get: { viewModel.isEnabled }, set: { viewModel.isEnabled = $0 }),
           sfSymbol: .checkmark,
-          text: appLocale.deviceEnabledString
+          text: appLocale.deviceEnabledString,
+          separator: []
         )
         .eraseToAnyView(),
       ],

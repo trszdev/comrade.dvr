@@ -130,7 +130,7 @@ private var desiredCameraConfiguration: CKCameraConfiguration {
     size: CKSize(width: 1920, height: 1080),
     zoom: 1.0,
     fps: 30,
-    fieldOfView: 110,
+    fieldOfView: 100,
     orientation: .portrait,
     autoFocus: .contrastDetection,
     stabilizationMode: .auto,

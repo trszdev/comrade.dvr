@@ -31,6 +31,8 @@ enum SFSymbol: String {
   case ear
   case polarPattern = "timelapse"
   case deviceLocation = "skew"
+  case restore = "arrow.counterclockwise"
+  case orientation = "arrow.2.squarepath"
 }
 
 extension Image {

@@ -76,3 +76,11 @@
 "FRONT_CAMERA" = "Front camera";
 "BACK_CAMERA" = "Back camera";
 "MICROPHONE" = "Microphone";
+
+"RESTORE_DEFAULT_SETTINGS" = "Default settings";
+"RESTORE_DEFAULT_SETTINGS_ASK" = "Do you really want to restore default settings?";
+"RESTORE_DEFAULT_SETTINGS_CONFIRM" = "Yes, restore default settings";
+
+"ORIENTATION" = "Orientation";
+"ORIENTATION_PORTRAIT" = "Portrait";
+"ORIENTATION_LANDSCAPE" = "Landscape";

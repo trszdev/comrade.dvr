@@ -9,7 +9,6 @@ struct StartDeviceView: View {
       let width = geometry.size.width
       let accentColor = viewModel.isActive ? theme.accentColor : theme.disabledTextColor
       let backgroundColor = isHovered ? theme.accentColorHover : theme.mainBackgroundColor
-      let iconSize = width / 10
       ZStack(alignment: .topLeading) {
         RoundedRectangle(cornerRadius: width / 10)
           .foregroundColor(backgroundColor)
@@ -19,29 +18,24 @@ struct StartDeviceView: View {
               .foregroundColor(accentColor)
           )
         VStack(alignment: .leading, spacing: 3) {
-          HStack {
-            Image(sfSymbol: viewModel.sfSymbol)
-              .fitResizable
-              .frame(width: iconSize, height: iconSize)
-            Text(viewModel.name)
-              .bold()
-              .font(.title2)
-              .lineLimit(1)
-          }
-          .foregroundColor(accentColor)
-          .minimumScaleFactor(0.5)
+          title(width: width).foregroundColor(accentColor)
           ScrollView {
             VStack(alignment: .leading) {
               ForEach(viewModel.details, id: \.self) { detail in
-                Text(detail)
-                  .font(.footnote)
+                detailText(width: width, detail)
                   .foregroundColor(viewModel.isActive ? theme.textColor : theme.disabledTextColor)
-                  .lineLimit(1)
               }
             }
-            .minimumScaleFactor(0.7)
           }
           .allowsHitTesting(false)
+        }
+        .padding()
+        VStack {
+          Spacer()
+          HStack {
+            Spacer()
+            icon(width: width).foregroundColor(accentColor).background(backgroundColor)
+          }
         }
         .padding()
       }
@@ -49,6 +43,25 @@ struct StartDeviceView: View {
     .touchdownOverlay(isHovered: $isHovered)
     .defaultAnimation
     .aspectRatio(1, contentMode: .fill)
+  }
+
+  private func title(width: CGFloat) -> some View {
+    Text(viewModel.name)
+      .bold()
+      .font(.system(size: max(min(width / 10, 20), 10) ))
+      .lineLimit(2)
+  }
+
+  private func icon(width: CGFloat) -> some View {
+    Text(Image(sfSymbol: viewModel.sfSymbol))
+      .font(.system(size: max(min(width / 10, 20), 10) ))
+      .padding(1)
+  }
+
+  private func detailText(width: CGFloat, _ detail: String) -> some View {
+    Text(detail)
+      .font(.system(size: max(min(width / 14, 15), 8) ))
+      .lineLimit(1)
   }
 
   @State private var isHovered = false

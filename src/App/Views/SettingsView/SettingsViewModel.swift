@@ -10,23 +10,36 @@ struct SettingsViewModelImpl: SettingsViewModel {
   let settingsLanguageCellViewBuilder: SettingsPickerCellViewBuilder<LanguageSetting>
   let settingsAssetLengthCellViewBuilder: SettingsPickerCellViewBuilder<AssetLengthSetting>
   let settingsThemeCellViewBuilder: SettingsPickerCellViewBuilder<ThemeSetting>
+  let settingsOrientationCellViewBuilder: SettingsPickerCellViewBuilder<OrientationSetting>
 
   var sections: [[AnyView]] {[
     [
       settingsAssetsLimitCellView.eraseToAnyView(),
       settingsAssetLengthCellView.eraseToAnyView(),
       SettingsUsedSpaceCellView().eraseToAnyView(),
-      SettingsClearAssetsCellView().eraseToAnyView(),
+      settingsOrientationCellView.eraseToAnyView(),
     ],
     [
       settingsLanguageCellView.eraseToAnyView(),
       settingsThemeCellView.eraseToAnyView(),
     ],
     [
+      SettingsRestoreCellView().eraseToAnyView(),
       settingsContactUsCellViewBuilder.makeView().eraseToAnyView(),
       SettingsRateAppCellView().eraseToAnyView(),
+      SettingsClearAssetsCellView().eraseToAnyView(),
     ],
   ]}
+
+  private var settingsOrientationCellView: some View {
+    settingsOrientationCellViewBuilder.makeView(
+      title: { $0.orientationString },
+      rightText: { $0.orientation($1) },
+      sfSymbol: .orientation,
+      availableOptions: OrientationSetting.allCases,
+      separator: []
+    )
+  }
 
   private var settingsAssetsLimitCellView: some View {
     let availableOptions: [Int?] = [1, 5, 10, 20, 30, nil]
@@ -63,7 +76,8 @@ struct SettingsViewModelImpl: SettingsViewModel {
       title: { $0.themeString },
       rightText: { $0.themeName($1) },
       sfSymbol: .theme,
-      availableOptions: ThemeSetting.allCases
+      availableOptions: ThemeSetting.allCases,
+      separator: []
     )
   }
 }

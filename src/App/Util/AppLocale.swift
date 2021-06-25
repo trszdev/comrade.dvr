@@ -3,6 +3,7 @@ import CameraKit
 
 protocol AppLocale {
   var currentLocale: Locale? { get }
+  func orientation(_ orientation: OrientationSetting) -> String
   func size(_ size: CKSize) -> String
   func fps(_ fps: Int) -> String
   func quality(_ quality: CKQuality) -> String
@@ -58,6 +59,10 @@ protocol AppLocale {
   var frontCameraString: String { get }
   var backCameraString: String { get }
   var microphoneString: String { get }
+  var restoreDefaultSettingsString: String { get }
+  var restoreDefaultSettingsAskString: String { get }
+  var restoreDefaultSettingsConfirmString: String { get }
+  var orientationString: String { get }
 }
 
 extension Default {
@@ -83,6 +88,17 @@ struct LocaleImpl: AppLocale {
   }
 
   var currentLocale: Locale?
+
+  func orientation(_ orientation: OrientationSetting) -> String {
+    switch orientation {
+    case .system:
+      return systemString
+    case .landscape:
+      return localizedString("ORIENTATION_LANDSCAPE")
+    case .portrait:
+      return localizedString("ORIENTATION_PORTRAIT")
+    }
+  }
 
   func size(_ size: CKSize) -> String {
     "\(size.width)x\(size.height)"
@@ -283,6 +299,10 @@ struct LocaleImpl: AppLocale {
   var frontCameraString: String { localizedString("FRONT_CAMERA") }
   var backCameraString: String { localizedString("BACK_CAMERA") }
   var microphoneString: String { localizedString("MICROPHONE") }
+  var restoreDefaultSettingsString: String { localizedString("RESTORE_DEFAULT_SETTINGS") }
+  var restoreDefaultSettingsAskString: String { localizedString("RESTORE_DEFAULT_SETTINGS_ASK") }
+  var restoreDefaultSettingsConfirmString: String { localizedString("RESTORE_DEFAULT_SETTINGS_CONFIRM") }
+  var orientationString: String { localizedString("ORIENTATION") }
 
   private func localizedString(_ key: String) -> String {
     if let bundle = bundle {

@@ -76,3 +76,11 @@
 "FRONT_CAMERA" = "Фронтальная камера";
 "BACK_CAMERA" = "Задняя камера";
 "MICROPHONE" = "Микрофон";
+
+"RESTORE_DEFAULT_SETTINGS" = "Настройки по умолчанию";
+"RESTORE_DEFAULT_SETTINGS_ASK" = "Вы действительно хотите восстановить настройки по умолчанию?";
+"RESTORE_DEFAULT_SETTINGS_CONFIRM" = "Да, восстановить настройки по умолчанию";
+
+"ORIENTATION" = "Ориентация";
+"ORIENTATION_PORTRAIT" = "Портрет";
+"ORIENTATION_LANDSCAPE" = "Ландшафт";

@@ -29,7 +29,8 @@ struct ConfigureCameraView<ViewModel: ConfigureCameraViewModel>: View {
         TableSwitchCellView(
           isOn: Binding(get: { viewModel.isEnabled }, set: { viewModel.isEnabled = $0 }),
           sfSymbol: .checkmark,
-          text: appLocale.deviceEnabledString
+          text: appLocale.deviceEnabledString,
+          separator: []
         )
         .eraseToAnyView(),
       ],
@@ -73,6 +74,7 @@ struct ConfigureCameraView<ViewModel: ConfigureCameraViewModel>: View {
           resolution: viewModel.resolution,
           title: { $0.bitrateString },
           sfSymbol: .speedometer,
+          separator: [],
           isDisabled: isDisabled
         )
         .eraseToAnyView(),
@@ -102,6 +104,7 @@ struct ConfigureCameraView<ViewModel: ConfigureCameraViewModel>: View {
           rightText: { $0.autofocus($1) },
           sfSymbol: .hare,
           availableOptions: CKAutoFocus.allCases,
+          separator: [],
           isDisabled: isDisabled
         )
         .eraseToAnyView(),

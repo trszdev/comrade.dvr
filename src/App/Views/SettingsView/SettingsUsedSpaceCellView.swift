@@ -8,7 +8,7 @@ struct SettingsUsedSpaceCellView: View {
       centerView: Text(appLocale.usedSpaceString).eraseToAnyView(),
       rightView: Text("1,2Gb").eraseToAnyView(),
       sfSymbol: .usedSpace,
-      separator: [],
+      separator: [.bottom],
       isDisabled: true
     )
   }

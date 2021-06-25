@@ -8,7 +8,9 @@ struct SettingsPickerCellViewBuilder<Value: SettingValue> {
     title: @escaping (AppLocale) -> String,
     rightText: @escaping (AppLocale, Value) -> String,
     sfSymbol: SFSymbol,
-    availableOptions: [Value]
+    availableOptions: [Value],
+    separator: [Edge] = [.bottom],
+    isDisabled: Bool = false
   ) -> AnyView {
     SettingsPickerCellView(
       viewModel: viewModel,
@@ -16,7 +18,9 @@ struct SettingsPickerCellViewBuilder<Value: SettingValue> {
       title: title,
       rightText: rightText,
       sfSymbol: sfSymbol,
-      availableOptions: availableOptions
+      availableOptions: availableOptions,
+      separator: separator,
+      isDisabled: isDisabled
     )
     .eraseToAnyView()
   }
@@ -30,6 +34,8 @@ struct SettingsPickerCellView<ViewModel: SettingsCellViewModel>: View {
   let rightText: (AppLocale, ViewModel.Value) -> String
   let sfSymbol: SFSymbol
   let availableOptions: [ViewModel.Value]
+  let separator: [Edge]
+  let isDisabled: Bool
 
   init(
     viewModel: ViewModel,
@@ -37,7 +43,9 @@ struct SettingsPickerCellView<ViewModel: SettingsCellViewModel>: View {
     title: @escaping (AppLocale) -> String,
     rightText: @escaping (AppLocale, ViewModel.Value) -> String,
     sfSymbol: SFSymbol,
-    availableOptions: [ViewModel.Value]
+    availableOptions: [ViewModel.Value],
+    separator: [Edge],
+    isDisabled: Bool
   ) {
     self._selected = State(initialValue: viewModel.value)
     self.tablePickerCellViewBuilder = tablePickerCellViewBuilder
@@ -46,6 +54,8 @@ struct SettingsPickerCellView<ViewModel: SettingsCellViewModel>: View {
     self.rightText = rightText
     self.sfSymbol = sfSymbol
     self.availableOptions = availableOptions
+    self.separator = separator
+    self.isDisabled = isDisabled
   }
 
   var body: some View {
@@ -54,7 +64,9 @@ struct SettingsPickerCellView<ViewModel: SettingsCellViewModel>: View {
       title: title,
       rightText: rightText,
       sfSymbol: sfSymbol,
-      availableOptions: availableOptions
+      availableOptions: availableOptions,
+      separator: separator,
+      isDisabled: isDisabled
     )
     .onChange(of: selected, perform: { value in
       viewModel.update(newValue: value)

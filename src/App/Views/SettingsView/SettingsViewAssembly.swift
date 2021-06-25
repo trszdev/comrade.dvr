@@ -6,6 +6,7 @@ struct SettingsViewAssembly: AKAssembly {
     registerSetting(container: container, ThemeSetting.self)
     registerSetting(container: container, AssetLimitSetting.self)
     registerSetting(container: container, AssetLengthSetting.self)
+    registerSetting(container: container, OrientationSetting.self)
     container.singleton.autoregister(
       SettingsViewModel.self,
       construct: SettingsViewModelImpl.init(
@@ -14,6 +15,7 @@ struct SettingsViewAssembly: AKAssembly {
         settingsLanguageCellViewBuilder:
         settingsAssetLengthCellViewBuilder:
         settingsThemeCellViewBuilder:
+        settingsOrientationCellViewBuilder:
       )
     )
     container.transient.autoregister(construct: SettingsView.Builder.init(viewModel:))

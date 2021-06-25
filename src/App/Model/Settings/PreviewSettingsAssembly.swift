@@ -7,6 +7,7 @@ struct PreviewSettingsAssembly: AKAssembly {
     registerSetting(container: container, ThemeSetting.system)
     registerSetting(container: container, AssetLimitSetting(value: .from(megabytes: 10)))
     registerSetting(container: container, AssetLengthSetting(value: .from(minutes: 2)))
+    registerSetting(container: container, OrientationSetting.system)
   }
 
   private func registerSetting<Value: SettingValue>(container: AKContainer, _ value: Value) {
