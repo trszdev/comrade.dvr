@@ -18,7 +18,7 @@ final class ModalViewPresenterImpl: ModalViewPresenter {
     )
     let hostingVc = UIHostingController(rootView: modalView)
     hostingVc.view.backgroundColor = .clear
-    hostingVc.modalPresentationStyle = .overCurrentContext
+    hostingVc.modalPresentationStyle = .overFullScreen
     guard let topViewController = UIApplication.shared.windows.first?.topViewController else { return }
     self.hostingVc = hostingVc
     self.observableUnit = observableUnit
