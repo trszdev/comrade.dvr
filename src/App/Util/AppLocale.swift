@@ -6,6 +6,7 @@ protocol AppLocale {
   func size(_ size: CKSize) -> String
   func fps(_ fps: Int) -> String
   func quality(_ quality: CKQuality) -> String
+  func qualityLong(_ quality: CKQuality) -> String
   func bitrate(_ bitrate: CKBitrate) -> String
   func autofocus(_ autofocus: CKAutoFocus) -> String
   func zoom(_ zoom: Double) -> String
@@ -54,6 +55,9 @@ protocol AppLocale {
   var autofocusString: String { get }
   var deviceLocationString: String { get }
   var polarPatternString: String { get }
+  var frontCameraString: String { get }
+  var backCameraString: String { get }
+  var microphoneString: String { get }
 }
 
 extension Default {
@@ -101,6 +105,10 @@ struct LocaleImpl: AppLocale {
     case .max:
       return localizedString("QUALITY_MAX")
     }
+  }
+
+  func qualityLong(_ quality: CKQuality) -> String {
+    [self.quality(quality), qualityString.lowercased()].joined(separator: " ")
   }
 
   func bitrate(_ bitrate: CKBitrate) -> String {
@@ -272,6 +280,9 @@ struct LocaleImpl: AppLocale {
   var autofocusString: String { localizedString("AUTOFOCUS") }
   var deviceLocationString: String { localizedString("DEVICE_LOCATION") }
   var polarPatternString: String { localizedString("POLAR_PATTERN") }
+  var frontCameraString: String { localizedString("FRONT_CAMERA") }
+  var backCameraString: String { localizedString("BACK_CAMERA") }
+  var microphoneString: String { localizedString("MICROPHONE") }
 
   private func localizedString(_ key: String) -> String {
     if let bundle = bundle {

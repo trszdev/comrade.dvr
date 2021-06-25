@@ -1,18 +1,18 @@
 import Foundation
 
-public struct CKCameraConfiguration: Identifiable, Hashable, Codable {
-  public let id: CKDeviceConfigurationID
-  public let size: CKSize
-  public let zoom: Double
-  public let fps: Int
-  public let fieldOfView: Int
-  public let orientation: CKOrientation
-  public let autoFocus: CKAutoFocus
-  public let stabilizationMode: CKStabilizationMode
-  public let videoGravity: CKVideoGravity
-  public let videoQuality: CKQuality
-  public let useH265: Bool
-  public let bitrate: CKBitrate
+public struct CKCameraConfiguration: Identifiable, Hashable, Codable, Equatable {
+  public var id: CKDeviceConfigurationID
+  public var size: CKSize
+  public var zoom: Double
+  public var fps: Int
+  public var fieldOfView: Int
+  public var orientation: CKOrientation
+  public var autoFocus: CKAutoFocus
+  public var stabilizationMode: CKStabilizationMode
+  public var videoGravity: CKVideoGravity
+  public var videoQuality: CKQuality
+  public var useH265: Bool
+  public var bitrate: CKBitrate
 
   public init(
     size: CKSize,

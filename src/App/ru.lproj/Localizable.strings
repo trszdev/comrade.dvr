@@ -72,3 +72,7 @@
 "POLAR_PATTERN_STEREO" = "Стерео";
 "POLAR_PATTERN_SUBCARDIOID" = "Субкардиоид";
 "POLAR_PATTERN_UNSPECIFIED" = "По умолчанию";
+
+"FRONT_CAMERA" = "Фронтальная камера";
+"BACK_CAMERA" = "Задняя камера";
+"MICROPHONE" = "Микрофон";

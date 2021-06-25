@@ -1,14 +1,29 @@
 import CameraKit
 
 struct TempDevicesStore: DevicesStore {
-  func store(device: Device) {
+  func store(devices: [Device]) {
   }
 
   func loadStoredDevices() -> [Device] {
     [
-      Device(isEnabled: true, id: CKAVCamera.back.value, configuration: .camera(configuration: backCamera)),
-      Device(isEnabled: false, id: CKAVCamera.front.value, configuration: .camera(configuration: frontCamera)),
-      Device(isEnabled: false, id: CKAVMicrophone.builtIn.value, configuration: .microphone(configuration: microphone)),
+      .camera(device: CameraDevice(
+        isEnabled: true,
+        id: CKAVCamera.back.value,
+        adjustableConfiguration: ConfigureCameraViewModelImpl.sample.adjustableConfiguration,
+        configuration: backCamera
+      )),
+      .camera(device: CameraDevice(
+        isEnabled: false,
+        id: CKAVCamera.front.value,
+        adjustableConfiguration: ConfigureCameraViewModelImpl.sample.adjustableConfiguration,
+        configuration: frontCamera
+      )),
+      .microphone(device: MicrophoneDevice(
+        isEnabled: false,
+        id: CKAVMicrophone.builtIn.value,
+        adjustableConfiguration: ConfigureMicrophoneViewModelImpl.sample.adjustableConfiguration,
+        configuration: microphone
+      )),
     ]
   }
 
@@ -24,7 +39,7 @@ struct TempDevicesStore: DevicesStore {
       videoGravity: .resizeAspectFill,
       videoQuality: .medium,
       useH265: true,
-      bitrate: CKBitrate(bitsPerSecond: 30)
+      bitrate: CKBitrate(bitsPerSecond: 15_000_000)
     )
   }
 
@@ -40,7 +55,7 @@ struct TempDevicesStore: DevicesStore {
       videoGravity: .resizeAspectFill,
       videoQuality: .high,
       useH265: true,
-      bitrate: CKBitrate(bitsPerSecond: 30)
+      bitrate: CKBitrate(bitsPerSecond: 15_000_000)
     )
   }
 

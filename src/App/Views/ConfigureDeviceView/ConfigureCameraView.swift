@@ -1,17 +1,16 @@
 import SwiftUI
 import CameraKit
+import AutocontainerKit
 
 struct ConfigureCameraViewBuilder {
-  let tablePickerCellViewBuilder: TablePickerCellViewBuilder
-  let tableSliderCellViewBuilder: TableSliderCellViewBuilder
-  let configureCameraBitrateCellViewBuilder: ConfigureCameraBitrateCellViewBuilder
+  let locator: AKLocator
 
-  func makeView() -> AnyView {
+  func makeView<ViewModel: ConfigureCameraViewModel>(viewModel: ViewModel) -> AnyView {
     ConfigureCameraView(
-      viewModel: ConfigureCameraViewModelImpl.sample,
-      tablePickerCellViewBuilder: tablePickerCellViewBuilder,
-      tableSliderCellViewBuilder: tableSliderCellViewBuilder,
-      configureCameraBitrateCellViewBuilder: configureCameraBitrateCellViewBuilder
+      viewModel: viewModel,
+      tablePickerCellViewBuilder: locator.resolve(TablePickerCellViewBuilder.self),
+      tableSliderCellViewBuilder: locator.resolve(TableSliderCellViewBuilder.self),
+      configureCameraBitrateCellViewBuilder: locator.resolve(ConfigureCameraBitrateCellViewBuilder.self)
     )
     .eraseToAnyView()
   }
@@ -133,7 +132,7 @@ private extension ConfigureCameraViewModel {
 
 struct ConfigureCameraViewPreview: PreviewProvider {
   static var previews: some View {
-    locator.resolve(ConfigureCameraViewBuilder.self).makeView()
+    locator.resolve(ConfigureCameraViewBuilder.self).makeView(viewModel: ConfigureCameraViewModelImpl.sample)
   }
 }
 

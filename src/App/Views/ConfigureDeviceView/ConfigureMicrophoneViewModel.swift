@@ -1,5 +1,6 @@
 import SwiftUI
 import CameraKit
+import Combine
 
 protocol ConfigureMicrophoneViewModel: ObservableObject {
   var adjustableConfiguration: CKUIAdjustableMicrophoneConfiguration { get }
@@ -38,6 +39,28 @@ final class ConfigureMicrophoneViewModelImpl: ConfigureMicrophoneViewModel {
     self.quality = quality
   }
 
+  init(devicesModel: DevicesModel, microphoneDevice: MicrophoneDevice) {
+    self.devicesModel = devicesModel
+    self.microphoneDevice = microphoneDevice
+    self.adjustableConfiguration = microphoneDevice.adjustableConfiguration
+    self.isEnabled = microphoneDevice.isEnabled
+    self.location = microphoneDevice.configuration.location
+    self.polarPattern = microphoneDevice.configuration.polarPattern
+    self.quality = microphoneDevice.configuration.audioQuality
+    cancellable = devicesModel.devicePublisher(id: microphoneDevice.id).sink { [weak self] device in
+      guard let self = self, case let .microphone(microphoneDevice) = device else { return }
+      let devicesModel = self.devicesModel
+      self.devicesModel = nil
+      self.microphoneDevice = microphoneDevice
+      self.adjustableConfiguration = microphoneDevice.adjustableConfiguration
+      self.isEnabled = microphoneDevice.isEnabled
+      self.location = microphoneDevice.configuration.location
+      self.polarPattern = microphoneDevice.configuration.polarPattern
+      self.quality = microphoneDevice.configuration.audioQuality
+      self.devicesModel = devicesModel
+    }
+  }
+
   @Published var adjustableConfiguration: CKUIAdjustableMicrophoneConfiguration
   var adjustableConfigurationPublished: Published<CKUIAdjustableMicrophoneConfiguration> {
     _adjustableConfiguration
@@ -47,19 +70,35 @@ final class ConfigureMicrophoneViewModelImpl: ConfigureMicrophoneViewModel {
     $adjustableConfiguration
   }
 
-  @Published var isEnabled: Bool
+  @Published var isEnabled: Bool {
+    didSet {
+      trySendUpdate(isEnabled: isEnabled)
+    }
+  }
   var isEnabledPublished: Published<Bool> { _isEnabled }
   var isEnabledPublisher: Published<Bool>.Publisher { $isEnabled }
 
-  @Published var location: CKDeviceLocation
+  @Published var location: CKDeviceLocation {
+    didSet {
+      trySendUpdate(location: location)
+    }
+  }
   var locationPublished: Published<CKDeviceLocation> { _location }
   var locationPublisher: Published<CKDeviceLocation>.Publisher { $location }
 
-  @Published var polarPattern: CKPolarPattern
+  @Published var polarPattern: CKPolarPattern {
+    didSet {
+      trySendUpdate(polarPattern: polarPattern)
+    }
+  }
   var polarPatternPublished: Published<CKPolarPattern> { _polarPattern }
   var polarPatternPublisher: Published<CKPolarPattern>.Publisher { $polarPattern }
 
-  @Published var quality: CKQuality
+  @Published var quality: CKQuality {
+    didSet {
+      trySendUpdate(quality: quality)
+    }
+  }
   var qualityPublished: Published<CKQuality> { _quality }
   var qualityPublisher: Published<CKQuality>.Publisher { $quality }
 
@@ -71,8 +110,28 @@ final class ConfigureMicrophoneViewModelImpl: ConfigureMicrophoneViewModel {
     quality: .max
   )
 
-  static let sampleConfig = CKUIAdjustableMicrophoneConfiguration(
+  private static let sampleConfig = CKUIAdjustableMicrophoneConfiguration(
     locations: [.unspecified, .top, .bottom],
     polarPatterns: [.unspecified, .stereo, .cardioid]
   )
+
+  private func trySendUpdate(
+    isEnabled: Bool? = nil,
+    location: CKDeviceLocation? = nil,
+    polarPattern: CKPolarPattern? = nil,
+    quality: CKQuality? = nil
+  ) {
+    guard let devicesModel = devicesModel, var microphoneDevice = self.microphoneDevice else { return }
+    microphoneDevice.isEnabled = isEnabled ?? self.isEnabled
+    var config = microphoneDevice.configuration
+    config.location = location ?? self.location
+    config.polarPattern = polarPattern ?? self.polarPattern
+    config.audioQuality = quality ?? self.quality
+    microphoneDevice.configuration = config
+    devicesModel.update(device: .microphone(device: microphoneDevice))
+  }
+
+  private var cancellable: AnyCancellable!
+  private var microphoneDevice: MicrophoneDevice!
+  private weak var devicesModel: DevicesModel?
 }

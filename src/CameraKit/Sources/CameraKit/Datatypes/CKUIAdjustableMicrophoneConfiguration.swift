@@ -1,4 +1,4 @@
-public struct CKUIAdjustableMicrophoneConfiguration: Hashable {
+public struct CKUIAdjustableMicrophoneConfiguration: Hashable, Codable {
   public let locations: Set<CKDeviceLocation>
   public let polarPatterns: Set<CKPolarPattern>
 

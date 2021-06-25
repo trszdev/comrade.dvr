@@ -4,6 +4,14 @@ import CameraKit
 struct ConfigureMicrophoneViewBuilder {
   let tablePickerCellViewBuilder: TablePickerCellViewBuilder
 
+  func makeView<ViewModel: ConfigureMicrophoneViewModel>(viewModel: ViewModel) -> AnyView {
+    ConfigureMicrophoneView(
+      viewModel: viewModel,
+      tablePickerCellViewBuilder: tablePickerCellViewBuilder
+    )
+    .eraseToAnyView()
+  }
+
   func makeView() -> AnyView {
     ConfigureMicrophoneView(
       viewModel: ConfigureMicrophoneViewModelImpl.sample,

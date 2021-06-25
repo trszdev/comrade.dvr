@@ -1,8 +1,9 @@
 import SwiftUI
 import Combine
+import AutocontainerKit
 
 struct TableSliderCellViewBuilder {
-  let modalViewPresenter: ModalViewPresenter
+  let locator: AKLocator
 
   func makeView<Value: BinaryFloatingPoint>(
     selected: Binding<Value>,
@@ -15,7 +16,7 @@ struct TableSliderCellViewBuilder {
   ) -> TableSliderCellView<Value> where Value.Stride: BinaryFloatingPoint {
     TableSliderCellView(
       selected: selected,
-      modalViewPresenter: modalViewPresenter,
+      modalViewPresenter: locator.resolve(ModalViewPresenter.self),
       title: title,
       rightText: rightText,
       sfSymbol: sfSymbol,
@@ -70,14 +71,8 @@ struct TableSliderCellView<Value: BinaryFloatingPoint>: View where Value.Stride:
     .onTapGesture {
       modalViewPresenter.presentView(content: modalContentView)
     }
-    .onAppear {
-      modalViewPresenter.submitPublisher
-        .sink(receiveValue: onSubmit)
-        .store(in: &cancellables.value)
-      modalSelected.objectWillChange
-        .sink(receiveValue: modalViewPresenter.updateModal)
-        .store(in: &cancellables.value)
-    }
+    .onReceive(modalViewPresenter.submitPublisher, perform: onSubmit)
+    .onReceive(modalSelected.objectWillChange, perform: modalViewPresenter.updateModal)
   }
 
   func modalContentView() -> AnyView {
@@ -95,7 +90,6 @@ struct TableSliderCellView<Value: BinaryFloatingPoint>: View where Value.Stride:
     selected = modalSelected.value
   }
 
-  private var cancellables = Ref<Set<AnyCancellable>>([])
   @StateObject private var modalSelected: ObservableValue<Value>
 }
 

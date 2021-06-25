@@ -72,3 +72,7 @@
 "POLAR_PATTERN_STEREO" = "Stereo";
 "POLAR_PATTERN_SUBCARDIOID" = "Subcardioid";
 "POLAR_PATTERN_UNSPECIFIED" = "Default";
+
+"FRONT_CAMERA" = "Front camera";
+"BACK_CAMERA" = "Back camera";
+"MICROPHONE" = "Microphone";

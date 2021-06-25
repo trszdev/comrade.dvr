@@ -1,5 +1,6 @@
 import SwiftUI
 import CameraKit
+import Combine
 
 protocol ConfigureCameraViewModel: ObservableObject {
   var adjustableConfiguration: CKUIAdjustableCameraConfiguration { get }
@@ -7,6 +8,7 @@ protocol ConfigureCameraViewModel: ObservableObject {
   var adjustableConfigurationPublisher: Published<CKUIAdjustableCameraConfiguration>.Publisher { get }
 
   var isEnabled: Bool { get set }
+  var isEnabledBinding: Binding<Bool> { get }
   var isEnabledPublished: Published<Bool> { get }
   var isEnabledPublisher: Published<Bool>.Publisher { get }
 
@@ -43,6 +45,12 @@ protocol ConfigureCameraViewModel: ObservableObject {
   var autofocusPublisher: Published<CKAutoFocus>.Publisher { get }
 }
 
+extension ConfigureCameraViewModel {
+  var isEnabledBinding: Binding<Bool> {
+    Binding(get: { self.isEnabled }, set: { self.isEnabled = $0 })
+  }
+}
+
 final class ConfigureCameraViewModelImpl: ConfigureCameraViewModel {
   init(
     adjustableConfiguration: CKUIAdjustableCameraConfiguration,
@@ -68,6 +76,38 @@ final class ConfigureCameraViewModelImpl: ConfigureCameraViewModel {
     self.autofocus = autofocus
   }
 
+  init(devicesModel: DevicesModel, cameraDevice: CameraDevice) {
+    self.devicesModel = devicesModel
+    self.cameraDevice = cameraDevice
+    self.adjustableConfiguration = cameraDevice.adjustableConfiguration
+    self.isEnabled = cameraDevice.isEnabled
+    self.resolution = cameraDevice.configuration.size
+    self.fps = cameraDevice.configuration.fps
+    self.quality = cameraDevice.configuration.videoQuality
+    self.useH265 = cameraDevice.configuration.useH265
+    self.bitrate = cameraDevice.configuration.bitrate
+    self.zoom = cameraDevice.configuration.zoom
+    self.fov = cameraDevice.configuration.fieldOfView
+    self.autofocus = cameraDevice.configuration.autoFocus
+    cancellable = devicesModel.devicePublisher(id: cameraDevice.id).sink { [weak self] device in
+      guard let self = self, case let .camera(cameraDevice) = device else { return }
+      let devicesModel = self.devicesModel
+      self.devicesModel = nil
+      self.cameraDevice = cameraDevice
+      self.adjustableConfiguration = cameraDevice.adjustableConfiguration
+      self.isEnabled = cameraDevice.isEnabled
+      self.resolution = cameraDevice.configuration.size
+      self.fps = cameraDevice.configuration.fps
+      self.quality = cameraDevice.configuration.videoQuality
+      self.useH265 = cameraDevice.configuration.useH265
+      self.bitrate = cameraDevice.configuration.bitrate
+      self.zoom = cameraDevice.configuration.zoom
+      self.fov = cameraDevice.configuration.fieldOfView
+      self.autofocus = cameraDevice.configuration.autoFocus
+      self.devicesModel = devicesModel
+    }
+  }
+
   @Published var adjustableConfiguration: CKUIAdjustableCameraConfiguration
   var adjustableConfigurationPublished: Published<CKUIAdjustableCameraConfiguration> {
     _adjustableConfiguration
@@ -76,39 +116,75 @@ final class ConfigureCameraViewModelImpl: ConfigureCameraViewModel {
     $adjustableConfiguration
   }
 
-  @Published var isEnabled: Bool
+  @Published var isEnabled: Bool {
+    didSet {
+      trySendUpdate(isEnabled: isEnabled)
+    }
+  }
   var isEnabledPublished: Published<Bool> { _isEnabled }
   var isEnabledPublisher: Published<Bool>.Publisher { $isEnabled }
 
-  @Published var resolution: CKSize
+  @Published var resolution: CKSize {
+    didSet {
+      trySendUpdate(resolution: resolution)
+    }
+  }
   var resolutionPublished: Published<CKSize> { _resolution }
   var resolutionPublisher: Published<CKSize>.Publisher { $resolution }
 
-  @Published var fps: Int
+  @Published var fps: Int {
+    didSet {
+      trySendUpdate(fps: fps)
+    }
+  }
   var fpsPublished: Published<Int> { _fps }
   var fpsPublisher: Published<Int>.Publisher { $fps }
 
-  @Published var quality: CKQuality
+  @Published var quality: CKQuality {
+    didSet {
+      trySendUpdate(quality: quality)
+    }
+  }
   var qualityPublished: Published<CKQuality> { _quality }
   var qualityPublisher: Published<CKQuality>.Publisher { $quality }
 
-  @Published var useH265: Bool
+  @Published var useH265: Bool {
+    didSet {
+      trySendUpdate(useH265: useH265)
+    }
+  }
   var useH265Published: Published<Bool> { _useH265 }
   var useH265Publisher: Published<Bool>.Publisher { $useH265 }
 
-  @Published var bitrate: CKBitrate
+  @Published var bitrate: CKBitrate {
+    didSet {
+      trySendUpdate(bitrate: bitrate)
+    }
+  }
   var bitratePublished: Published<CKBitrate> { _bitrate }
   var bitratePublisher: Published<CKBitrate>.Publisher { $bitrate }
 
-  @Published var zoom: Double
+  @Published var zoom: Double {
+    didSet {
+      trySendUpdate(zoom: zoom)
+    }
+  }
   var zoomPublished: Published<Double> { _zoom }
   var zoomPublisher: Published<Double>.Publisher { $zoom }
 
-  @Published var fov: Int
+  @Published var fov: Int {
+    didSet {
+      trySendUpdate(fov: fov)
+    }
+  }
   var fovPublished: Published<Int> { _fov }
   var fovPublisher: Published<Int>.Publisher { $fov }
 
-  @Published var autofocus: CKAutoFocus
+  @Published var autofocus: CKAutoFocus {
+    didSet {
+      trySendUpdate(autofocus: autofocus)
+    }
+  }
   var autofocusPublished: Published<CKAutoFocus> { _autofocus }
   var autofocusPublisher: Published<CKAutoFocus>.Publisher { $autofocus }
 
@@ -119,13 +195,13 @@ final class ConfigureCameraViewModelImpl: ConfigureCameraViewModel {
     fps: 30,
     quality: .high,
     useH265: true,
-    bitrate: CKBitrate(bitsPerSecond: 30_000),
+    bitrate: CKBitrate(bitsPerSecond: 15_000_000),
     zoom: 1.0,
     fov: 45,
     autofocus: .contrastDetection
   )
 
-  static let sampleAdjustableConfiguration = CKUIAdjustableCameraConfiguration(
+  private static let sampleAdjustableConfiguration = CKUIAdjustableCameraConfiguration(
     sizes: [CKSize(width: 1920, height: 1080), CKSize(width: 1280, height: 720)],
     minZoom: 1.0,
     maxZoom: 1.5,
@@ -136,4 +212,35 @@ final class ConfigureCameraViewModelImpl: ConfigureCameraViewModel {
     supportedStabilizationModes: [.auto, .cinematic],
     isMulticamAvailable: true
   )
+
+  private func trySendUpdate(
+    isEnabled: Bool? = nil,
+    resolution: CKSize? = nil,
+    fps: Int? = nil,
+    quality: CKQuality? = nil,
+    useH265: Bool? = nil,
+    bitrate: CKBitrate? = nil,
+    zoom: Double? = nil,
+    fov: Int? = nil,
+    autofocus: CKAutoFocus? = nil
+  ) {
+    guard let devicesModel = devicesModel, var cameraDevice = self.cameraDevice else { return }
+    cameraDevice.isEnabled = isEnabled ?? self.isEnabled
+    var config = cameraDevice.configuration
+    config.size = resolution ?? self.resolution
+    config.fps = fps ?? self.fps
+    config.videoQuality = quality ?? self.quality
+    config.useH265 = useH265 ?? self.useH265
+    config.bitrate = bitrate ?? self.bitrate
+    config.zoom = zoom ?? self.zoom
+    config.fieldOfView = fov ?? self.fov
+    config.autoFocus = autofocus ?? self.autofocus
+    cameraDevice.configuration = config
+    self.cameraDevice = cameraDevice
+    devicesModel.update(device: .camera(device: cameraDevice))
+  }
+
+  private var cancellable: AnyCancellable!
+  private var cameraDevice: CameraDevice!
+  private weak var devicesModel: DevicesModel?
 }

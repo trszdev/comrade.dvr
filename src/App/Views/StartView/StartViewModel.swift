@@ -1,67 +1,89 @@
 import SwiftUI
+import Combine
 
 protocol StartViewModel: ObservableObject {
   var devices: [StartViewModelDevice] { get }
   var devicesPublished: Published<[StartViewModelDevice]> { get }
   var devicesPublisher: Published<[StartViewModelDevice]>.Publisher { get }
 
-  var canAddMicrophone: Bool { get }
-  var canAddMicrophonePublished: Published<Bool> { get }
-  var canAddMicrophonePublisher: Published<Bool>.Publisher { get }
-
-  var canAddCamera: Bool { get }
-  var canAddCameraPublished: Published<Bool> { get }
-  var canAddCameraPublisher: Published<Bool>.Publisher { get }
-
-  func presentAddMicrophoneScreen()
-  func presentAddCameraScreen()
   func presentConfigureDeviceScreen(for device: StartViewModelDevice)
+  func start()
 }
 
-final class StartViewModelImpl: StartViewModel {
+struct StartViewModelBuilder {
+  let devicesModel: DevicesModel
+  let configureMicrophoneViewBuilder: ConfigureMicrophoneViewBuilder
+  let configureCameraViewBuilder: ConfigureCameraViewBuilder
+  let rootVm: RootViewModelImpl
+  let navigationViewPresenter: NavigationViewPresenter
+
+  func makeViewModel() -> StartViewModelImpl<RootViewModelImpl> {
+    StartViewModelImpl(
+      devicesModel: devicesModel,
+      configureMicrophoneViewBuilder: configureMicrophoneViewBuilder,
+      configureCameraViewBuilder: configureCameraViewBuilder,
+      rootVm: rootVm,
+      navigationViewPresenter: navigationViewPresenter
+    )
+  }
+}
+
+final class StartViewModelImpl<RootVM: RootViewModel>: StartViewModel {
   init(
-    devices: [Bool] = [true, false, false],
-    canAddMicrophone: Bool = true,
-    canAddCamera: Bool = true,
-    presentAddNewDeviceScreenStub: @escaping () -> Void = {},
-    presentConfigureDeviceScreenStub: @escaping (_ device: StartViewModelDevice) -> Void = { _ in }
+    devicesModel: DevicesModel,
+    configureMicrophoneViewBuilder: ConfigureMicrophoneViewBuilder,
+    configureCameraViewBuilder: ConfigureCameraViewBuilder,
+    rootVm: RootVM,
+    navigationViewPresenter: NavigationViewPresenter
   ) {
-    self.devices = devices.map { isMicrophone in
-      StartViewModelDevice(
-        name: isMicrophone ? "Microphone" : "Camera",
-        details: isMicrophone ? ["Stereo", "High quality"] : ["HD", "60fps", "30kbit/s"],
-        sfSymbol: isMicrophone ? .mic : .camera,
-        isActive: Bool.random()
-      )
-    }
-    self.canAddMicrophone = canAddMicrophone
-    self.canAddCamera = canAddCamera
-    self.presentAddNewDeviceScreenStub = presentAddNewDeviceScreenStub
-    self.presentConfigureDeviceScreenStub = presentConfigureDeviceScreenStub
+    self.devices = devicesModel.devices.map { StartViewModelDevice.from(device: $0, appLocale: rootVm.appLocale) }
+    self.devicesModel = devicesModel
+    self.configureMicrophoneViewBuilder = configureMicrophoneViewBuilder
+    self.configureCameraViewBuilder = configureCameraViewBuilder
+    self.rootVm = rootVm
+    self.navigationViewPresenter = navigationViewPresenter
+    devicesModel.devicesPublisher
+      .sink { [weak self] devices in
+        self?.devices = devices.map { StartViewModelDevice.from(device: $0, appLocale: rootVm.appLocale) }
+      }
+      .store(in: &cancellables)
+    rootVm.appLocalePublisher
+      .sink { [weak self] appLocale in
+        self?.devices = devicesModel.devices.map { StartViewModelDevice.from(device: $0, appLocale: appLocale) }
+      }
+      .store(in: &cancellables)
   }
 
   @Published private(set) var devices: [StartViewModelDevice]
   var devicesPublished: Published<[StartViewModelDevice]> { _devices }
   var devicesPublisher: Published<[StartViewModelDevice]>.Publisher { $devices }
-  @Published private(set) var canAddMicrophone: Bool
-  var canAddMicrophonePublished: Published<Bool> { _canAddMicrophone }
-  var canAddMicrophonePublisher: Published<Bool>.Publisher { $canAddMicrophone }
-  @Published private(set) var canAddCamera: Bool
-  var canAddCameraPublished: Published<Bool> { _canAddCamera }
-  var canAddCameraPublisher: Published<Bool>.Publisher { $canAddCamera }
 
   func presentConfigureDeviceScreen(for device: StartViewModelDevice) {
-    presentConfigureDeviceScreenStub(device)
+    guard let device = devicesModel.device(id: device.id) else { return }
+    switch device {
+    case let .camera(cameraDevice):
+      let viewModel = ConfigureCameraViewModelImpl(devicesModel: devicesModel, cameraDevice: cameraDevice)
+      navigationViewPresenter.presentView(content: { [configureCameraViewBuilder] in
+        configureCameraViewBuilder.makeView(viewModel: viewModel)
+      })
+    case let .microphone(microphoneDevice):
+      let viewModel = ConfigureMicrophoneViewModelImpl(devicesModel: devicesModel, microphoneDevice: microphoneDevice)
+      navigationViewPresenter.presentView(content: { [configureMicrophoneViewBuilder] in
+        configureMicrophoneViewBuilder.makeView(viewModel: viewModel)
+      })
+    }
   }
 
-  func presentAddMicrophoneScreen() {
-    presentAddNewDeviceScreenStub()
+  func start() {
+    navigationViewPresenter.presentView {
+      Color.red.ignoresSafeArea()
+    }
   }
 
-  func presentAddCameraScreen() {
-    presentAddNewDeviceScreenStub()
-  }
-
-  private let presentAddNewDeviceScreenStub: () -> Void
-  private let presentConfigureDeviceScreenStub: (_ device: StartViewModelDevice) -> Void
+  private var cancellables = Set<AnyCancellable>()
+  private let devicesModel: DevicesModel
+  private let configureMicrophoneViewBuilder: ConfigureMicrophoneViewBuilder
+  private let configureCameraViewBuilder: ConfigureCameraViewBuilder
+  private let rootVm: RootVM
+  private let navigationViewPresenter: NavigationViewPresenter
 }

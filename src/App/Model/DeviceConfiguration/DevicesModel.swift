@@ -1,16 +1,18 @@
 import CameraKit
 import Combine
 
-protocol DevicesModel {
+protocol DevicesModel: AnyObject {
   var devicesPublisher: AnyPublisher<[Device], Never> { get }
   func devicePublisher(id: CKDeviceID) -> AnyPublisher<Device, Never>
   var devices: [Device] { get }
+  func device(id: CKDeviceID) -> Device?
   func update(device: Device)
 }
 
 final class DevicesModelImpl: DevicesModel {
-  init(devicesStore: DevicesStore) {
+  init(devicesStore: DevicesStore, nearestConfigurationPicker: CKNearestConfigurationPicker) {
     self.devicesStore = devicesStore
+    self.nearestConfigurationPicker = nearestConfigurationPicker
     let devices = devicesStore.loadStoredDevices()
     self.devicesSubject = CurrentValueSubject<[Device], Never>(devices)
     self.deviceSubjectMap = Dictionary(devices.enumerated().map { (index, device) in
@@ -29,25 +31,28 @@ final class DevicesModelImpl: DevicesModel {
 
   var devices: [Device] { devicesSubject.value }
 
+  func device(id: CKDeviceID) -> Device? {
+    deviceSubjectMap[id]?.1.value
+  }
+
   func update(device: Device) {
-    let subject: CurrentValueSubject<Device, Never>
-    let index: Int
-    if let (existingIndex, existingSubject) = deviceSubjectMap[device.id] {
-      subject = existingSubject
-      index = existingIndex
-    } else {
-      subject = CurrentValueSubject<Device, Never>(device)
-      index = deviceSubjectMap.count
-      deviceSubjectMap[device.id] = (index, subject)
-    }
+    guard let (index, subject) = deviceSubjectMap[device.id], subject.value != device else { return }
     var devices = self.devices
     devices[index] = device
-    subject.send(device)
+    let newConfiguration = nearestConfigurationPicker.nearestConfiguration(for: devices.configuration)
+    for device in devices {
+      guard let (existingIndex, existingSubject) = deviceSubjectMap[device.id] else { continue }
+      let newDevice = newConfiguration.device(device: device)
+      guard newDevice != existingSubject.value else { continue }
+      devices[existingIndex] = newDevice
+      existingSubject.send(newDevice)
+    }
+    devicesStore.store(devices: devices)
     devicesSubject.send(devices)
-    devicesStore.store(device: device)
   }
 
   private var devicesSubject: CurrentValueSubject<[Device], Never>
   private var deviceSubjectMap: [CKDeviceID: (Int, CurrentValueSubject<Device, Never>)]
   private let devicesStore: DevicesStore
+  private let nearestConfigurationPicker: CKNearestConfigurationPicker
 }

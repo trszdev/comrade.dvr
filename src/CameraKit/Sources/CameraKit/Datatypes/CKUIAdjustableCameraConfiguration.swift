@@ -1,4 +1,4 @@
-public struct CKUIAdjustableCameraConfiguration: Hashable {
+public struct CKUIAdjustableCameraConfiguration: Hashable, Codable {
   public let sizes: Set<CKSize>
   public let minZoom: Double
   public let maxZoom: Double

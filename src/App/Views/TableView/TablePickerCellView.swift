@@ -1,8 +1,9 @@
 import SwiftUI
 import Combine
+import AutocontainerKit
 
 struct TablePickerCellViewBuilder {
-  let modalViewPresenter: ModalViewPresenter
+  let locator: AKLocator
 
   func makeView<Value: Hashable>(
     selected: Binding<Value>,
@@ -15,7 +16,7 @@ struct TablePickerCellViewBuilder {
   ) -> TablePickerCellView<Value> {
     TablePickerCellView(
       selected: selected,
-      modalViewPresenter: modalViewPresenter,
+      modalViewPresenter: locator.resolve(ModalViewPresenter.self),
       title: title,
       rightText: rightText,
       sfSymbol: sfSymbol,
@@ -70,9 +71,7 @@ struct TablePickerCellView<Value: Hashable>: View {
     .onTapGesture {
       modalViewPresenter.presentView(content: modalContentView)
     }
-    .onAppear {
-      modalViewPresenter.submitPublisher.sink(receiveValue: onSubmit).store(in: &cancellables.value)
-    }
+    .onReceive(modalViewPresenter.submitPublisher, perform: onSubmit)
   }
 
   fileprivate func modalContentView() -> AnyView {
@@ -96,7 +95,6 @@ struct TablePickerCellView<Value: Hashable>: View {
   }
 
   @State private var modalSelected: Value
-  private var cancellables = Ref<Set<AnyCancellable>>([])
 }
 
 #if DEBUG

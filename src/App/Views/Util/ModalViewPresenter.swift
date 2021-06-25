@@ -47,8 +47,8 @@ final class ModalViewPresenterImpl: ModalViewPresenter {
   }
 
   private func dismissVc() {
-    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(250)) { [hostingVc] in
-      hostingVc?.dismiss(animated: false, completion: nil)
+    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(250)) { [weak self] in
+      self?.hostingVc?.dismiss(animated: false, completion: nil)
     }
   }
 
@@ -103,13 +103,13 @@ struct ModalView: View {
       dividerView
       HStack(spacing: 0) {
         buttonView(text: Text(appLocale.cancelString).bold(), action: {
-          self.close()
-          self.onCancel()
+          close()
+          onCancel()
         })
         dividerView
         buttonView(text: Text(appLocale.okString), action: {
-          self.close()
-          self.onSubmit()
+          close()
+          onSubmit()
         })
       }
       .frame(height: 45)

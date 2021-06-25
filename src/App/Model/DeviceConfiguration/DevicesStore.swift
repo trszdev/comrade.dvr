@@ -1,6 +1,6 @@
 import CameraKit
 
 protocol DevicesStore {
-  func store(device: Device)
+  func store(devices: [Device])
   func loadStoredDevices() -> [Device]
 }

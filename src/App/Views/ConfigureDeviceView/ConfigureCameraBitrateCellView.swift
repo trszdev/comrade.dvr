@@ -1,9 +1,10 @@
 import SwiftUI
 import Combine
 import CameraKit
+import AutocontainerKit
 
 struct ConfigureCameraBitrateCellViewBuilder {
-  let modalViewPresenter: ModalViewPresenter
+  let locator: AKLocator
 
   func makeView(
     selected: Binding<CKBitrate>,
@@ -16,7 +17,7 @@ struct ConfigureCameraBitrateCellViewBuilder {
     ConfigureCameraBitrateCellView(
       selected: selected,
       resolution: resolution,
-      modalViewPresenter: modalViewPresenter,
+      modalViewPresenter: locator.resolve(ModalViewPresenter.self),
       title: title,
       sfSymbol: sfSymbol,
       separator: separator,
@@ -67,14 +68,8 @@ struct ConfigureCameraBitrateCellView: View {
     .onTapGesture {
       modalViewPresenter.presentView(content: modalContentView)
     }
-    .onAppear {
-      modalViewPresenter.submitPublisher
-        .sink(receiveValue: onSubmit)
-        .store(in: &cancellables.value)
-      modalSelected.objectWillChange
-        .sink(receiveValue: modalViewPresenter.updateModal)
-        .store(in: &cancellables.value)
-    }
+    .onReceive(modalViewPresenter.submitPublisher, perform: onSubmit)
+    .onReceive(modalSelected.objectWillChange, perform: modalViewPresenter.updateModal)
   }
 
   func modalContentView() -> AnyView {
@@ -119,7 +114,6 @@ struct ConfigureCameraBitrateCellView: View {
     CKBitrate(bitsPerSecond: Int(modalSelected.value))
   }
 
-  private var cancellables = Ref<Set<AnyCancellable>>([])
   @StateObject private var modalSelected: ObservableValue<Double>
 }
 
@@ -158,7 +152,7 @@ private let resolutionSuggestions: [Int: [String: Double]] = [
 struct ConfigureCameraBitrateCellViewPreviews: PreviewProvider {
   static var previews: some View {
     let view = locator.resolve(ConfigureCameraBitrateCellViewBuilder .self).makeView(
-      selected: .constant(CKBitrate(bitsPerSecond: 30_000)),
+      selected: .constant(CKBitrate(bitsPerSecond: 15_000_000)),
       resolution: CKSize(width: 1920, height: 1080),
       title: { $0.fullAppName },
       sfSymbol: .language

@@ -1,14 +1,14 @@
 import Foundation
 
 public struct CKMicrophoneConfiguration: Identifiable, Hashable, Codable {
-  public let id: CKDeviceConfigurationID
-  public let orientation: CKOrientation
-  public let location: CKDeviceLocation
-  public let polarPattern: CKPolarPattern
-  public let duckOthers: Bool
-  public let useSpeaker: Bool
-  public let useBluetoothCompatibilityMode: Bool
-  public let audioQuality: CKQuality
+  public var id: CKDeviceConfigurationID
+  public var orientation: CKOrientation
+  public var location: CKDeviceLocation
+  public var polarPattern: CKPolarPattern
+  public var duckOthers: Bool
+  public var useSpeaker: Bool
+  public var useBluetoothCompatibilityMode: Bool
+  public var audioQuality: CKQuality
 
   public init(
     orientation: CKOrientation,

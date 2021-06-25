@@ -2,7 +2,7 @@ import SwiftUI
 
 struct StartView<ViewModel: StartViewModel>: View {
   @Environment(\.theme) var theme: Theme
-  @StateObject var viewModel: ViewModel
+  @ObservedObject var viewModel: ViewModel
   @Environment(\.appLocale) var appLocale: AppLocale
 
   var body: some View {
@@ -46,7 +46,7 @@ struct StartView<ViewModel: StartViewModel>: View {
         }
         Spacer()
       }
-      StartButtonView().frame(maxHeight: 50)
+      StartButtonView().frame(maxHeight: 50).onTapGesture(perform: viewModel.start)
     }
     .padding(10)
   }
@@ -56,9 +56,8 @@ struct StartView<ViewModel: StartViewModel>: View {
 
 struct StartViewPreview: PreviewProvider {
   static var previews: some View {
-    let viewModel = StartViewModelImpl(devices: [true, false, false])
+    let viewModel = locator.resolve(StartViewModelBuilder.self).makeViewModel()
     StartView(viewModel: viewModel)
-      .environment(\.theme, DarkTheme())
   }
 }
 

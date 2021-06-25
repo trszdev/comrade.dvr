@@ -9,36 +9,26 @@ protocol MainViewModel {
 
 final class MainViewModelImpl: MainViewModel {
   init(
-    navigationController: UINavigationController,
-    settingsViewBuilder: SettingsView.Builder,
-    configureCameraView: ConfigureMicrophoneViewBuilder
+    startViewModelBuilder: StartViewModelBuilder,
+    settingsViewBuilder: SettingsView.Builder
   ) {
-    self.navigationController = navigationController
-    self.settingsView = settingsViewBuilder.makeView()
-    self.configureCameraView = configureCameraView
+    self.startViewModelBuilder = startViewModelBuilder
+    self.settingsViewBuilder = settingsViewBuilder
   }
 
   var startView: AnyView {
-    let startViewModel = StartViewModelImpl(
-      presentAddNewDeviceScreenStub: { [navigationController] in
-        navigationController?.presentView {
-          Color.red.ignoresSafeArea()
-        }
-      },
-      presentConfigureDeviceScreenStub: { [navigationController, configureCameraView] _ in
-        navigationController?.presentView {
-          configureCameraView.makeView()
-        }
-      })
-    return StartView(viewModel: startViewModel).eraseToAnyView()
+    let viewModel = startViewModelBuilder.makeViewModel()
+    return StartView(viewModel: viewModel).eraseToAnyView()
   }
 
   var historyView: AnyView {
     HistoryView().eraseToAnyView()
   }
 
-  let settingsView: AnyView
+  var settingsView: AnyView {
+    settingsViewBuilder.makeView()
+  }
 
-  private let configureCameraView: ConfigureMicrophoneViewBuilder
-  private weak var navigationController: UINavigationController?
+  private let startViewModelBuilder: StartViewModelBuilder
+  private let settingsViewBuilder: SettingsView.Builder
 }

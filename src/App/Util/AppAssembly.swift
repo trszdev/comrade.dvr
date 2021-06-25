@@ -20,6 +20,7 @@ struct AppAssembly: AKAssembly {
     RootViewAssembly(),
     TableViewAssembly(),
     ConfigureDeviceViewAssembly(),
+    StartViewAssembly(),
   ]
 
   private let previewAssemblies: [AKAssembly]  = [
@@ -29,7 +30,6 @@ struct AppAssembly: AKAssembly {
 
   private let releaseAssemblies: [AKAssembly]  = [
     SettingsAssembly(),
-    // TODO
-    DevicesAssembly(isPreview: true),
+    DevicesAssembly(isPreview: false),
   ]
 }

@@ -1,4 +1,4 @@
-public struct CKDevice<Configuration: Hashable>: Identifiable, Hashable {
+public struct CKDevice<Configuration: Hashable>: Identifiable, Hashable, Equatable {
   public let id: CKDeviceID
   public let configuration: Configuration
 
