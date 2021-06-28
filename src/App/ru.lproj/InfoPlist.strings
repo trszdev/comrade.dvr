@@ -1,0 +1,3 @@
+NSMicrophoneUsageDescription = "Микрофон используется видеорегистратором";
+NSCameraUsageDescription = "Камера используется видеорегистратором";
+

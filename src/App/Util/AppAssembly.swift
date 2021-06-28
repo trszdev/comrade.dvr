@@ -11,6 +11,8 @@ struct AppAssembly: AKAssembly {
       container.registerMany(assemblies: releaseAssemblies)
     }
     container.registerMany(assemblies: commonAssemblies)
+    container.singleton.autoregister(value: UserDefaults.standard)
+    container.singleton.autoregister(value: UIApplication.shared)
   }
 
   private let commonAssemblies: [AKAssembly] = [

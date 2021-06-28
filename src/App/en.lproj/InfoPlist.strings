@@ -1,0 +1,2 @@
+NSMicrophoneUsageDescription = "Microphone is used by DVR";
+NSCameraUsageDescription = "Camera is used by DVR";

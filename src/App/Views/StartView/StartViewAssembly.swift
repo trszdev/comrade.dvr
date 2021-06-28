@@ -8,6 +8,8 @@ struct StartViewAssembly: AKAssembly {
       configureCameraViewBuilder:
       rootVm:
       navigationViewPresenter:
+      app:
+      ckManager:
     ))
   }
 }

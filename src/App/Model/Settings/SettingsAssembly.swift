@@ -11,8 +11,11 @@ struct SettingsAssembly: AKAssembly {
   }
 
   private func registerSetting<Value: SettingValue>(container: AKContainer, key: String, _ value: Value) {
-    let userDefaultsSetting = UserDefaultsSetting(key: key, userDefaults: .standard, value: value)
-    let setting = AnySetting(userDefaultsSetting)
-    container.singleton.autoregister(value: setting)
+    container.singleton.autoregister(construct: { (locator: AKLocator) -> AnySetting<Value> in
+      let userDefaults = locator.resolve(UserDefaults.self)!
+      let userDefaultsSetting = UserDefaultsSetting(key: key, userDefaults: userDefaults, value: value)
+      let setting = AnySetting(userDefaultsSetting)
+      return setting
+    })
   }
 }

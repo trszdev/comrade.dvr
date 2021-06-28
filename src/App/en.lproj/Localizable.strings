@@ -84,3 +84,10 @@
 "ORIENTATION" = "Orientation";
 "ORIENTATION_PORTRAIT" = "Portrait";
 "ORIENTATION_LANDSCAPE" = "Landscape";
+
+"OPEN_SYSTEM_SETTINGS" = "Open system settings";
+"CAMERA_PERMISSION_ALERT_TEXT" = "Camera permission is required to start DVR";
+"MIC_PERMISSION_ALERT_TEXT" = "Microphone permission is required to start DVR";
+
+"ERROR" = "Error";
+"ERROR_OCCURED_TEMPLATE" = "Error occured. %@";

@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import CameraKit
 
 protocol StartViewModel: ObservableObject {
   var devices: [StartViewModelDevice] { get }
@@ -8,6 +9,8 @@ protocol StartViewModel: ObservableObject {
 
   func presentConfigureDeviceScreen(for device: StartViewModelDevice)
   func start()
+  func openSettingsUrl()
+  var errors: AnyPublisher<Error, Never> { get }
 }
 
 struct StartViewModelBuilder {
@@ -16,6 +19,8 @@ struct StartViewModelBuilder {
   let configureCameraViewBuilder: ConfigureCameraViewBuilder
   let rootVm: RootViewModelImpl
   let navigationViewPresenter: NavigationViewPresenter
+  let app: UIApplication
+  let ckManager: CKManager
 
   func makeViewModel() -> StartViewModelImpl<RootViewModelImpl> {
     StartViewModelImpl(
@@ -23,7 +28,9 @@ struct StartViewModelBuilder {
       configureMicrophoneViewBuilder: configureMicrophoneViewBuilder,
       configureCameraViewBuilder: configureCameraViewBuilder,
       rootVm: rootVm,
-      navigationViewPresenter: navigationViewPresenter
+      navigationViewPresenter: navigationViewPresenter,
+      app: app,
+      ckManager: ckManager
     )
   }
 }
@@ -34,7 +41,9 @@ final class StartViewModelImpl<RootVM: RootViewModel>: StartViewModel {
     configureMicrophoneViewBuilder: ConfigureMicrophoneViewBuilder,
     configureCameraViewBuilder: ConfigureCameraViewBuilder,
     rootVm: RootVM,
-    navigationViewPresenter: NavigationViewPresenter
+    navigationViewPresenter: NavigationViewPresenter,
+    app: UIApplication,
+    ckManager: CKManager
   ) {
     self.devices = devicesModel.devices.map { StartViewModelDevice.from(device: $0, appLocale: rootVm.appLocale) }
     self.devicesModel = devicesModel
@@ -42,6 +51,8 @@ final class StartViewModelImpl<RootVM: RootViewModel>: StartViewModel {
     self.configureCameraViewBuilder = configureCameraViewBuilder
     self.rootVm = rootVm
     self.navigationViewPresenter = navigationViewPresenter
+    self.app = app
+    self.ckManager = ckManager
     devicesModel.devicesPublisher
       .sink { [weak self] devices in
         self?.devices = devices.map { StartViewModelDevice.from(device: $0, appLocale: rootVm.appLocale) }
@@ -75,15 +86,40 @@ final class StartViewModelImpl<RootVM: RootViewModel>: StartViewModel {
   }
 
   func start() {
-    navigationViewPresenter.presentView {
-      Color.red.ignoresSafeArea()
-    }
+    ckManager.sessionMakerPublisher
+      .tryMap { [devicesModel] sesionMaker in
+        let configuration = devicesModel.devices.configuration
+        return try sesionMaker.makeSession(configuration: configuration)
+      }
+      .mapError { [errorSubject] (error: Error) -> Error in
+        errorSubject.send(error)
+        return error
+      }
+      .receive(on: DispatchQueue.main)
+      .sink(receiveCompletion: { _ in}, receiveValue: { [navigationViewPresenter] (session: CKSession) in
+        navigationViewPresenter.presentView {
+          session.cameras.first!.value.previewView
+        }
+      })
+      .store(in: &cancellables)
   }
 
+  func openSettingsUrl() {
+    guard let url = URL(string: UIApplication.openSettingsURLString), app.canOpenURL(url) else { return }
+    app.open(url, options: [:], completionHandler: nil)
+  }
+
+  var errors: AnyPublisher<Error, Never> {
+    errorSubject.eraseToAnyPublisher()
+  }
+
+  private let errorSubject = PassthroughSubject<Error, Never>()
   private var cancellables = Set<AnyCancellable>()
   private let devicesModel: DevicesModel
   private let configureMicrophoneViewBuilder: ConfigureMicrophoneViewBuilder
   private let configureCameraViewBuilder: ConfigureCameraViewBuilder
   private let rootVm: RootVM
   private let navigationViewPresenter: NavigationViewPresenter
+  private let app: UIApplication
+  private let ckManager: CKManager
 }

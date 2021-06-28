@@ -84,3 +84,10 @@
 "ORIENTATION" = "Ориентация";
 "ORIENTATION_PORTRAIT" = "Портрет";
 "ORIENTATION_LANDSCAPE" = "Ландшафт";
+
+"OPEN_SYSTEM_SETTINGS" = "Открыть системные настройки";
+"CAMERA_PERMISSION_ALERT_TEXT" = "Доступ к камере нужен для работы видеорегистратора";
+"MIC_PERMISSION_ALERT_TEXT" = "Доступ к микрофону нужен для работы видеорегистратора";
+
+"ERROR" = "Ошибка";
+"ERROR_OCCURED_TEMPLATE" = "Произошла ошибка. %@";

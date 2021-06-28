@@ -1,4 +1,5 @@
 import SwiftUI
+import CameraKit
 
 struct StartView<ViewModel: StartViewModel>: View {
   @Environment(\.theme) var theme: Theme
@@ -14,10 +15,14 @@ struct StartView<ViewModel: StartViewModel>: View {
             devicesView(viewHeight: geometry.size.height)
           }
         }
-        startHeaderView()
-          .background(theme.startHeaderBackgroundColor.ignoresSafeArea())
+        startHeaderView().background(theme.startHeaderBackgroundColor.ignoresSafeArea())
       }
     }
+    .onReceive(viewModel.errors) { error in
+      self.error = error
+      showAlert = true
+    }
+    .alert(isPresented: $showAlert, content: alertContent)
   }
 
   func devicesView(viewHeight: CGFloat) -> some View {
@@ -49,6 +54,27 @@ struct StartView<ViewModel: StartViewModel>: View {
     }
     .padding(10)
   }
+
+  private func alertContent() -> Alert {
+    guard let error = error else { return Alert(title: Text("")) }
+    switch error {
+    case let CKPermissionError.noPermission(mediaType):
+      return Alert(
+        title: Text(appLocale.warningString),
+        message: Text(mediaType == .audio ?
+          appLocale.micPermissionAlertTextString :
+          appLocale.cameraPermissionAlertTextString
+        ),
+        primaryButton: .cancel(),
+        secondaryButton: .default(Text(appLocale.openSystemSettingsString), action: viewModel.openSettingsUrl)
+      )
+    default:
+      return Alert(title: Text(appLocale.errorString), message: Text(appLocale.errorBody(error)))
+    }
+  }
+
+  @State private var showAlert = false
+  @State private var error: Error?
 }
 
 #if DEBUG

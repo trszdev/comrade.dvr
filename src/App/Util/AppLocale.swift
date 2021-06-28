@@ -1,8 +1,10 @@
+// swiftlint:disable type_body_length
 import Foundation
 import CameraKit
 
 protocol AppLocale {
   var currentLocale: Locale? { get }
+  func errorBody(_ error: Error) -> String
   func orientation(_ orientation: OrientationSetting) -> String
   func size(_ size: CKSize) -> String
   func fps(_ fps: Int) -> String
@@ -63,6 +65,10 @@ protocol AppLocale {
   var restoreDefaultSettingsAskString: String { get }
   var restoreDefaultSettingsConfirmString: String { get }
   var orientationString: String { get }
+  var openSystemSettingsString: String { get }
+  var cameraPermissionAlertTextString: String { get }
+  var micPermissionAlertTextString: String { get }
+  var errorString: String { get }
 }
 
 extension Default {
@@ -88,6 +94,11 @@ struct LocaleImpl: AppLocale {
   }
 
   var currentLocale: Locale?
+
+  func errorBody(_ error: Error) -> String {
+    let template = localizedString("ERROR_OCCURED_TEMPLATE")
+    return String(format: template, error.localizedDescription)
+  }
 
   func orientation(_ orientation: OrientationSetting) -> String {
     switch orientation {
@@ -303,6 +314,21 @@ struct LocaleImpl: AppLocale {
   var restoreDefaultSettingsAskString: String { localizedString("RESTORE_DEFAULT_SETTINGS_ASK") }
   var restoreDefaultSettingsConfirmString: String { localizedString("RESTORE_DEFAULT_SETTINGS_CONFIRM") }
   var orientationString: String { localizedString("ORIENTATION") }
+  var openSystemSettingsString: String { localizedString("OPEN_SYSTEM_SETTINGS") }
+  var cameraPermissionAlertTextString: String { localizedString("CAMERA_PERMISSION_ALERT_TEXT") }
+  var micPermissionAlertTextString: String { localizedString("MIC_PERMISSION_ALERT_TEXT") }
+  var errorString: String { localizedString("ERROR") }
+
+  private func error(_ error: CKPermissionError) -> String? {
+    switch error {
+    case .noPermission(.audio):
+      return ""
+    case .noPermission(.video):
+      return ""
+    case .noDescription:
+      return nil
+    }
+  }
 
   private func localizedString(_ key: String) -> String {
     if let bundle = bundle {

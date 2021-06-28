@@ -24,7 +24,6 @@ struct DevicesAssembly: AKAssembly {
         construct: UserDefaultsDevicesStore.init(ckManager:userDefaults:)
       )
     }
-    container.singleton.autoregister(value: UserDefaults.standard)
     container.singleton.autoregister(
       DevicesModel.self,
       construct: DevicesModelImpl.init(devicesStore:nearestConfigurationPicker:)
