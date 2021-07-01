@@ -23,6 +23,7 @@ struct AppAssembly: AKAssembly {
     TableViewAssembly(),
     ConfigureDeviceViewAssembly(),
     StartViewAssembly(),
+    SessionViewAssembly(),
   ]
 
   private let previewAssemblies: [AKAssembly]  = [

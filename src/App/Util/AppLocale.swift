@@ -66,9 +66,10 @@ protocol AppLocale {
   var restoreDefaultSettingsConfirmString: String { get }
   var orientationString: String { get }
   var openSystemSettingsString: String { get }
-  var cameraPermissionAlertTextString: String { get }
-  var micPermissionAlertTextString: String { get }
   var errorString: String { get }
+  var pressButtonTwiceString: String { get }
+  var microphoneMutedString: String { get }
+  var microphoneUnmutedString: String { get }
 }
 
 extension Default {
@@ -96,8 +97,19 @@ struct LocaleImpl: AppLocale {
   var currentLocale: Locale?
 
   func errorBody(_ error: Error) -> String {
-    let template = localizedString("ERROR_OCCURED_TEMPLATE")
-    return String(format: template, error.localizedDescription)
+    switch error {
+    case CKPermissionError.noPermission(mediaType: .audio):
+      return localizedString("CAMERA_PERMISSION_ALERT_TEXT")
+    case CKPermissionError.noPermission(mediaType: .video):
+      return localizedString("MIC_PERMISSION_ALERT_TEXT")
+    case CKAVCameraSessionError.hardwareCostExceeded:
+      return localizedString("HARDWARE_COST_EXCEEDED")
+    case CKAVCameraSessionError.systemPressureExceeded:
+      return localizedString("SYSTEM_PRESSURE_EXCEEDED")
+    default:
+      let template = localizedString("ERROR_OCCURED_TEMPLATE")
+      return String(format: template, error.localizedDescription)
+    }
   }
 
   func orientation(_ orientation: OrientationSetting) -> String {
@@ -315,20 +327,10 @@ struct LocaleImpl: AppLocale {
   var restoreDefaultSettingsConfirmString: String { localizedString("RESTORE_DEFAULT_SETTINGS_CONFIRM") }
   var orientationString: String { localizedString("ORIENTATION") }
   var openSystemSettingsString: String { localizedString("OPEN_SYSTEM_SETTINGS") }
-  var cameraPermissionAlertTextString: String { localizedString("CAMERA_PERMISSION_ALERT_TEXT") }
-  var micPermissionAlertTextString: String { localizedString("MIC_PERMISSION_ALERT_TEXT") }
   var errorString: String { localizedString("ERROR") }
-
-  private func error(_ error: CKPermissionError) -> String? {
-    switch error {
-    case .noPermission(.audio):
-      return ""
-    case .noPermission(.video):
-      return ""
-    case .noDescription:
-      return nil
-    }
-  }
+  var pressButtonTwiceString: String { localizedString("PRESS_BUTTON_TWICE") }
+  var microphoneMutedString: String { localizedString("MICROPHONE_MUTED") }
+  var microphoneUnmutedString: String { localizedString("MICROPHONE_UNMUTED") }
 
   private func localizedString(_ key: String) -> String {
     if let bundle = bundle {

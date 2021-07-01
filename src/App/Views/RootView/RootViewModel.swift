@@ -16,11 +16,13 @@ protocol RootViewModel: ObservableObject {
 final class RootViewModelImpl: RootViewModel {
   init(
     themeSetting: AnySetting<ThemeSetting>,
-    languageSetting: AnySetting<LanguageSetting>
+    appLocaleModel: AppLocaleModel,
+    application: UIApplication
   ) {
     self.themeSetting = themeSetting.value
     self.theme = WhiteTheme()
-    self.appLocale = languageSetting.value.appLocale
+    self.appLocale = appLocaleModel.appLocale
+    self.application = application
     updateCurrentTheme()
     themeSetting.publisher
       .sink { [weak self] newThemeSetting in
@@ -29,10 +31,8 @@ final class RootViewModelImpl: RootViewModel {
         self.updateCurrentTheme()
       }
       .store(in: &cancellables)
-    languageSetting.publisher
-      .sink { [weak self] newLanguageSetting in
-        self?.appLocale = newLanguageSetting.appLocale
-      }
+    appLocaleModel.appLocalePublisher
+      .assign(to: \.appLocale, on: self)
       .store(in: &cancellables)
   }
 
@@ -49,7 +49,7 @@ final class RootViewModelImpl: RootViewModel {
 
   private func updateCurrentTheme(userInterfaceStyle: UIUserInterfaceStyle? = nil) {
     let isDark: Bool
-    for window in UIApplication.shared.windows {
+    for window in application.windows {
       window.overrideUserInterfaceStyle = themeSetting.userInterfaceStyle
     }
     switch themeSetting {
@@ -63,6 +63,7 @@ final class RootViewModelImpl: RootViewModel {
     theme = isDark ? DarkTheme() : WhiteTheme()
   }
 
+  private let application: UIApplication
   private var cancellables = Set<AnyCancellable>()
   private var themeSetting: ThemeSetting
 }
@@ -76,19 +77,6 @@ private extension ThemeSetting {
       return .light
     case .system:
       return .unspecified
-    }
-  }
-}
-
-private extension LanguageSetting {
-  var appLocale: AppLocale {
-    switch self {
-    case .english:
-      return LocaleImpl(languageCode: .en)
-    case .system:
-      return LocaleImpl()
-    case .russian:
-      return LocaleImpl(languageCode: .ru)
     }
   }
 }

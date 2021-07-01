@@ -11,6 +11,7 @@ struct SettingsViewModelImpl: SettingsViewModel {
   let settingsAssetLengthCellViewBuilder: SettingsPickerCellViewBuilder<AssetLengthSetting>
   let settingsThemeCellViewBuilder: SettingsPickerCellViewBuilder<ThemeSetting>
   let settingsOrientationCellViewBuilder: SettingsPickerCellViewBuilder<OrientationSetting>
+  let settingsRateAppCellViewBuilder: SettingsRateAppCellView.Builder
 
   var sections: [[AnyView]] {[
     [
@@ -26,7 +27,7 @@ struct SettingsViewModelImpl: SettingsViewModel {
     [
       SettingsRestoreCellView().eraseToAnyView(),
       settingsContactUsCellViewBuilder.makeView().eraseToAnyView(),
-      SettingsRateAppCellView().eraseToAnyView(),
+      settingsRateAppCellViewBuilder.makeView().eraseToAnyView(),
       SettingsClearAssetsCellView().eraseToAnyView(),
     ],
   ]}

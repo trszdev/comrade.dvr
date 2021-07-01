@@ -2,6 +2,14 @@ import SwiftUI
 import StoreKit
 
 struct SettingsRateAppCellView: View {
+  struct Builder {
+    let application: UIApplication
+
+    func makeView() -> SettingsRateAppCellView {
+      SettingsRateAppCellView(application: application)
+    }
+  }
+
   @Environment(\.appLocale) var appLocale: AppLocale
 
   var body: some View {
@@ -12,11 +20,13 @@ struct SettingsRateAppCellView: View {
       separator: []
     )
     .onTapGesture {
-      let scenes = UIApplication.shared.connectedScenes
+      let scenes = application.connectedScenes
       guard let scene = scenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene else {
         return
       }
       SKStoreReviewController.requestReview(in: scene)
     }
   }
+
+  let application: UIApplication
 }

@@ -11,54 +11,59 @@ protocol StartViewModel: ObservableObject {
   func start()
   func openSettingsUrl()
   var errors: AnyPublisher<Error, Never> { get }
+
+  var isStartButtonBusy: Bool { get }
+  var isStartButtonBusyPublished: Published<Bool> { get }
+  var isStartButtonBusyPublisher: Published<Bool>.Publisher { get }
 }
 
 struct StartViewModelBuilder {
   let devicesModel: DevicesModel
   let configureMicrophoneViewBuilder: ConfigureMicrophoneViewBuilder
   let configureCameraViewBuilder: ConfigureCameraViewBuilder
-  let rootVm: RootViewModelImpl
+  let appLocaleModel: AppLocaleModel
   let navigationViewPresenter: NavigationViewPresenter
   let app: UIApplication
-  let ckManager: CKManager
+  let sessionModel: SessionStarter
 
-  func makeViewModel() -> StartViewModelImpl<RootViewModelImpl> {
+  func makeViewModel() -> StartViewModelImpl {
     StartViewModelImpl(
       devicesModel: devicesModel,
       configureMicrophoneViewBuilder: configureMicrophoneViewBuilder,
       configureCameraViewBuilder: configureCameraViewBuilder,
-      rootVm: rootVm,
+      appLocaleModel: appLocaleModel,
       navigationViewPresenter: navigationViewPresenter,
       app: app,
-      ckManager: ckManager
+      sessionModel: sessionModel
     )
   }
 }
 
-final class StartViewModelImpl<RootVM: RootViewModel>: StartViewModel {
+final class StartViewModelImpl: StartViewModel {
   init(
     devicesModel: DevicesModel,
     configureMicrophoneViewBuilder: ConfigureMicrophoneViewBuilder,
     configureCameraViewBuilder: ConfigureCameraViewBuilder,
-    rootVm: RootVM,
+    appLocaleModel: AppLocaleModel,
     navigationViewPresenter: NavigationViewPresenter,
     app: UIApplication,
-    ckManager: CKManager
+    sessionModel: SessionStarter
   ) {
-    self.devices = devicesModel.devices.map { StartViewModelDevice.from(device: $0, appLocale: rootVm.appLocale) }
+    self.devices = devicesModel.devices.map {
+      StartViewModelDevice.from(device: $0, appLocale: appLocaleModel.appLocale)
+    }
     self.devicesModel = devicesModel
     self.configureMicrophoneViewBuilder = configureMicrophoneViewBuilder
     self.configureCameraViewBuilder = configureCameraViewBuilder
-    self.rootVm = rootVm
     self.navigationViewPresenter = navigationViewPresenter
     self.app = app
-    self.ckManager = ckManager
+    self.sessionModel = sessionModel
     devicesModel.devicesPublisher
       .sink { [weak self] devices in
-        self?.devices = devices.map { StartViewModelDevice.from(device: $0, appLocale: rootVm.appLocale) }
+        self?.devices = devices.map { StartViewModelDevice.from(device: $0, appLocale: appLocaleModel.appLocale) }
       }
       .store(in: &cancellables)
-    rootVm.appLocalePublisher
+    appLocaleModel.appLocalePublisher
       .sink { [weak self] appLocale in
         self?.devices = devicesModel.devices.map { StartViewModelDevice.from(device: $0, appLocale: appLocale) }
       }
@@ -86,21 +91,17 @@ final class StartViewModelImpl<RootVM: RootViewModel>: StartViewModel {
   }
 
   func start() {
-    ckManager.sessionMakerPublisher
-      .tryMap { [devicesModel] sesionMaker in
-        let configuration = devicesModel.devices.configuration
-        return try sesionMaker.makeSession(configuration: configuration)
-      }
-      .mapError { [errorSubject] (error: Error) -> Error in
-        errorSubject.send(error)
-        return error
-      }
+    isStartButtonBusy = true
+    sessionModel.startSession()
       .receive(on: DispatchQueue.main)
-      .sink(receiveCompletion: { _ in}, receiveValue: { [navigationViewPresenter] (session: CKSession) in
-        navigationViewPresenter.presentView {
-          session.cameras.first!.value.previewView
-        }
-      })
+      .catch { [weak self, errorSubject] (error: Error) -> Empty<Void, Never> in
+        errorSubject.send(error)
+        self?.isStartButtonBusy = false
+        return Empty()
+      }
+      .sink { [weak self] in
+        self?.isStartButtonBusy = false
+      }
       .store(in: &cancellables)
   }
 
@@ -113,13 +114,16 @@ final class StartViewModelImpl<RootVM: RootViewModel>: StartViewModel {
     errorSubject.eraseToAnyPublisher()
   }
 
+  @Published private(set) var isStartButtonBusy: Bool = false
+  var isStartButtonBusyPublished: Published<Bool> { _isStartButtonBusy }
+  var isStartButtonBusyPublisher: Published<Bool>.Publisher { $isStartButtonBusy }
+
   private let errorSubject = PassthroughSubject<Error, Never>()
   private var cancellables = Set<AnyCancellable>()
   private let devicesModel: DevicesModel
   private let configureMicrophoneViewBuilder: ConfigureMicrophoneViewBuilder
   private let configureCameraViewBuilder: ConfigureCameraViewBuilder
-  private let rootVm: RootVM
   private let navigationViewPresenter: NavigationViewPresenter
   private let app: UIApplication
-  private let ckManager: CKManager
+  private let sessionModel: SessionStarter
 }

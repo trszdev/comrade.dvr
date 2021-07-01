@@ -8,5 +8,6 @@ struct UtilAssembly: AKAssembly {
     container.singleton.autoregister(NavigationViewPresenter.self, value: navigationController)
     container.transient.autoregister(construct: CustomNavigationViewBuilder.init(navigationViewController:))
     container.transient.autoregister(ModalViewPresenter.self, construct: ModalViewPresenterImpl.init)
+    container.transient.autoregister(Haptics.self, construct: HapticsImpl.init)
   }
 }

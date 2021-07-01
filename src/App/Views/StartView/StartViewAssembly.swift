@@ -6,10 +6,10 @@ struct StartViewAssembly: AKAssembly {
       devicesModel:
       configureMicrophoneViewBuilder:
       configureCameraViewBuilder:
-      rootVm:
+      appLocaleModel:
       navigationViewPresenter:
       app:
-      ckManager:
+      sessionModel:
     ))
   }
 }

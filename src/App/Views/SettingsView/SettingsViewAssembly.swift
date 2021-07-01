@@ -16,10 +16,14 @@ struct SettingsViewAssembly: AKAssembly {
         settingsAssetLengthCellViewBuilder:
         settingsThemeCellViewBuilder:
         settingsOrientationCellViewBuilder:
+        settingsRateAppCellViewBuilder:
       )
     )
     container.transient.autoregister(construct: SettingsView.Builder.init(viewModel:))
-    container.transient.autoregister(construct: SettingsContactUsCellView.Builder.init(navigationViewPresenter:))
+    container.transient.autoregister(
+      construct: SettingsContactUsCellView.Builder.init(application:navigationViewPresenter:)
+    )
+    container.transient.autoregister(construct: SettingsRateAppCellView.Builder.init(application:))
   }
 
   private func registerSetting<Value: SettingValue>(container: AKContainer, _ valueType: Value.Type) {

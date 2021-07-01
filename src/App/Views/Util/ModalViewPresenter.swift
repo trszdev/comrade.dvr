@@ -8,6 +8,10 @@ protocol ModalViewPresenter: ViewPresenter {
 }
 
 final class ModalViewPresenterImpl: ModalViewPresenter {
+  init(application: UIApplication) {
+    self.application = application
+  }
+
   func presentView<Content>(animated: Bool, @ViewBuilder content: @escaping () -> Content) where Content: View {
     let observableUnit = ObservableUnit()
     let modalView = ModalView(
@@ -19,7 +23,7 @@ final class ModalViewPresenterImpl: ModalViewPresenter {
     let hostingVc = UIHostingController(rootView: modalView)
     hostingVc.view.backgroundColor = .clear
     hostingVc.modalPresentationStyle = .overFullScreen
-    guard let topViewController = UIApplication.shared.windows.first?.topViewController else { return }
+    guard let topViewController = application.windows.first?.topViewController else { return }
     self.hostingVc = hostingVc
     self.observableUnit = observableUnit
     topViewController.present(hostingVc, animated: false, completion: nil)
@@ -52,6 +56,7 @@ final class ModalViewPresenterImpl: ModalViewPresenter {
     }
   }
 
+  private let application: UIApplication
   private let submitPublisherInternal = PassthroughSubject<Void, Never>()
   private let cancelPublisherInternal = PassthroughSubject<Void, Never>()
   private weak var hostingVc: UIViewController?

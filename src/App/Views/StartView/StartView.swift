@@ -50,7 +50,9 @@ struct StartView<ViewModel: StartViewModel>: View {
         }
         Spacer()
       }
-      StartButtonView().frame(maxHeight: 50).onTapGesture(perform: viewModel.start)
+      StartButtonView(isBusy: viewModel.isStartButtonBusy)
+        .frame(maxHeight: 50)
+        .onTapGesture(perform: viewModel.start)
     }
     .padding(10)
   }
@@ -58,13 +60,10 @@ struct StartView<ViewModel: StartViewModel>: View {
   private func alertContent() -> Alert {
     guard let error = error else { return Alert(title: Text("")) }
     switch error {
-    case let CKPermissionError.noPermission(mediaType):
+    case CKPermissionError.noPermission:
       return Alert(
         title: Text(appLocale.warningString),
-        message: Text(mediaType == .audio ?
-          appLocale.micPermissionAlertTextString :
-          appLocale.cameraPermissionAlertTextString
-        ),
+        message: Text(appLocale.errorBody(error)),
         primaryButton: .cancel(),
         secondaryButton: .default(Text(appLocale.openSystemSettingsString), action: viewModel.openSettingsUrl)
       )

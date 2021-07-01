@@ -3,13 +3,15 @@ import MessageUI
 
 struct SettingsContactUsCellView: View {
   struct Builder {
+    let application: UIApplication
     let navigationViewPresenter: NavigationViewPresenter
 
     func makeView() -> SettingsContactUsCellView {
-      SettingsContactUsCellView(navigationViewPresenter: navigationViewPresenter)
+      SettingsContactUsCellView(application: application, navigationViewPresenter: navigationViewPresenter)
     }
   }
 
+  let application: UIApplication
   let navigationViewPresenter: NavigationViewPresenter
   @Environment(\.appLocale) var appLocale: AppLocale
 
@@ -34,10 +36,10 @@ struct SettingsContactUsCellView: View {
 
   private func tryOpenMailtoURL() {
     guard let mailtoUrl = URL(string: "mailto:\(appLocale.appContactEmail)"),
-      UIApplication.shared.canOpenURL(mailtoUrl)
+      application.canOpenURL(mailtoUrl)
     else {
       return
     }
-    UIApplication.shared.open(mailtoUrl, options: [:], completionHandler: nil)
+    application.open(mailtoUrl, options: [:], completionHandler: nil)
   }
 }

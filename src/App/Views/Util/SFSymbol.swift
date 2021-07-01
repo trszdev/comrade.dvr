@@ -33,6 +33,8 @@ enum SFSymbol: String {
   case deviceLocation = "skew"
   case restore = "arrow.counterclockwise"
   case orientation = "arrow.2.squarepath"
+  case cross = "multiply"
+  case info = "info.circle"
 }
 
 extension Image {

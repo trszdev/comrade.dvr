@@ -91,3 +91,10 @@
 
 "ERROR" = "Error";
 "ERROR_OCCURED_TEMPLATE" = "Error occured. %@";
+"PRESS_BUTTON_TWICE" = "Press button twice";
+
+"MICROPHONE_MUTED" = "Microphone muted";
+"MICROPHONE_UNMUTED" = "Microphone unmuted";
+
+"HARDWARE_COST_EXCEEDED" = "Hardware cost exceeded, try use less demanding configuration";
+"SYSTEM_PRESSURE_EXCEEDED" = "System pressure exceeded, try use less demanding configuration and close other apps";

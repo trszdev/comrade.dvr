@@ -1,22 +1,30 @@
 import SwiftUI
 
 struct StartButtonView: View {
+  let isBusy: Bool
   @Environment(\.theme) var theme: Theme
   @Environment(\.appLocale) var appLocale: AppLocale
 
   var body: some View {
     GeometryReader { geometry in
-      let backgroundColor = isHovered ? theme.accentColorHover : theme.accentColor
+      let backgroundColor = (isHovered || isBusy) ? theme.accentColorHover : theme.accentColor
+      let foregroundColor = theme.startHeaderBackgroundColor
       ZStack {
-        Rectangle().foregroundColor(theme.startHeaderBackgroundColor)
+        Rectangle().foregroundColor(foregroundColor)
         RoundedRectangle(cornerRadius: geometry.defaultCornerRadius).foregroundColor(backgroundColor)
-        Text(appLocale.startRecordingString)
-          .foregroundColor(theme.startHeaderBackgroundColor)
-          .font(.title3)
-          .minimumScaleFactor(0.5)
+        HStack {
+          isBusy ?
+            ActivityIndicator(isAnimating: true) { $0.color = UIColor(foregroundColor) } :
+            nil
+          Text(appLocale.startRecordingString)
+            .foregroundColor(foregroundColor)
+            .font(.title3)
+            .minimumScaleFactor(0.5)
+        }
       }
       .touchdownOverlay(isHovered: $isHovered)
       .defaultAnimation
+      .allowsHitTesting(!isBusy)
     }
   }
 
@@ -27,8 +35,8 @@ struct StartButtonView: View {
 
 struct StartButtonViewPreview: PreviewProvider {
   static var previews: some View {
-    StartButtonView()
-      .previewLayout(.fixed(width: 300, height: 50))
+    StartButtonView(isBusy: false).previewLayout(.fixed(width: 300, height: 50))
+    StartButtonView(isBusy: true).previewLayout(.fixed(width: 300, height: 50))
   }
 }
 
