@@ -43,6 +43,7 @@ struct StartDeviceView: View {
     .touchdownOverlay(isHovered: $isHovered)
     .defaultAnimation
     .aspectRatio(1, contentMode: .fill)
+    .id(viewModel.id)
   }
 
   private func title(width: CGFloat) -> some View {

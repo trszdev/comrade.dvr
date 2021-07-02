@@ -25,6 +25,7 @@ struct HistoryView: View {
         historyView(bottomPadding: geometry.safeAreaInsets.bottom)
       }
       .background(theme.mainBackgroundColor.ignoresSafeArea())
+      .navigationBarHidden(true)
     }
   }
 

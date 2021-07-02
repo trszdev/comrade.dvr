@@ -14,7 +14,7 @@ struct SettingsView: View {
   let viewModel: SettingsViewModel
 
   var body: some View {
-    TableView(sections: viewModel.sections)
+    TableView(sections: viewModel.sections).navigationBarHidden(true)
   }
 }
 

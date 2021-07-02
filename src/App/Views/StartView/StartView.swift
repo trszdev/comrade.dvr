@@ -23,6 +23,7 @@ struct StartView<ViewModel: StartViewModel>: View {
       showAlert = true
     }
     .alert(isPresented: $showAlert, content: alertContent)
+    .navigationBarHidden(true)
   }
 
   func devicesView(viewHeight: CGFloat) -> some View {

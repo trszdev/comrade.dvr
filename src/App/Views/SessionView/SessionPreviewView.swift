@@ -1,36 +1,62 @@
 import SwiftUI
+import CameraKit
 
 struct SessionPreviewView: View {
   let previews: [AnyView]
   let pinnedView: AnyView
+  let orientation: CKOrientation
 
   var body: some View {
-    VStack {
-      ScrollView(.horizontal, showsIndicators: false) {
-        LazyHGrid(rows: [GridItem(.fixed(cameraPreviewSize))], pinnedViews: [.sectionFooters]) {
-          Section(footer: pinnedView) {
-            ForEach(0..<selectedIndex, id: \.self) { index in
-              previews[index]
-                .frame(width: cameraPreviewSize, height: cameraPreviewSize)
-                .border(Color.white, width: 1)
-                .onTapGesture {
-                  selectedIndex = index
-                }
-            }
-            ForEach(selectedIndex+1..<previews.count, id: \.self) { index in
-              previews[index]
-                .frame(width: cameraPreviewSize, height: cameraPreviewSize)
-                .border(Color.white, width: 1)
-                .onTapGesture {
-                  selectedIndex = index
-                }
-            }
-          }
-
+    switch orientation {
+    case .landscapeLeft, .landscapeRight:
+      HStack {
+        ScrollView(.vertical, showsIndicators: false) {
+          LazyVGrid(
+            columns: [GridItem(.fixed(cameraPreviewSize))],
+            pinnedViews: [.sectionFooters],
+            content: contentView
+          )
+          .frame(width: cameraPreviewSize)
         }
-        .frame(height: cameraPreviewSize)
+        previews[selectedIndex]
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+          .id(selectedIndex)
       }
-      previews[selectedIndex].frame(maxWidth: .infinity, maxHeight: .infinity)
+    case .portrait, .portraitUpsideDown:
+      VStack {
+        ScrollView(.horizontal, showsIndicators: false) {
+          LazyHGrid(
+            rows: [GridItem(.fixed(cameraPreviewSize))],
+            pinnedViews: [.sectionFooters],
+            content: contentView
+          )
+          .frame(height: cameraPreviewSize)
+        }
+        previews[selectedIndex]
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+          .id(selectedIndex)
+      }
+    }
+  }
+
+  private func contentView() -> some View {
+    Section(footer: pinnedView) {
+      ForEach(0..<selectedIndex, id: \.self) { index in
+        previews[index]
+          .frame(width: cameraPreviewSize, height: cameraPreviewSize)
+          .border(Color.white, width: 1)
+          .onTapGesture {
+            selectedIndex = index
+          }
+      }
+      ForEach(selectedIndex+1..<previews.count, id: \.self) { index in
+        previews[index]
+          .frame(width: cameraPreviewSize, height: cameraPreviewSize)
+          .border(Color.white, width: 1)
+          .onTapGesture {
+            selectedIndex = index
+          }
+      }
     }
   }
 
@@ -50,7 +76,7 @@ struct SessionPreviewViewPreview: PreviewProvider {
           Color.red.eraseToAnyView(),
           Color.green.eraseToAnyView(),
           Color.orange.eraseToAnyView(),
-        ], pinnedView: Color.blue.eraseToAnyView())
+        ], pinnedView: Color.blue.eraseToAnyView(), orientation: .portrait)
       }
       .background(Color.black)
       .frame(width: 400, height: 700)
@@ -60,7 +86,7 @@ struct SessionPreviewViewPreview: PreviewProvider {
           Color.red.eraseToAnyView(),
           Color.green.eraseToAnyView(),
           Color.orange.eraseToAnyView(),
-        ], pinnedView: Color.blue.eraseToAnyView())
+        ], pinnedView: Color.blue.eraseToAnyView(), orientation: .landscapeRight)
       }
       .background(Color.gray)
       .frame(width: 700, height: 400)

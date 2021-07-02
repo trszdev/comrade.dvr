@@ -34,7 +34,7 @@ struct SessionView<ViewModel: SessionViewModel>: View {
     switch orientation {
     case .landscapeLeft, .landscapeRight:
       return landscapeBody.eraseToAnyView()
-    default:
+    case .portrait, .portraitUpsideDown:
       return portraitBody.eraseToAnyView()
     }
   }
@@ -43,7 +43,12 @@ struct SessionView<ViewModel: SessionViewModel>: View {
     VStack {
       viewModel.previews.isEmpty ?
         Color.clear.eraseToAnyView() :
-        SessionPreviewView(previews: viewModel.previews, pinnedView: pressureView).eraseToAnyView()
+        SessionPreviewView(
+          previews: viewModel.previews,
+          pinnedView: pressureView,
+          orientation: orientation
+        )
+        .eraseToAnyView()
       HStack(spacing: 30) {
         bottomButtonView(content: infoButtonView)
         bottomButtonView(content: stopButtonView)
@@ -63,7 +68,12 @@ struct SessionView<ViewModel: SessionViewModel>: View {
     HStack {
       viewModel.previews.isEmpty ?
         Color.clear.eraseToAnyView() :
-        SessionPreviewView(previews: viewModel.previews, pinnedView: pressureView).eraseToAnyView()
+        SessionPreviewView(
+          previews: viewModel.previews,
+          pinnedView: pressureView,
+          orientation: orientation
+        )
+        .eraseToAnyView()
       VStack(spacing: 30) {
         bottomButtonView(content: infoButtonView)
         bottomButtonView(content: stopButtonView)
