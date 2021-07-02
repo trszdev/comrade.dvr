@@ -39,7 +39,7 @@ final class DevicesModelImpl: DevicesModel {
     guard let (index, subject) = deviceSubjectMap[device.id], subject.value != device else { return }
     var devices = self.devices
     devices[index] = device
-    let newConfiguration = nearestConfigurationPicker.nearestConfiguration(for: devices.configuration)
+    let newConfiguration = nearestConfigurationPicker.nearestConfiguration(for: devices.configuration())
     for device in devices {
       guard let (existingIndex, existingSubject) = deviceSubjectMap[device.id] else { continue }
       let newDevice = newConfiguration.device(device: device)

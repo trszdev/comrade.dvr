@@ -98,3 +98,10 @@
 
 "HARDWARE_COST_EXCEEDED" = "Hardware cost exceeded, try use less demanding configuration";
 "SYSTEM_PRESSURE_EXCEEDED" = "System pressure exceeded, try use less demanding configuration and close other apps";
+
+"YES" = "Yes";
+"NO" = "No";
+
+"SYSTEM_PRESSURE_NOMINAL_DESC" = "System load: normal";
+"SYSTEM_PRESSURE_SERIOUS_DESC" = "System load: icreased; recording quality may be downgraded";
+"SYSTEM_PRESSURE_SHUTDOWN_DESC" = "System load: critical; recording quality may be downgraded or shutdown may occur";

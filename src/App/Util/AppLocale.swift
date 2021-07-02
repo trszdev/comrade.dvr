@@ -4,6 +4,9 @@ import CameraKit
 
 protocol AppLocale {
   var currentLocale: Locale? { get }
+  func pressureLevelAlertText(_ pressureLevel: CKPressureLevel) -> String
+  func yesNo(_ value: Bool) -> String
+  func fieldOfView(_ fov: Int) -> String
   func errorBody(_ error: Error) -> String
   func orientation(_ orientation: OrientationSetting) -> String
   func size(_ size: CKSize) -> String
@@ -95,6 +98,25 @@ struct LocaleImpl: AppLocale {
   }
 
   var currentLocale: Locale?
+
+  func pressureLevelAlertText(_ pressureLevel: CKPressureLevel) -> String {
+    switch pressureLevel {
+    case .nominal:
+      return localizedString("SYSTEM_PRESSURE_NOMINAL_DESC")
+    case .serious:
+      return localizedString("SYSTEM_PRESSURE_SERIOUS_DESC")
+    case .shutdown:
+      return localizedString("SYSTEM_PRESSURE_SHUTDOWN_DESC")
+    }
+  }
+
+  func yesNo(_ value: Bool) -> String {
+    localizedString(value ? "YES" : "NO")
+  }
+
+  func fieldOfView(_ fov: Int) -> String {
+    "\(fov)°"
+  }
 
   func errorBody(_ error: Error) -> String {
     switch error {

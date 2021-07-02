@@ -47,7 +47,7 @@ struct ConfigureCameraView<ViewModel: ConfigureCameraViewModel>: View {
         tablePickerCellViewBuilder.makeView(
           selected: Binding(get: { viewModel.fps }, set: { viewModel.fps = $0 }),
           title: { $0.fpsString },
-          rightText: { _, value in "\(value)FPS" },
+          rightText: { $0.fps($1) },
           sfSymbol: .camera,
           availableOptions: viewModel.fpsRange,
           isDisabled: isDisabled
@@ -92,7 +92,7 @@ struct ConfigureCameraView<ViewModel: ConfigureCameraViewModel>: View {
         tablePickerCellViewBuilder.makeView(
           selected: Binding(get: { viewModel.fov }, set: { viewModel.fov = $0 }),
           title: { $0.fieldOfViewString },
-          rightText: { _, value in "\(value)°" },
+          rightText: { $0.fieldOfView($1) },
           sfSymbol: .fov,
           availableOptions: viewModel.fovRange,
           isDisabled: isDisabled

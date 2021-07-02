@@ -6,44 +6,22 @@ class SessionViewController: UIHostingController<AnyView> {
   struct Builder {
     let application: UIApplication
     let sessionViewBuilder: SessionViewBuilder
-    let viewModel: SessionViewModelImpl
+    let sessionViewModelBuilder: SessionViewModelBuilder
 
-    func makeViewController(orientation: OrientationSetting, session: CKSession) -> SessionViewController {
-      let rootView = sessionViewBuilder.makeView(viewModel: viewModel)
-      viewModel.previews = Array(session.cameras.values).map { $0.previewView.eraseToAnyView() }
+    func makeViewController(orientation: CKOrientation, session: CKSession) -> SessionViewController {
+      let viewModel = sessionViewModelBuilder.makeViewModel(session: session)
+      let rootView = sessionViewBuilder.makeView(viewModel: viewModel, orientation: orientation)
       let viewController = SessionViewController(
         application: application,
-        orientation: uiOrientation(orientation),
+        orientation: orientation,
         rootView: rootView
       )
       viewModel.sessionViewController = viewController
       return viewController
     }
-
-    private func uiOrientation(_ orientation: OrientationSetting) -> UIInterfaceOrientationMask {
-      switch orientation {
-      case .portrait:
-        return .portrait
-      case .landscape:
-        return .landscapeLeft
-      case .system:
-        switch UIDevice.current.orientation {
-        case .landscapeLeft:
-          return .landscapeLeft
-        case .landscapeRight:
-          return .landscapeRight
-        case .portrait:
-          return .portrait
-        case .portraitUpsideDown:
-          return .portraitUpsideDown
-        default:
-          return .portrait
-        }
-      }
-    }
   }
 
-  init(application: UIApplication, orientation: UIInterfaceOrientationMask, rootView: AnyView) {
+  init(application: UIApplication, orientation: CKOrientation, rootView: AnyView) {
     self.application = application
     self.orientation = orientation
     super.init(rootView: rootView)
@@ -63,10 +41,23 @@ class SessionViewController: UIHostingController<AnyView> {
     }
   }
 
+  override var preferredStatusBarStyle: UIStatusBarStyle {
+    .lightContent
+  }
+
   override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-    orientation
+    switch orientation {
+    case .portrait:
+      return .portrait
+    case .landscapeLeft:
+      return .landscapeLeft
+    case .landscapeRight:
+      return .landscapeRight
+    case .portraitUpsideDown:
+      return .portraitUpsideDown
+    }
   }
 
   private let application: UIApplication
-  private let orientation: UIInterfaceOrientationMask
+  private let orientation: CKOrientation
 }
