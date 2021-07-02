@@ -21,10 +21,10 @@ struct DevicesAssembly: AKAssembly {
       )
       container.singleton.autoregister(
         DevicesStore.self,
-        construct: UserDefaultsDevicesStore.init(ckManager:userDefaults:)
+        construct: UserDefaultsDevicesStore.init
       )
     }
-    container.transient.autoregister(SessionStarter.self, construct: SessionStarterImpl.init)
+    container.singleton.autoregister(SessionStarter.self, construct: SessionStarterImpl.init)
     container.singleton.autoregister(
       DevicesModel.self,
       construct: DevicesModelImpl.init(devicesStore:nearestConfigurationPicker:)

@@ -2,12 +2,13 @@ import SwiftUI
 
 struct StartButtonView: View {
   let isBusy: Bool
+  var isDisabled = false
   @Environment(\.theme) var theme: Theme
   @Environment(\.appLocale) var appLocale: AppLocale
 
   var body: some View {
     GeometryReader { geometry in
-      let backgroundColor = (isHovered || isBusy) ? theme.accentColorHover : theme.accentColor
+      let backgroundColor = (isHovered || isBusy || isDisabled) ? theme.accentColorHover : theme.accentColor
       let foregroundColor = theme.startHeaderBackgroundColor
       ZStack {
         Rectangle().foregroundColor(foregroundColor)
@@ -24,7 +25,7 @@ struct StartButtonView: View {
       }
       .touchdownOverlay(isHovered: $isHovered)
       .defaultAnimation
-      .allowsHitTesting(!isBusy)
+      .allowsHitTesting(!isBusy && !isDisabled)
     }
   }
 

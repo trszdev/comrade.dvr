@@ -13,13 +13,19 @@ class SessionStarterImpl: SessionStarter {
     devicesModel: DevicesModel,
     orientationSetting: AnySetting<OrientationSetting>,
     sessionViewControllerBuilder: SessionViewController.Builder,
-    application: UIApplication
+    application: UIApplication,
+    sessionViewBuilder: SessionViewBuilder,
+    sessionViewModelBuilder: SessionViewModelBuilder,
+    rootViewModelBuilder: RootViewModelBuilder
   ) {
     self.ckManager = ckManager
     self.devicesModel = devicesModel
     self.orientationSetting = orientationSetting
     self.sessionViewControllerBuilder = sessionViewControllerBuilder
     self.application = application
+    self.sessionViewBuilder = sessionViewBuilder
+    self.sessionViewModelBuilder = sessionViewModelBuilder
+    self.rootViewModelBuilder = rootViewModelBuilder
     self.startSessionPublisher = startSessionSubject
       .debounce(for: 0.5, scheduler: RunLoop.main)
       .removeDuplicates { _, _ in true }
@@ -57,16 +63,28 @@ class SessionStarterImpl: SessionStarter {
     }
   }
 
+  private func makeSessionVc(
+    session: CKSession,
+    orientation: CKOrientation,
+    devices: [Device]
+  ) -> SessionViewController {
+    let viewModel = sessionViewModelBuilder.makeViewModel(session: session, devices: devices)
+    let sessionView = sessionViewBuilder.makeView(viewModel: viewModel, orientation: orientation)
+    let rootViewModel = rootViewModelBuilder.makeViewModel()
+    let rootView = RootView(viewModel: rootViewModel, content: { sessionView }).eraseToAnyView()
+    let sessionVc = sessionViewControllerBuilder.makeViewController(orientation: orientation, rootView: rootView)
+    viewModel.sessionViewController = sessionVc
+    return sessionVc
+  }
+
   private func makeSessionPublisher() -> AnyPublisher<Void, Error> {
     let orientation = ckOrientatsion(orientationSetting.value)
+    let devices = devicesModel.devices
     return ckManager.sessionMakerPublisher
       .tryMap { [configuration] (sessionMaker: CKSessionMaker) -> CKSession in
         try sessionMaker.makeSession(configuration: configuration(orientation))
       }
-      .map { [sessionViewControllerBuilder] session in
-        sessionViewControllerBuilder
-          .makeViewController(orientation: orientation, session: session)
-      }
+      .map { [makeSessionVc] session in makeSessionVc(session, orientation, devices) }
       .receive(on: DispatchQueue.main)
       .flatMap { sessionViewController in
         Deferred {
@@ -83,4 +101,7 @@ class SessionStarterImpl: SessionStarter {
   private let orientationSetting: AnySetting<OrientationSetting>
   private let sessionViewControllerBuilder: SessionViewController.Builder
   private let application: UIApplication
+  private let sessionViewBuilder: SessionViewBuilder
+  private let sessionViewModelBuilder: SessionViewModelBuilder
+  private let rootViewModelBuilder: RootViewModelBuilder
 }

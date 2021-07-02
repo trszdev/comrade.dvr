@@ -64,9 +64,8 @@ final class StartViewModelImpl: StartViewModel {
       }
       .store(in: &cancellables)
     appLocaleModel.appLocalePublisher
-      .sink { [weak self] appLocale in
-        self?.devices = devicesModel.devices.map { StartViewModelDevice.from(device: $0, appLocale: appLocale) }
-      }
+      .map { appLocale in devicesModel.devices.map { StartViewModelDevice.from(device: $0, appLocale: appLocale) } }
+      .assign(to: \.devices, on: self)
       .store(in: &cancellables)
   }
 

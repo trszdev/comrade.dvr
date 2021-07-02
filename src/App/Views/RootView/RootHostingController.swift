@@ -3,9 +3,10 @@ import Combine
 
 struct RootHostingControllerBuilder {
   let mainViewBuilder: MainViewBuilder
-  let rootViewModel: RootViewModelImpl
+  let rootViewModelBuilder: RootViewModelBuilder
 
   func makeViewController() -> UIViewController {
+    let rootViewModel = rootViewModelBuilder.makeViewModel()
     let rootView = RootView(viewModel: rootViewModel, content: mainViewBuilder.makeView)
     let hostingVc = RootHostingController(viewModel: rootViewModel, rootView: rootView.eraseToAnyView())
     return hostingVc

@@ -29,19 +29,21 @@ protocol SessionViewModel: ObservableObject {
 struct SessionViewModelBuilder {
   let appLocaleModel: AppLocaleModel
 
-  func makeViewModel(session: CKSession? = nil) -> SessionViewModelImpl {
-    SessionViewModelImpl(session: session, appLocaleModel: appLocaleModel)
+  func makeViewModel(session: CKSession? = nil, devices: [Device] = []) -> SessionViewModelImpl {
+    SessionViewModelImpl(session: session, appLocaleModel: appLocaleModel, devices: devices)
   }
 }
 
 class SessionViewModelImpl: SessionViewModel {
-  init(session: CKSession? = nil, appLocaleModel: AppLocaleModel) {
+  init(session: CKSession?, appLocaleModel: AppLocaleModel, devices: [Device]) {
     self.session = session
     microphoneEnabled = session == nil || session?.microphone != nil
     microphoneMuted = session?.microphone?.isMuted == true
     infoText = session.flatMap { $0.description(appLocale: appLocaleModel.appLocale) } ?? "test test"
     if let session = session {
-      previews = Array(session.cameras.values).map { $0.previewView.eraseToAnyView() }
+      let indeces = Dictionary(uniqueKeysWithValues: devices.enumerated().map { ($0.element.id, $0.offset) })
+      let views = session.cameras.sorted { (indeces[$0.key] ?? 0) < (indeces[$1.key] ?? 0) }.map(\.value.previewView)
+      previews = views.map { $0.eraseToAnyView() }
     } else {
       previews = [
         Color.green.eraseToAnyView(),

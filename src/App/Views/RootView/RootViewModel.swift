@@ -13,6 +13,14 @@ protocol RootViewModel: ObservableObject {
   func didChange(userInterfaceStyle: UIUserInterfaceStyle)
 }
 
+struct RootViewModelBuilder {
+  func makeViewModel() -> RootViewModelImpl {
+    viewModel
+  }
+
+  let viewModel: RootViewModelImpl
+}
+
 final class RootViewModelImpl: RootViewModel {
   init(
     themeSetting: AnySetting<ThemeSetting>,

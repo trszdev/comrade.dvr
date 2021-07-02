@@ -5,19 +5,13 @@ import Combine
 class SessionViewController: UIHostingController<AnyView> {
   struct Builder {
     let application: UIApplication
-    let sessionViewBuilder: SessionViewBuilder
-    let sessionViewModelBuilder: SessionViewModelBuilder
 
-    func makeViewController(orientation: CKOrientation, session: CKSession) -> SessionViewController {
-      let viewModel = sessionViewModelBuilder.makeViewModel(session: session)
-      let rootView = sessionViewBuilder.makeView(viewModel: viewModel, orientation: orientation)
-      let viewController = SessionViewController(
+    func makeViewController(orientation: CKOrientation, rootView: AnyView) -> SessionViewController {
+      SessionViewController(
         application: application,
         orientation: orientation,
         rootView: rootView
       )
-      viewModel.sessionViewController = viewController
-      return viewController
     }
   }
 

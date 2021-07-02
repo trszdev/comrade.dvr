@@ -51,7 +51,7 @@ struct StartView<ViewModel: StartViewModel>: View {
         }
         Spacer()
       }
-      StartButtonView(isBusy: viewModel.isStartButtonBusy)
+      StartButtonView(isBusy: viewModel.isStartButtonBusy, isDisabled: !viewModel.devices.contains(where: \.isActive))
         .frame(maxHeight: 50)
         .onTapGesture(perform: viewModel.start)
     }
