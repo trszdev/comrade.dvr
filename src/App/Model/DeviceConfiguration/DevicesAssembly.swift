@@ -19,15 +19,8 @@ struct DevicesAssembly: AKAssembly {
         CKNearestConfigurationPicker.self,
         value: CKAVManager.shared.configurationPicker
       )
-      container.singleton.autoregister(
-        DevicesStore.self,
-        construct: UserDefaultsDevicesStore.init
-      )
+      container.singleton.autoregister(DevicesStore.self, construct: UserDefaultsDevicesStore.init)
     }
-    container.singleton.autoregister(SessionStarter.self, construct: SessionStarterImpl.init)
-    container.singleton.autoregister(
-      DevicesModel.self,
-      construct: DevicesModelImpl.init(devicesStore:nearestConfigurationPicker:)
-    )
+    container.singleton.autoregister(DevicesModel.self, construct: DevicesModelImpl.init)
   }
 }

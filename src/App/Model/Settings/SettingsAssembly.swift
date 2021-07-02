@@ -8,7 +8,7 @@ struct SettingsAssembly: AKAssembly {
     registerSetting(container: container, key: "app:assetLimit", AssetLimitSetting(value: .from(gigabytes: 5)))
     registerSetting(container: container, key: "app:assetLength", AssetLengthSetting(value: .from(minutes: 1)))
     registerSetting(container: container, key: "app:orientation", OrientationSetting.system)
-    container.transient.autoregister(AppLocaleModel.self, construct: AppLocaleModelImpl.init(languageSetting:))
+    container.transient.autoregister(AppLocaleModel.self, construct: AppLocaleModelImpl.init)
   }
 
   private func registerSetting<Value: SettingValue>(container: AKContainer, key: String, _ value: Value) {

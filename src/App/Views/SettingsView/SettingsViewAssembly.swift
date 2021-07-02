@@ -7,29 +7,14 @@ struct SettingsViewAssembly: AKAssembly {
     registerSetting(container: container, AssetLimitSetting.self)
     registerSetting(container: container, AssetLengthSetting.self)
     registerSetting(container: container, OrientationSetting.self)
-    container.singleton.autoregister(
-      SettingsViewModel.self,
-      construct: SettingsViewModelImpl.init(
-        settingsContactUsCellViewBuilder:
-        settingsAssetsLimitCellViewBuilder:
-        settingsLanguageCellViewBuilder:
-        settingsAssetLengthCellViewBuilder:
-        settingsThemeCellViewBuilder:
-        settingsOrientationCellViewBuilder:
-        settingsRateAppCellViewBuilder:
-      )
-    )
-    container.transient.autoregister(construct: SettingsView.Builder.init(viewModel:))
-    container.transient.autoregister(
-      construct: SettingsContactUsCellView.Builder.init(application:navigationViewPresenter:)
-    )
-    container.transient.autoregister(construct: SettingsRateAppCellView.Builder.init(application:))
+    container.singleton.autoregister(SettingsViewModel.self, construct: SettingsViewModelImpl.init)
+    container.transient.autoregister(construct: SettingsView.Builder.init)
+    container.transient.autoregister(construct: SettingsContactUsCellView.Builder.init)
+    container.transient.autoregister(construct: SettingsRateAppCellView.Builder.init)
   }
 
   private func registerSetting<Value: SettingValue>(container: AKContainer, _ valueType: Value.Type) {
-    container.singleton.autoregister(construct: SettingsCellViewModelImpl<Value>.init(setting:))
-    container.transient.autoregister(
-      construct: SettingsPickerCellViewBuilder<Value>.init(viewModel:tablePickerCellViewBuilder:)
-    )
+    container.singleton.autoregister(construct: SettingsCellViewModelImpl<Value>.init)
+    container.transient.autoregister(construct: SettingsPickerCellViewBuilder<Value>.init)
   }
 }
