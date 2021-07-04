@@ -4,6 +4,7 @@ import Combine
 import CameraKit
 import SwiftUI
 import AVKit
+import AutocontainerKit
 
 final class MainViewController: UIViewController {
   private let responsivenessView: UISlider = {
@@ -20,17 +21,22 @@ final class MainViewController: UIViewController {
       responsivenessView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
       responsivenessView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
     ])
+  }
+
+  override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
     CKAVManager.shared.sessionMakerPublisher
       .receive(on: DispatchQueue.main)
-      .map { [weak self] sessionMaker in
-        self?.startSession(sessionMaker: sessionMaker)
-      }
-      .mapError { [weak self] (error: CKPermissionError) -> CKPermissionError in
+      .map(startSession(sessionMaker:))
+      .catch { [weak self] (error: CKPermissionError) -> Just<Void> in
         self?.alert(message: error.localizedDescription)
-        return error
+        return Just(())
       }
-      .sinkAndStore()
+      .sink {}
+      .store(in: &cancellables)
   }
+
+  private var cancellables = Set<AnyCancellable>()
 
   // swiftlint:disable function_parameter_count
   private func addSessionTemplates(
@@ -121,9 +127,11 @@ final class MainViewController: UIViewController {
       do {
         let session = try self.makeSession(sessionMaker: sessionMaker, cameraIds: cameraIds, microphoneId: microphoneId)
         self.alert(title: "Session info", message: String(describing: session.configuration)) {
-          let viewBuilder = Assembly().hashContainer.resolve(CameraKitViewBuilder.self)!
-          let view = viewBuilder.makeView(session: session)
-          let hostingVc = UIHostingControllerWithoutRotation(rootView: view)
+          let container = Assembly().hashContainer
+          let viewBuilder = container.resolve(CameraKitViewBuilder.self)!
+          let hostingVc = UIHostingControllerWithoutRotation<AnyView>(rootView: AnyView(EmptyView()))
+          hostingVc.container = container
+          hostingVc.rootView = viewBuilder.makeView(session: session, hostingVc: hostingVc)
           hostingVc.view.backgroundColor = .black
           hostingVc.modalPresentationStyle = .fullScreen
           self.present(hostingVc, animated: true, completion: nil)
@@ -194,6 +202,8 @@ final class MainViewController: UIViewController {
 }
 
 class UIHostingControllerWithoutRotation<Content: View>: UIHostingController<Content> {
+  var container: AKContainer?
+
   override var shouldAutorotate: Bool {
     false
   }

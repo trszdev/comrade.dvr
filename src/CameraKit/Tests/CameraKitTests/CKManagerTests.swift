@@ -16,6 +16,28 @@ class CKManagerTests: CKTestCase {
     testCheckPermission_endsWithAnyResult(mediaType: .video)
   }
 
+  func testGeneralMemoryLeak() {
+    let mock = CKPermissionManagerMock()
+    let manager = makeManager(mock: mock)
+    let expectation = Expectation()
+    weak var session: CKSession?
+    manager.sessionMakerPublisher
+      .tryMap { sessionMaker in try sessionMaker.makeSession(configuration: .empty) }
+      .map { createdSession in
+        session = createdSession
+        expectation.fulfill()
+      }
+      .catch { (error: Error) -> Just<Void> in
+        XCTFail(error.localizedDescription)
+        expectation.fulfill()
+        return Just(())
+      }
+      .sink {}
+      .store(in: &cancellables)
+    expectation.wait()
+    XCTAssert(session == nil)
+  }
+
   func testSessionMaker_okIfNoPermissionProblems() {
     let mock = CKPermissionManagerMock()
     let manager = makeManager(mock: mock)

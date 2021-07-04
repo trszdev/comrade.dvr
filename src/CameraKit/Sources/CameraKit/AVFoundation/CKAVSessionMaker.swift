@@ -1,12 +1,11 @@
-struct CKAVSessionMaker: CKSessionMaker {
-  struct Builder {
-    let cameraSessionBuilder: CKAVCameraSession.Builder
-    let microphoneSessionBuilder: CKAVMicrophoneSession.Builder
+import AutocontainerKit
 
+struct CKAVSessionMaker: CKSessionMaker {
+  class Builder: AKBuilder {
     func makeSessionMaker(configurationPicker: CKNearestConfigurationPicker) -> CKSessionMaker {
       CKAVSessionMaker(
-        cameraSessionBuilder: cameraSessionBuilder,
-        microphoneSessionBuilder: microphoneSessionBuilder,
+        cameraSessionBuilder: resolve(CKAVCameraSession.Builder.self),
+        microphoneSessionBuilder: resolve(CKAVMicrophoneSession.Builder.self),
         configurationPicker: configurationPicker
       )
     }

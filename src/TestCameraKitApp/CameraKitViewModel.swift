@@ -9,6 +9,7 @@ protocol CameraKitViewModel: ObservableObject {
   var pressureLevelPublished: Published<CKPressureLevel> { get }
   var pressureLevelPublisher: Published<CKPressureLevel>.Publisher { get }
   func requestMediaChunk()
+  func stop()
 }
 
 final class CameraKitViewModelImpl: CameraKitViewModel {
@@ -19,6 +20,8 @@ final class CameraKitViewModelImpl: CameraKitViewModel {
     self.previews = Array(session.cameras.values.map { $0.previewView.eraseToAnyView() })
     self.pressureLevel = session.pressureLevel
   }
+
+  weak var hostingVc: UIViewController?
 
   @Published var pressureLevel: CKPressureLevel
   var pressureLevelPublished: Published<CKPressureLevel> { _pressureLevel }
@@ -34,11 +37,18 @@ final class CameraKitViewModelImpl: CameraKitViewModel {
     session.outputPublisher
       .map(sessionDidOutput(mediaChunk:))
       .mapError(sessionDidOutput(error:))
-      .sinkAndStore()
+      .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+      .store(in: &cancellables)
     session.pressureLevelPublisher
       .receive(on: DispatchQueue.main)
       .map(sessionDidChangePressureLevel(pressureLevel:))
-      .sinkAndStore()
+      .sink {}
+      .store(in: &cancellables)
+  }
+
+  func stop() {
+    hostingVc?.dismiss(animated: true, completion: nil)
+    cancellables = Set()
   }
 
   private func sessionDidChangePressureLevel(pressureLevel: CKPressureLevel) {
@@ -58,6 +68,7 @@ final class CameraKitViewModelImpl: CameraKitViewModel {
     return error
   }
 
+  private var cancellables = Set<AnyCancellable>()
   private let session: CKSession
   private let logger: Logger
   private let shareViewPresenter: ShareViewPresenter

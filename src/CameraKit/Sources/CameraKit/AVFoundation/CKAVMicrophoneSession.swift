@@ -3,19 +3,13 @@ import Combine
 import AutocontainerKit
 
 final class CKAVMicrophoneSession: CKSession, CKSessionPublisherProvider {
-  struct Builder {
-    let mapper: CKAVConfigurationMapper
-    let session: AVAudioSession
-    let locator: AKLocator
-
+  class Builder: AKBuilder {
     func makeSession(configuration: CKConfiguration, sessionPublisher: CKSessionPublisher) -> CKAVMicrophoneSession {
       CKAVMicrophoneSession(
         configuration: configuration,
-        mapper: mapper,
-        session: session,
-        recorder: locator
-          .resolve(CKAVMicrophoneRecorderImpl.Builder.self)
-          .makeRecorder(sessionPublisher: sessionPublisher),
+        mapper: resolve(CKAVConfigurationMapper.self),
+        session: resolve(AVAudioSession.self),
+        recorder: resolve(CKAVMicrophoneRecorderImpl.Builder.self).makeRecorder(sessionPublisher: sessionPublisher),
         sessionPublisher: sessionPublisher
       )
     }

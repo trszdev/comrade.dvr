@@ -1,4 +1,5 @@
 import AVFoundation
+import AutocontainerKit
 
 struct CKAVNearestSingleCameraConfigurationPicker: CKNearestConfigurationPicker {
   let adjustableConfiguration: CKAdjustableConfiguration
@@ -16,13 +17,11 @@ struct CKAVNearestSingleCameraConfigurationPicker: CKNearestConfigurationPicker 
 }
 
 struct CKAVNearestMultiCameraConfigurationPicker: CKNearestConfigurationPicker {
-  struct Builder {
-    let multicamSetsProvider: CKAVMulticamSetsProvider
-
+  class Builder: AKBuilder {
     func makePicker(adjustableConfiguration: CKAdjustableConfiguration) -> CKNearestConfigurationPicker {
       CKAVNearestMultiCameraConfigurationPicker(
         adjustableConfiguration: adjustableConfiguration,
-        multicamSetsProvider: multicamSetsProvider
+        multicamSetsProvider: resolve(CKAVMulticamSetsProvider.self)
       )
     }
   }

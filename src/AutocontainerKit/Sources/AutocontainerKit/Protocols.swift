@@ -1,5 +1,5 @@
 // swiftlint:disable large_tuple
-public protocol AKLocator {
+public protocol AKLocator: AnyObject {
   func resolve<T>(_ type: T.Type) -> T!
 }
 
@@ -21,7 +21,7 @@ public protocol AKSingletonAutoRegistry: AnyObject {
   func autoregister<T>(_ type: T.Type, value: T)
 }
 
-public protocol AKContainer {
+public protocol AKContainer: AnyObject {
   var singleton: AKAutoRegistry & AKSingletonAutoRegistry { get }
   var transient: AKAutoRegistry { get }
 }

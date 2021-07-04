@@ -3,7 +3,7 @@ import CameraKit
 
 struct CameraKitView<ViewModel: CameraKitViewModel, Log: LogViewModel>: View {
   let consoleView: ConsoleView<Log>
-  @StateObject var viewModel: ViewModel
+  @ObservedObject var viewModel: ViewModel
 
   var body: some View {
     ZStack(alignment: .topTrailing) {
@@ -14,7 +14,10 @@ struct CameraKitView<ViewModel: CameraKitViewModel, Log: LogViewModel>: View {
       }
       HStack(alignment: .top) {
         pressureLevel.frame(width: 10, height: 10)
-        requestMediaChunkBtn
+        VStack {
+          CustomButton(text: "Request media chunk", action: viewModel.requestMediaChunk)
+          CustomButton(text: "Stop", action: viewModel.stop)
+        }
       }
     }
   }
@@ -35,31 +38,11 @@ struct CameraKitView<ViewModel: CameraKitViewModel, Log: LogViewModel>: View {
       return Color.red.eraseToAnyView()
     }
   }
-
-  private var requestMediaChunkBtn: some View {
-    CustomButton(text: "Request media chunk", action: {
-      viewModel.requestMediaChunk()
-    })
-  }
 }
 
 extension Array where Element: View & Identifiable {
   var view: some View {
     ForEach(self) { $0 }
-  }
-}
-
-struct CameraKitViewPreview: PreviewProvider {
-  static var previews: some View {
-    let container = Assembly().hashContainer
-    let consoleView = container.resolve(ConsoleView<LogViewModelImpl>.self)!
-    let shareViewPresenter = container.resolve(ShareViewPresenter.self)!
-    let logger = container.resolve(Logger.self)!
-    logger.log("ahahah")
-    logger.log("1234 123")
-    logger.log("lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum")
-    let viewModel = PreviewViewModel(logger: logger, shareViewPresenter: shareViewPresenter)
-    return CameraKitView<PreviewViewModel, LogViewModelImpl>(consoleView: consoleView, viewModel: viewModel)
   }
 }
 
@@ -74,6 +57,20 @@ private struct CustomButton: View {
       .padding(10)
       .background(Color.gray)
       .foregroundColor(.black)
+  }
+}
+
+struct CameraKitViewPreview: PreviewProvider {
+  static var previews: some View {
+    let container = Assembly().hashContainer
+    let consoleView = container.resolve(ConsoleView<LogViewModelImpl>.self)!
+    let shareViewPresenter = container.resolve(ShareViewPresenter.self)!
+    let logger = container.resolve(Logger.self)!
+    logger.log("ahahah")
+    logger.log("1234 123")
+    logger.log("lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum")
+    let viewModel = PreviewViewModel(logger: logger, shareViewPresenter: shareViewPresenter)
+    return CameraKitView<PreviewViewModel, LogViewModelImpl>(consoleView: consoleView, viewModel: viewModel)
   }
 }
 
@@ -96,6 +93,9 @@ private final class PreviewViewModel: CameraKitViewModel {
     logger.log("request media chunk")
     shareViewPresenter.presentFile(url: URL(string: "https://example.com/media.m4a")!)
     shareViewPresenter.presentFile(url: URL(string: "https://example.com/media.mov")!)
+  }
+
+  func stop() {
   }
 
   @Published var pressureLevel: CKPressureLevel = .nominal

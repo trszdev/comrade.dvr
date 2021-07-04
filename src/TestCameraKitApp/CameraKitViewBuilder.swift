@@ -1,19 +1,22 @@
 import CameraKit
 import AutocontainerKit
+import SwiftUI
 
 protocol CameraKitViewBuilder {
-  func makeView(session: CKSession) -> CameraKitView<CameraKitViewModelImpl, LogViewModelImpl>
+  func makeView(session: CKSession, hostingVc: UIViewController) -> AnyView
 }
 
-struct CameraKitViewBuilderImpl: CameraKitViewBuilder {
-  let logger: Logger
-  let shareViewPresenter: ShareViewPresenter
-  let consoleView: ConsoleView<LogViewModelImpl>
-
-  func makeView(session: CKSession) -> CameraKitView<CameraKitViewModelImpl, LogViewModelImpl> {
+class CameraKitViewBuilderImpl: AKBuilder, CameraKitViewBuilder {
+  func makeView(session: CKSession, hostingVc: UIViewController) -> AnyView {
+    let logger = resolve(Logger.self)!
     logger.log("View created for session: \(session.configuration))")
-    let viewModel = CameraKitViewModelImpl(session: session, logger: logger, shareViewPresenter: shareViewPresenter)
+    let viewModel = CameraKitViewModelImpl(
+      session: session,
+      logger: logger,
+      shareViewPresenter: resolve(ShareViewPresenter.self)
+    )
     viewModel.setupHandlers()
-    return CameraKitView(consoleView: consoleView, viewModel: viewModel)
+    viewModel.hostingVc = hostingVc
+    return AnyView(CameraKitView(consoleView: resolve(ConsoleView<LogViewModelImpl>.self), viewModel: viewModel))
   }
 }

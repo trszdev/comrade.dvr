@@ -1,6 +1,6 @@
 import Combine
 
-public protocol CKSession {
+public protocol CKSession: AnyObject {
   var startupInfo: CKSessionStartupInfo { get }
   var outputPublisher: AnyPublisher<CKMediaChunk, Error> { get }
   var pressureLevelPublisher: AnyPublisher<CKPressureLevel, Never> { get }

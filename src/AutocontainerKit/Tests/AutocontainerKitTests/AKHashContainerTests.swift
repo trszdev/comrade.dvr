@@ -7,6 +7,23 @@ final class AKHashContainerTests: XCTestCase {
     AKHashContainer()
   }
 
+  func testGeneralMemoryLeak() {
+    struct Sample {}
+    struct SampleSingleton {}
+    class SampleBuilder: AKBuilder {}
+    weak var container: AKHashContainer? = {
+      let result = makeContainer()
+      result.transient.autoregister(AKLocator.self) { [weak result] in
+        result!
+      }
+      result.transient.autoregister(construct: Sample.init)
+      result.singleton.autoregister(value: SampleSingleton())
+      result.singleton.autoregister(AKBuilder.self, construct: SampleBuilder.init)
+      return result
+    }()
+    XCTAssert(container == nil)
+  }
+
   func testNoThrowsWhenMissing() {
     let container = makeContainer()
     container.asserts = false
@@ -17,7 +34,9 @@ final class AKHashContainerTests: XCTestCase {
   func testSample() {
     struct Sample { let locator: AKLocator }
     let container = makeContainer()
-    container.singleton.autoregister(AKLocator.self, value: container)
+    container.transient.autoregister(AKLocator.self) { [weak container] in
+      container!
+    }
     container.transient.autoregister(construct: Sample.init)
     let resolved = container.resolve(Sample.self)!
     XCTAssertEqual(String(describing: container), String(describing: resolved.locator))

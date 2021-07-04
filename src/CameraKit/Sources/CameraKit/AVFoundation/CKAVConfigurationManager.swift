@@ -1,12 +1,11 @@
-struct CKAVConfigurationManager: CKConfigurationManager {
-  struct Builder {
-    let configurationMapper: CKAVConfigurationMapper
-    let configurationPickerBuilder: CKAVNearestConfigurationPicker.Builder
+import AutocontainerKit
 
+struct CKAVConfigurationManager: CKConfigurationManager {
+  class Builder: AKBuilder {
     func makeManager(shouldPickNearest: Bool) -> CKConfigurationManager {
       CKAVConfigurationManager(
-        configurationMapper: configurationMapper,
-        configurationPickerBuilder: configurationPickerBuilder,
+        configurationMapper: resolve(CKAVConfigurationMapper.self),
+        configurationPickerBuilder: resolve(CKAVNearestConfigurationPicker.Builder.self),
         shouldPickNearest: shouldPickNearest
       )
     }

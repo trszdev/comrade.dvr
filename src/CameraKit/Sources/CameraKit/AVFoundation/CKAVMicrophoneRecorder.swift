@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import Combine
+import AutocontainerKit
 
 protocol CKAVMicrophoneRecorder: AnyObject {
   func requestMediaChunk()
@@ -10,11 +11,12 @@ protocol CKAVMicrophoneRecorder: AnyObject {
 }
 
 final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
-  struct Builder {
-    let mediaChunkMaker: CKMediaChunkMaker
-
+  class Builder: AKBuilder {
     func makeRecorder(sessionPublisher: CKSessionPublisher) -> CKAVMicrophoneRecorder {
-      CKAVMicrophoneRecorderImpl(mediaChunkMaker: mediaChunkMaker, sessionPublisher: sessionPublisher)
+      CKAVMicrophoneRecorderImpl(
+        mediaChunkMaker: resolve(CKMediaChunkMaker.self),
+        sessionPublisher: sessionPublisher
+      )
     }
   }
 

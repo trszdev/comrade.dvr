@@ -8,10 +8,7 @@ struct Assembly: AKAssembly {
     container.transient.autoregister { (locator: AKLocator) in
       ConsoleView(viewModel: locator.resolve(LogViewModelImpl.self))
     }
-    container.transient.autoregister(
-      CameraKitViewBuilder.self,
-      construct: CameraKitViewBuilderImpl.init(logger:shareViewPresenter:consoleView:)
-    )
-    container.transient.autoregister(ShareViewPresenter.self, construct: ShareViewPresenterImpl.init(logger:))
+    container.transient.autoregister(CameraKitViewBuilder.self, construct: CameraKitViewBuilderImpl.init)
+    container.transient.autoregister(ShareViewPresenter.self, construct: ShareViewPresenterImpl.init)
   }
 }

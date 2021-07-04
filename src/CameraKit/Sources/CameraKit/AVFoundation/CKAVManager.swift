@@ -5,10 +5,7 @@ import AVFoundation
 import AutocontainerKit
 
 public struct CKAVManager: CKManager {
-  struct Builder: CKManagerBuilder {
-    let configurationManagerBuilder: CKAVConfigurationManager.Builder
-    let sessionMakerBuilder: CKAVSessionMaker.Builder
-
+  class Builder: AKBuilder, CKManagerBuilder {
     func makeManager(infoPlistBundle: Bundle?, shouldPickNearest: Bool) -> CKManager {
       makeManager(
         permissionManager: CKAVPermissionManager(infoPlistBundle: infoPlistBundle),
@@ -21,11 +18,12 @@ public struct CKAVManager: CKManager {
     }
 
     private func makeManager(permissionManager: CKPermissionManager, shouldPickNearest: Bool) -> CKManager {
-      let manager = configurationManagerBuilder.makeManager(shouldPickNearest: shouldPickNearest)
+      let manager = resolve(CKAVConfigurationManager.Builder.self).makeManager(shouldPickNearest: shouldPickNearest)
       return CKAVManager(
         permissionManager: permissionManager,
         configurationManager: manager,
-        sessionMaker: sessionMakerBuilder.makeSessionMaker(configurationPicker: manager.configurationPicker)
+        sessionMaker: resolve(CKAVSessionMaker.Builder.self)
+          .makeSessionMaker(configurationPicker: manager.configurationPicker)
       )
     }
   }
@@ -70,10 +68,12 @@ public struct CKAVManager: CKManager {
   }
 
   public static let shared: CKManager = {
-    CKAVAssembly().hashContainer
+    sharedContainer
       .resolve(CKManagerBuilder.self)
       .makeManager(infoPlistBundle: .main, shouldPickNearest: true)
   }()
+
+  private static let sharedContainer = CKAVAssembly().hashContainer
 
   private let permissionManager: CKPermissionManager
   private let configurationManager: CKConfigurationManager

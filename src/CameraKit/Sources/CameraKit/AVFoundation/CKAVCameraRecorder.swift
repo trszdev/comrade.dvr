@@ -11,12 +11,13 @@ protocol CKAVCameraRecorderBuilder {
   func makeRecorder(sessionPublisher: CKSessionPublisher) -> CKAVCameraRecorder
 }
 
-struct CKAVCameraRecorderBuilderImpl: CKAVCameraRecorderBuilder {
-  let mapper: CKAVConfigurationMapper
-  let mediaChunkMaker: CKMediaChunkMaker
-
+class CKAVCameraRecorderBuilderImpl: AKBuilder, CKAVCameraRecorderBuilder {
   func makeRecorder(sessionPublisher: CKSessionPublisher) -> CKAVCameraRecorder {
-    CKAVCameraRecorderImpl(mapper: mapper, mediaChunkMaker: mediaChunkMaker, sessionPublisher: sessionPublisher)
+    CKAVCameraRecorderImpl(
+      mapper: resolve(CKAVConfigurationMapper.self),
+      mediaChunkMaker: resolve(CKMediaChunkMaker.self),
+      sessionPublisher: sessionPublisher
+    )
   }
 }
 

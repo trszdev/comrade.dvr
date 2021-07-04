@@ -1,14 +1,15 @@
-struct CKAVNearestConfigurationPicker: CKNearestConfigurationPicker {
-  struct Builder {
-    let multiCameraPickerBuilder: CKAVNearestMultiCameraConfigurationPicker.Builder
+import AutocontainerKit
 
+struct CKAVNearestConfigurationPicker: CKNearestConfigurationPicker {
+  class Builder: AKBuilder {
     func makePicker(adjustableConfiguration: CKAdjustableConfiguration) -> CKNearestConfigurationPicker {
       CKAVNearestConfigurationPicker(
         microphonePicker: CKAVNearestMicrophoneConfigurationPicker(adjustableConfiguration: adjustableConfiguration),
         singleCameraPicker: CKAVNearestSingleCameraConfigurationPicker(
           adjustableConfiguration: adjustableConfiguration
         ),
-        multiCameraPicker: multiCameraPickerBuilder.makePicker(adjustableConfiguration: adjustableConfiguration)
+        multiCameraPicker: resolve(CKAVNearestMultiCameraConfigurationPicker.Builder.self)
+          .makePicker(adjustableConfiguration: adjustableConfiguration)
       )
     }
 

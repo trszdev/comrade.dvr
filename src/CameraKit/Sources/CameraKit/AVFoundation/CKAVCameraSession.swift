@@ -1,17 +1,15 @@
 import AVFoundation
 import Combine
 import Foundation
+import AutocontainerKit
 
 final class CKAVCameraSession: NSObject, CKSession, CKSessionPublisherProvider {
-  struct Builder {
-    let mapper: CKAVConfigurationMapper
-    let recorderBuilder: CKAVCameraRecorderBuilder
-
+  class Builder: AKBuilder {
     func makeSession(configuration: CKConfiguration, sessionPublisher: CKSessionPublisher) -> CKAVCameraSession {
       CKAVCameraSession(
         configuration: configuration,
-        mapper: mapper,
-        recorderBuilder: recorderBuilder,
+        mapper: resolve(CKAVConfigurationMapper.self),
+        recorderBuilder: resolve(CKAVCameraRecorderBuilder.self),
         sessionPublisher: sessionPublisher
       )
     }
