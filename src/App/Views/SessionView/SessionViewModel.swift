@@ -52,13 +52,13 @@ class SessionViewModelImpl: SessionViewModel {
     }
     pressureLevel = session?.pressureLevel ?? .nominal
     session?.pressureLevelPublisher
-      .assign(to: \.pressureLevel, on: self)
+      .assignWeak(to: \.pressureLevel, on: self)
       .store(in: &cancellables)
     appLocaleModel.appLocalePublisher
       .compactMap { [weak self] appLocale in
         (self?.session).flatMap { $0.description(appLocale: appLocale) }
       }
-      .assign(to: \.infoText, on: self)
+      .assignWeak(to: \.infoText, on: self)
       .store(in: &cancellables)
   }
 
@@ -68,7 +68,6 @@ class SessionViewModelImpl: SessionViewModel {
 
   func stopSession() {
     sessionViewController?.dismiss(animated: true, completion: nil)
-
   }
 
   @Published var microphoneMuted: Bool {
@@ -93,9 +92,9 @@ class SessionViewModelImpl: SessionViewModel {
 
   func scheduleDismissAlertTimer() {
     dismissTimer?.invalidate()
-    dismissTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { [dismissAlertPublisherInternal] timer in
-      guard timer.isValid else { return }
-      dismissAlertPublisherInternal.send()
+    dismissTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { [weak self] timer in
+      guard timer.isValid, let self = self else { return }
+      self.dismissAlertPublisherInternal.send()
     }
   }
 

@@ -81,10 +81,14 @@ class SessionStarterImpl: SessionStarter {
     let orientation = ckOrientatsion(orientationSetting.value)
     let devices = devicesModel.devices
     return ckManager.sessionMakerPublisher
-      .tryMap { [configuration] (sessionMaker: CKSessionMaker) -> CKSession in
-        try sessionMaker.makeSession(configuration: configuration(orientation))
+      .tryCompactMap { [weak self] sessionMaker in
+        guard let self = self else { return nil }
+        return try sessionMaker.makeSession(configuration: self.configuration(orientation))
       }
-      .map { [makeSessionVc] session in makeSessionVc(session, orientation, devices) }
+      .compactMap { [weak self] (session: CKSession) -> SessionViewController? in
+        guard let self = self else { return nil }
+        return self.makeSessionVc(session: session, orientation: orientation, devices: devices)
+      }
       .receive(on: DispatchQueue.main)
       .flatMap { sessionViewController in
         Deferred {

@@ -50,7 +50,7 @@ struct SettingsViewModelImpl: SettingsViewModel {
       sfSymbol: .assetLimit,
       availableOptions: availableOptions
         .map { $0.flatMap(FileSize.from(gigabytes:)) }
-        .map(AssetLimitSetting.init(value:))
+        .map(AssetLimitSetting.init)
     )
   }
 

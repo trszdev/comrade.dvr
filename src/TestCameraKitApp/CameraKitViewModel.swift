@@ -35,20 +35,22 @@ final class CameraKitViewModelImpl: CameraKitViewModel {
 
   func setupHandlers() {
     session.outputPublisher
-      .map(sessionDidOutput(mediaChunk:))
-      .mapError(sessionDidOutput(error:))
+      .map { [weak self] in self?.sessionDidOutput(mediaChunk: $0) }
+      .mapError { [weak self] (error: Error) -> Error in
+        self?.logger.log("Received error: \(error.localizedDescription)")
+        return error
+      }
       .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
       .store(in: &cancellables)
     session.pressureLevelPublisher
       .receive(on: DispatchQueue.main)
-      .map(sessionDidChangePressureLevel(pressureLevel:))
+      .map { [weak self] in self?.sessionDidChangePressureLevel(pressureLevel: $0) }
       .sink {}
       .store(in: &cancellables)
   }
 
   func stop() {
     hostingVc?.dismiss(animated: true, completion: nil)
-    cancellables = Set()
   }
 
   private func sessionDidChangePressureLevel(pressureLevel: CKPressureLevel) {
@@ -61,11 +63,6 @@ final class CameraKitViewModelImpl: CameraKitViewModel {
     let url2 = mediaChunk.url.appendingPathExtension(mediaChunk.fileType.rawValue)
     try? FileManager.default.moveItem(at: mediaChunk.url, to: url2)
     shareViewPresenter.presentFile(url: url2)
-  }
-
-  private func sessionDidOutput(error: Error) -> Error {
-    logger.log("Received error: \(error.localizedDescription)")
-    return error
   }
 
   private var cancellables = Set<AnyCancellable>()

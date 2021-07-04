@@ -6,7 +6,7 @@ struct UserDefaultsDevicesStore: DevicesStore {
   let userDefaults: UserDefaults
 
   func store(devices: [Device]) {
-    DispatchQueue.global(qos: .background).async { [userDefaults] in
+    DispatchQueue.global(qos: .background).async {
       guard let jsonData = try? devices.jsonData() else { return }
       userDefaults.set(jsonData, forKey: key)
     }

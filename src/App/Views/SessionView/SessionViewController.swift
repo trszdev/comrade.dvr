@@ -27,8 +27,12 @@ class SessionViewController: UIHostingController<AnyView> {
   }
 
   func present() -> Future<Void, Never> {
-    Future { [application] promise in
-      guard let topVc = application.windows.first?.topViewController else { return promise(.success) }
+    Future { [weak self] promise in
+      guard let self = self,
+        let topVc = self.application.windows.first?.topViewController
+      else {
+        return promise(.success)
+      }
       topVc.present(self, animated: true) {
         promise(.success)
       }

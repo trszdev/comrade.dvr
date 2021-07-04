@@ -25,8 +25,9 @@ final class LogViewModelImpl: LogViewModel {
     mutableLog.append(logline)
     mutableLog.append("\n")
     print(logline)
-    DispatchQueue.main.async { [weak self, mutableLog] in
-      self?.log = mutableLog as String
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else { return }
+      self.log = self.mutableLog as String
     }
   }
 }

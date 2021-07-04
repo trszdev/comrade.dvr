@@ -59,13 +59,12 @@ final class StartViewModelImpl: StartViewModel {
     self.app = app
     self.sessionModel = sessionModel
     devicesModel.devicesPublisher
-      .sink { [weak self] devices in
-        self?.devices = devices.map { StartViewModelDevice.from(device: $0, appLocale: appLocaleModel.appLocale) }
-      }
+      .map { devices in devices.map { StartViewModelDevice.from(device: $0, appLocale: appLocaleModel.appLocale) } }
+      .assignWeak(to: \.devices, on: self)
       .store(in: &cancellables)
     appLocaleModel.appLocalePublisher
       .map { appLocale in devicesModel.devices.map { StartViewModelDevice.from(device: $0, appLocale: appLocale) } }
-      .assign(to: \.devices, on: self)
+      .assignWeak(to: \.devices, on: self)
       .store(in: &cancellables)
   }
 
@@ -78,14 +77,16 @@ final class StartViewModelImpl: StartViewModel {
     switch device {
     case let .camera(cameraDevice):
       let viewModel = ConfigureCameraViewModelImpl(devicesModel: devicesModel, cameraDevice: cameraDevice)
-      navigationViewPresenter.presentView(content: { [configureCameraViewBuilder] in
-        configureCameraViewBuilder.makeView(viewModel: viewModel)
-      })
+      let view = configureCameraViewBuilder.makeView(viewModel: viewModel)
+      navigationViewPresenter.presentView {
+        view
+      }
     case let .microphone(microphoneDevice):
       let viewModel = ConfigureMicrophoneViewModelImpl(devicesModel: devicesModel, microphoneDevice: microphoneDevice)
-      navigationViewPresenter.presentView(content: { [configureMicrophoneViewBuilder] in
-        configureMicrophoneViewBuilder.makeView(viewModel: viewModel)
-      })
+      let view = configureMicrophoneViewBuilder.makeView(viewModel: viewModel)
+      navigationViewPresenter.presentView {
+        view
+      }
     }
   }
 
@@ -93,9 +94,11 @@ final class StartViewModelImpl: StartViewModel {
     isStartButtonBusy = true
     sessionModel.startSession()
       .receive(on: DispatchQueue.main)
-      .catch { [weak self, errorSubject] (error: Error) -> Empty<Void, Never> in
-        errorSubject.send(error)
-        self?.isStartButtonBusy = false
+      .catch { [weak self] (error: Error) -> Empty<Void, Never> in
+        if let self = self {
+          self.errorSubject.send(error)
+          self.isStartButtonBusy = false
+        }
         return Empty()
       }
       .sink { [weak self] in

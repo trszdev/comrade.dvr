@@ -40,7 +40,7 @@ final class RootViewModelImpl: RootViewModel {
       }
       .store(in: &cancellables)
     appLocaleModel.appLocalePublisher
-      .assign(to: \.appLocale, on: self)
+      .assignWeak(to: \.appLocale, on: self)
       .store(in: &cancellables)
   }
 

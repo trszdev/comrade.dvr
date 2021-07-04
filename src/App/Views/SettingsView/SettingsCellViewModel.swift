@@ -13,7 +13,7 @@ final class SettingsCellViewModelImpl<Value: SettingValue>: SettingsCellViewMode
   init(setting: AnySetting<Value>) {
     self.setting = setting
     self.value = setting.value
-    self.cancellable = setting.publisher.assign(to: \.value, on: self)
+    self.cancellable = setting.publisher.assignWeak(to: \.value, on: self)
   }
 
   @Published var value: Value
