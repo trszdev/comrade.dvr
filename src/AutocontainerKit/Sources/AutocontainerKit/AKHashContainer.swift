@@ -14,9 +14,9 @@ public class AKHashContainer: AKContainer, AKLocator {
     return AKAutoregistryAdapter(registry: registry)
   }()
 
-  public func resolve<T>(_ type: T.Type) -> T! {
+  public func resolve<T>(_ type: T.Type, locator: AKLocator) -> T! {
     let id = ObjectIdentifier(type)
-    guard let value = hash[id]?(self) else {
+    guard let value = hash[id]?(locator) else {
       assert("Constructor not found for \(type)[id: \(id)]")
       return nil
     }
@@ -27,6 +27,10 @@ public class AKHashContainer: AKContainer, AKLocator {
       return nil
     }
     return result
+  }
+
+  public func canResolve<T>(_ type: T.Type) -> Bool {
+    hash.keys.contains(ObjectIdentifier(type))
   }
 
   fileprivate func didOutputConstructor(id: ObjectIdentifier, constructor: @escaping (AKLocator) -> Any) {

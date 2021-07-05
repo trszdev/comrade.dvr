@@ -1,4 +1,4 @@
-protocol CKMediaChunkMaker {
+public protocol CKMediaChunkMaker {
   func makeMediaChunk(deviceId: CKDeviceID, fileType: CKFileType) -> CKMediaChunk
 }
 

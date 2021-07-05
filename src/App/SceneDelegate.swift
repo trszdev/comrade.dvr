@@ -11,7 +11,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   ) {
     guard let windowScene = scene as? UIWindowScene else { return }
     let window = UIWindow(windowScene: windowScene)
-    let container = AppAssembly(isPreview: false).hashContainer
+    let container = AppAssembly(isPreview: false).locator
     let rootViewController = container.resolve(RootHostingControllerBuilder.self).makeViewController()
     window.rootViewController = rootViewController
     self.window = window

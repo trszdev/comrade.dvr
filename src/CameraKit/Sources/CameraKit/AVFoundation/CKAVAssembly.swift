@@ -2,6 +2,9 @@ import AutocontainerKit
 import AVFoundation
 
 public struct CKAVAssembly: AKAssembly {
+  public init() {
+  }
+
   public func assemble(container: AKContainer) {
     container.singleton.autoregister(CKTempFileMaker.self, construct: CKTempFileMakerImpl.init)
     container.transient.autoregister(CKTimestampMaker.self, construct: CKTimestampMakerImpl.init)
@@ -21,5 +24,11 @@ public struct CKAVAssembly: AKAssembly {
     container.transient.autoregister(construct: CKAVConfigurationManager.Builder.init)
     container.transient.autoregister(CKManagerBuilder.self, construct: CKAVManager.Builder.init)
     container.transient.autoregister(construct: CKAVManager.Builder.init)
+    container.singleton.autoregister(CKManager.self) { (ckManagerBuilder: CKManagerBuilder) in
+      ckManagerBuilder.makeManager(infoPlistBundle: .main, shouldPickNearest: true)
+    }
+    container.singleton.autoregister(CKNearestConfigurationPicker.self) { (ckManager: CKManager) in
+      ckManager.configurationPicker
+    }
   }
 }

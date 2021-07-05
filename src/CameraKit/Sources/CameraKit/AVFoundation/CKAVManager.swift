@@ -67,11 +67,7 @@ public struct CKAVManager: CKManager {
       .eraseToAnyPublisher()
   }
 
-  public static let shared: CKManager = {
-    sharedContainer
-      .resolve(CKManagerBuilder.self)
-      .makeManager(infoPlistBundle: .main, shouldPickNearest: true)
-  }()
+  public static let shared: CKManager = sharedContainer.resolve(CKManager.self)
 
   private static let sharedContainer = CKAVAssembly().hashContainer
 

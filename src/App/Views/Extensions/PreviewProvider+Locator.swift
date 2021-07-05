@@ -5,10 +5,10 @@ import AutocontainerKit
 
 extension PreviewProvider {
   static var locator: AKLocator {
-    previewContainer
+    previewLocator
   }
 }
 
-private let previewContainer = AppAssembly(isPreview: true).hashContainer
+private let previewLocator = AppAssembly(isPreview: true).locator
 
 #endif

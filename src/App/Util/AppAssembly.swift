@@ -1,5 +1,6 @@
 import AutocontainerKit
 import SwiftUI
+import CameraKit
 
 struct AppAssembly: AKAssembly {
   var isPreview = false
@@ -15,6 +16,12 @@ struct AppAssembly: AKAssembly {
     container.singleton.autoregister(value: UIApplication.shared)
   }
 
+  var locator: AKLocator {
+    let result = mockContainer
+    result.transient.autoregister(CKMediaChunkMaker.self, construct: SessionMediaChunkMaker.init)
+    return result
+  }
+
   private let commonAssemblies: [AKAssembly] = [
     SettingsViewAssembly(),
     MainViewAssembly(),
@@ -25,6 +32,7 @@ struct AppAssembly: AKAssembly {
     StartViewAssembly(),
     SessionViewAssembly(),
     SessionAssembly(),
+    CKAVAssembly(),
   ]
 
   private let previewAssemblies: [AKAssembly]  = [

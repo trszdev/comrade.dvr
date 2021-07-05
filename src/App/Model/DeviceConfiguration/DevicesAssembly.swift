@@ -14,11 +14,6 @@ struct DevicesAssembly: AKAssembly {
         value: ForcedConfigurationPicker(devices: tempDevicesStore.loadStoredDevices())
       )
     } else {
-      container.singleton.autoregister(CKManager.self, value: CKAVManager.shared)
-      container.singleton.autoregister(
-        CKNearestConfigurationPicker.self,
-        value: CKAVManager.shared.configurationPicker
-      )
       container.singleton.autoregister(DevicesStore.self, construct: UserDefaultsDevicesStore.init)
     }
     container.singleton.autoregister(DevicesModel.self, construct: DevicesModelImpl.init)

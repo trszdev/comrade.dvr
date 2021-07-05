@@ -1,4 +1,5 @@
 import AutocontainerKit
+import CameraKit
 
 struct SessionAssembly: AKAssembly {
   func assemble(container: AKContainer) {

@@ -1,6 +1,6 @@
 import Foundation
 
-protocol CKTimestampMaker {
+public protocol CKTimestampMaker {
   var currentTimestamp: CKTimestamp { get }
 }
 
