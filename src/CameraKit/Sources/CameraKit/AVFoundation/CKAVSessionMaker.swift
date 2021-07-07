@@ -1,7 +1,7 @@
 import AutocontainerKit
 
 struct CKAVSessionMaker: CKSessionMaker {
-  class Builder: AKBuilder {
+  final class Builder: AKBuilder {
     func makeSessionMaker(configurationPicker: CKNearestConfigurationPicker) -> CKSessionMaker {
       CKAVSessionMaker(
         cameraSessionBuilder: resolve(CKAVCameraSession.Builder.self),

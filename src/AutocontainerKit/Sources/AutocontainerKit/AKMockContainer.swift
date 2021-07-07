@@ -1,4 +1,4 @@
-public class AKMockContainer: AKContainer & AKLocator {
+public final class AKMockContainer: AKContainer & AKLocator {
   public convenience init() {
     self.init(innerContainer: AKHashContainer(), mockContainer: AKHashContainer())
   }

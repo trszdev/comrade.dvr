@@ -201,7 +201,7 @@ final class MainViewController: UIViewController {
   )
 }
 
-class UIHostingControllerWithoutRotation<Content: View>: UIHostingController<Content> {
+final class UIHostingControllerWithoutRotation<Content: View>: UIHostingController<Content> {
   var container: AKContainer?
 
   override var shouldAutorotate: Bool {

@@ -5,7 +5,7 @@ import AVFoundation
 import AutocontainerKit
 
 public struct CKAVManager: CKManager {
-  class Builder: AKBuilder, CKManagerBuilder {
+  final class Builder: AKBuilder, CKManagerBuilder {
     func makeManager(infoPlistBundle: Bundle?, shouldPickNearest: Bool) -> CKManager {
       makeManager(
         permissionManager: CKAVPermissionManager(infoPlistBundle: infoPlistBundle),

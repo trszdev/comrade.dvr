@@ -17,7 +17,7 @@ struct CKAVNearestSingleCameraConfigurationPicker: CKNearestConfigurationPicker 
 }
 
 struct CKAVNearestMultiCameraConfigurationPicker: CKNearestConfigurationPicker {
-  class Builder: AKBuilder {
+  final class Builder: AKBuilder {
     func makePicker(adjustableConfiguration: CKAdjustableConfiguration) -> CKNearestConfigurationPicker {
       CKAVNearestMultiCameraConfigurationPicker(
         adjustableConfiguration: adjustableConfiguration,

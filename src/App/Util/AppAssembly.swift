@@ -12,13 +12,14 @@ struct AppAssembly: AKAssembly {
       container.registerMany(assemblies: releaseAssemblies)
     }
     container.registerMany(assemblies: commonAssemblies)
+    container.singleton.autoregister(value: Calendar.current)
     container.singleton.autoregister(value: UserDefaults.standard)
     container.singleton.autoregister(value: UIApplication.shared)
   }
 
   var locator: AKLocator {
     let result = mockContainer
-    result.transient.autoregister(CKMediaChunkMaker.self, construct: SessionMediaChunkMaker.init)
+    result.transient.autoregister(CKMediaURLMaker.self, construct: SessionMediaURLMaker.init)
     return result
   }
 

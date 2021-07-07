@@ -2,23 +2,26 @@ import Foundation
 
 public struct CKMediaChunk: Hashable {
   public init(
-    timestamp: CKTimestamp,
+    startedAt: CKTimestamp,
     url: URL,
     deviceId: CKDeviceID,
-    fileType: CKFileType
+    fileType: CKFileType,
+    finishedAt: CKTimestamp
   ) {
-    self.timestamp = timestamp
+    self.startedAt = startedAt
     self.url = url
     self.deviceId = deviceId
     self.fileType = fileType
+    self.finishedAt = finishedAt
   }
 
-  public let timestamp: CKTimestamp
+  public let startedAt: CKTimestamp
   public let url: URL
   public let deviceId: CKDeviceID
   public let fileType: CKFileType
+  public let finishedAt: CKTimestamp
 
-  func with(timestamp: CKTimestamp) -> CKMediaChunk {
-    CKMediaChunk(timestamp: timestamp, url: url, deviceId: deviceId, fileType: fileType)
+  func with(finishedAt: CKTimestamp) -> CKMediaChunk {
+    CKMediaChunk(startedAt: startedAt, url: url, deviceId: deviceId, fileType: fileType, finishedAt: finishedAt)
   }
 }

@@ -35,7 +35,7 @@ struct TouchDownView: UIViewRepresentable {
     return view
   }
 
-  class Coordinator: NSObject, UIGestureRecognizerDelegate {
+  final class Coordinator: NSObject, UIGestureRecognizerDelegate {
     var callback: TouchDownCallback?
 
     @objc fileprivate func gestureRecognized(gesture: UILongPressGestureRecognizer) {

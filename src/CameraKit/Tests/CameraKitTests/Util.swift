@@ -28,7 +28,7 @@ struct Expectation {
   }
 }
 
-class CallLogger<Table: Hashable> {
+final class CallLogger<Table: Hashable> {
   init(_ type: Table.Type) {
   }
 

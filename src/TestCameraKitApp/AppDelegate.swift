@@ -2,7 +2,7 @@ import UIKit
 import Combine
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+final class AppDelegate: UIResponder, UIApplicationDelegate {
   var window: UIWindow?
 
   func application(

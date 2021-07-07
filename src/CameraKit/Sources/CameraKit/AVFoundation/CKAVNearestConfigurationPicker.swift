@@ -1,7 +1,7 @@
 import AutocontainerKit
 
 struct CKAVNearestConfigurationPicker: CKNearestConfigurationPicker {
-  class Builder: AKBuilder {
+  final class Builder: AKBuilder {
     func makePicker(adjustableConfiguration: CKAdjustableConfiguration) -> CKNearestConfigurationPicker {
       CKAVNearestConfigurationPicker(
         microphonePicker: CKAVNearestMicrophoneConfigurationPicker(adjustableConfiguration: adjustableConfiguration),

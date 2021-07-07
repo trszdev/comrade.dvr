@@ -24,10 +24,24 @@ struct SessionView<ViewModel: SessionViewModel>: View {
     .onReceive(viewModel.dismissAlertPublisher) {
       isNotificationVisible = false
     }
+    .onReceive(viewModel.errors) { error in
+      self.error = error
+      showAlert = true
+    }
+    .alert(isPresented: $showAlert, content: alertContent)
     .onChange(of: isHovered) { isHovered in
       guard isHovered else { return }
       haptics.hover()
     }
+  }
+
+  private func alertContent() -> Alert {
+    guard let error = error else { return Alert(title: Text("")) }
+    return Alert(
+      title: Text(appLocale.errorString),
+      message: Text(appLocale.errorBody(error)),
+      dismissButton: .cancel(viewModel.stopSession)
+    )
   }
 
   private var orientedBody: AnyView {
@@ -165,6 +179,8 @@ struct SessionView<ViewModel: SessionViewModel>: View {
     isInfoTextVisible = true
   }
 
+  @State private var showAlert = false
+  @State private var error: Error?
   @State private var isHovered = false
   @State private var isNotificationVisible = false
   @State private var notificationText = ""

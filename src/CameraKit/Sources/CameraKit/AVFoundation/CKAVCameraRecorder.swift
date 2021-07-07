@@ -4,28 +4,39 @@ import AutocontainerKit
 
 protocol CKAVCameraRecorder: AVCaptureVideoDataOutputSampleBufferDelegate {
   func requestMediaChunk()
-  func setup(output: AVCaptureVideoDataOutput, camera: CKDevice<CKCameraConfiguration>) throws
+  func setup(
+    output: AVCaptureVideoDataOutput,
+    camera: CKDevice<CKCameraConfiguration>,
+    sessionStartupInfo: CKSessionStartupInfo
+  ) throws
 }
 
 protocol CKAVCameraRecorderBuilder {
   func makeRecorder(sessionPublisher: CKSessionPublisher) -> CKAVCameraRecorder
 }
 
-class CKAVCameraRecorderBuilderImpl: AKBuilder, CKAVCameraRecorderBuilder {
+final class CKAVCameraRecorderBuilderImpl: AKBuilder, CKAVCameraRecorderBuilder {
   func makeRecorder(sessionPublisher: CKSessionPublisher) -> CKAVCameraRecorder {
     CKAVCameraRecorderImpl(
       mapper: resolve(CKAVConfigurationMapper.self),
-      mediaChunkMaker: resolve(CKMediaChunkMaker.self),
-      sessionPublisher: sessionPublisher
+      mediaUrlMaker: resolve(CKMediaURLMaker.self),
+      sessionPublisher: sessionPublisher,
+      timestampMaker: resolve(CKTimestampMaker.self)
     )
   }
 }
 
 final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
-  init(mapper: CKAVConfigurationMapper, mediaChunkMaker: CKMediaChunkMaker, sessionPublisher: CKSessionPublisher) {
+  init(
+    mapper: CKAVConfigurationMapper,
+    mediaUrlMaker: CKMediaURLMaker,
+    sessionPublisher: CKSessionPublisher,
+    timestampMaker: CKTimestampMaker
+  ) {
     self.mapper = mapper
-    self.mediaChunkMaker = mediaChunkMaker
+    self.mediaUrlMaker = mediaUrlMaker
     self.sessionPublisher = sessionPublisher
+    self.timestampMaker = timestampMaker
   }
 
   func requestMediaChunk() {
@@ -33,7 +44,11 @@ final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
     tryStartRecording()
   }
 
-  func setup(output: AVCaptureVideoDataOutput, camera: CKDevice<CKCameraConfiguration>) throws {
+  func setup(
+    output: AVCaptureVideoDataOutput,
+    camera: CKDevice<CKCameraConfiguration>,
+    sessionStartupInfo: CKSessionStartupInfo
+  ) throws {
     NotificationCenter.default.addObserver(
       self,
       selector: #selector(interruptionWillBegin),
@@ -48,14 +63,30 @@ final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
     )
     output.tryChangePixelFormat(quality: camera.configuration.videoQuality)
     self.camera = camera
+    self.sessionStartupInfo = sessionStartupInfo
     try startRecording()
   }
 
   private let sessionPublisher: CKSessionPublisher
 
+  private func makeMediaChunk(deviceId: CKDeviceID, fileType: CKFileType) -> CKMediaChunk {
+    let startedAt = timestampMaker.currentTimestamp
+    let mediaUrl = mediaUrlMaker
+      .makeMediaURL(deviceId: deviceId, sessionStartupInfo: sessionStartupInfo, startedAt: startedAt)
+      .appendingPathExtension(fileType.rawValue)
+    let mediaChunk = CKMediaChunk(
+      startedAt: startedAt,
+      url: mediaUrl,
+      deviceId: deviceId,
+      fileType: fileType,
+      finishedAt: startedAt
+    )
+    return mediaChunk
+  }
+
   private func startRecording() throws {
     guard let camera = camera else { return }
-    let mediaChunk = mediaChunkMaker.makeMediaChunk(deviceId: camera.id, fileType: .mov)
+    let mediaChunk = makeMediaChunk(deviceId: camera.id, fileType: .mov)
     do {
       let videoWriter = try AVAssetWriter(outputURL: mediaChunk.url, fileType: .mov)
       let videoWriterInput = camera.configuration.assetWriterInput
@@ -83,7 +114,8 @@ final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
     videoWriter.finishWriting { [weak self] in
       guard let self = self else { return }
       self.finishingWriters.removeValue(forKey: mediaChunk)
-      self.sessionPublisher.outputPublisher.send(mediaChunk)
+      let updatedMediaChunk = mediaChunk.with(finishedAt: self.timestampMaker.currentTimestamp)
+      self.sessionPublisher.outputPublisher.send(updatedMediaChunk)
     }
   }
 
@@ -96,10 +128,12 @@ final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
   }
 
   private var mediaChunk: CKMediaChunk?
+  private var sessionStartupInfo = CKSessionStartupInfo()
   private var finishingWriters = [CKMediaChunk: AVAssetWriter]()
   private var videoWriter: AVAssetWriter?
   private var camera: CKDevice<CKCameraConfiguration>?
-  private let mediaChunkMaker: CKMediaChunkMaker
+  private let mediaUrlMaker: CKMediaURLMaker
+  private let timestampMaker: CKTimestampMaker
   private let mapper: CKAVConfigurationMapper
 }
 

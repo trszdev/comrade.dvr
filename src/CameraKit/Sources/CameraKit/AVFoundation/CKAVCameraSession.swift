@@ -4,7 +4,7 @@ import Foundation
 import AutocontainerKit
 
 final class CKAVCameraSession: NSObject, CKSession, CKSessionPublisherProvider {
-  class Builder: AKBuilder {
+  final class Builder: AKBuilder {
     func makeSession(configuration: CKConfiguration, sessionPublisher: CKSessionPublisher) -> CKAVCameraSession {
       CKAVCameraSession(
         configuration: configuration,
@@ -107,7 +107,7 @@ final class CKAVCameraSession: NSObject, CKSession, CKSessionPublisherProvider {
     configurator.configurePreviewView()
     try configurator.addConnections()
     try configurator.configureDevice()
-    try recorder.setup(output: output, camera: camera)
+    try recorder.setup(output: output, camera: camera, sessionStartupInfo: startupInfo)
     recorders.append(recorder)
     let ckPreviewView = CKCameraPreviewView(configurator.previewView)
     cameras[camera.id] = CKAVCameraDevice(device: camera, previewView: ckPreviewView)

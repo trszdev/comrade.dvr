@@ -2,7 +2,7 @@ import SwiftUI
 import CameraKit
 import Combine
 
-class SessionViewController: UIHostingController<AnyView> {
+final class SessionViewController: UIHostingController<AnyView> {
   struct Builder {
     let application: UIApplication
 

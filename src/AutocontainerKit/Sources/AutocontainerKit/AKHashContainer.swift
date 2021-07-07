@@ -1,4 +1,4 @@
-public class AKHashContainer: AKContainer, AKLocator {
+public final class AKHashContainer: AKContainer, AKLocator {
   public init() {}
   public var asserts = true
 
@@ -48,7 +48,7 @@ public class AKHashContainer: AKContainer, AKLocator {
   private var hash = [ObjectIdentifier: (AKLocator) -> Any]()
 }
 
-private class AKSingletonRegistry: AKRegistry {
+private final class AKSingletonRegistry: AKRegistry {
   weak var container: AKHashContainer?
 
   func register<T>(_ type: T.Type, construct: @escaping (AKLocator) -> T) {
@@ -62,7 +62,7 @@ private class AKSingletonRegistry: AKRegistry {
   }
 }
 
-private class AKTransientRegistry: AKRegistry {
+private final class AKTransientRegistry: AKRegistry {
   weak var container: AKHashContainer?
 
   func register<T>(_ type: T.Type, construct: @escaping (AKLocator) -> T) {

@@ -24,6 +24,7 @@ protocol SessionViewModel: ObservableObject {
 
   func scheduleDismissAlertTimer()
   var dismissAlertPublisher: AnyPublisher<Void, Never> { get }
+  var errors: AnyPublisher<Error, Never> { get }
 }
 
 struct SessionViewModelBuilder {
@@ -34,7 +35,7 @@ struct SessionViewModelBuilder {
   }
 }
 
-class SessionViewModelImpl: SessionViewModel {
+final class SessionViewModelImpl: SessionViewModel {
   init(session: CKSession?, appLocaleModel: AppLocaleModel, devices: [Device]) {
     self.session = session
     microphoneEnabled = session == nil || session?.microphone != nil
@@ -51,6 +52,16 @@ class SessionViewModelImpl: SessionViewModel {
       ]
     }
     pressureLevel = session?.pressureLevel ?? .nominal
+    session?.outputPublisher
+      .map { [weak self] mediaChunk in
+        self?.receive(mediaChunk: mediaChunk)
+      }
+      .catch { [weak self] (error: Error) -> Just<Void> in
+        self?.errorSubject.send(error)
+        return Just(())
+      }
+      .sink {}
+      .store(in: &cancellables)
     session?.pressureLevelPublisher
       .assignWeak(to: \.pressureLevel, on: self)
       .store(in: &cancellables)
@@ -65,6 +76,10 @@ class SessionViewModelImpl: SessionViewModel {
   weak var sessionViewController: SessionViewController?
 
   let previews: [AnyView]
+
+  public func receive(mediaChunk: CKMediaChunk) {
+    print("Media: \(mediaChunk)")
+  }
 
   func stopSession() {
     sessionViewController?.dismiss(animated: true, completion: nil)
@@ -91,6 +106,7 @@ class SessionViewModelImpl: SessionViewModel {
   var infoTextPublisher: Published<String>.Publisher { $infoText }
 
   func scheduleDismissAlertTimer() {
+    session?.requestMediaChunk()
     dismissTimer?.invalidate()
     dismissTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { [weak self] timer in
       guard timer.isValid, let self = self else { return }
@@ -99,7 +115,9 @@ class SessionViewModelImpl: SessionViewModel {
   }
 
   var dismissAlertPublisher: AnyPublisher<Void, Never> { dismissAlertPublisherInternal.eraseToAnyPublisher() }
+  var errors: AnyPublisher<Error, Never> { errorSubject.eraseToAnyPublisher() }
 
+  private let errorSubject = PassthroughSubject<Error, Never>()
   private var dismissAlertPublisherInternal = PassthroughSubject<Void, Never>()
   private var dismissTimer: Timer?
   private var session: CKSession?

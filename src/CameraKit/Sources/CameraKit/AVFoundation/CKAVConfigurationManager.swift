@@ -1,7 +1,7 @@
 import AutocontainerKit
 
 struct CKAVConfigurationManager: CKConfigurationManager {
-  class Builder: AKBuilder {
+  final class Builder: AKBuilder {
     func makeManager(shouldPickNearest: Bool) -> CKConfigurationManager {
       CKAVConfigurationManager(
         configurationMapper: resolve(CKAVConfigurationMapper.self),

@@ -5,24 +5,26 @@ import AutocontainerKit
 
 protocol CKAVMicrophoneRecorder: AnyObject {
   func requestMediaChunk()
-  func setup(microphone: CKDevice<CKMicrophoneConfiguration>) throws
+  func setup(microphone: CKDevice<CKMicrophoneConfiguration>, sessionStartupInfo: CKSessionStartupInfo) throws
   func stop()
   func record()
 }
 
 final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
-  class Builder: AKBuilder {
+  final class Builder: AKBuilder {
     func makeRecorder(sessionPublisher: CKSessionPublisher) -> CKAVMicrophoneRecorder {
       CKAVMicrophoneRecorderImpl(
-        mediaChunkMaker: resolve(CKMediaChunkMaker.self),
-        sessionPublisher: sessionPublisher
+        mediaUrlMaker: resolve(CKMediaURLMaker.self),
+        sessionPublisher: sessionPublisher,
+        timestampMaker: resolve(CKTimestampMaker.self)
       )
     }
   }
 
-  init(mediaChunkMaker: CKMediaChunkMaker, sessionPublisher: CKSessionPublisher) {
-    self.mediaChunkMaker = mediaChunkMaker
+  init(mediaUrlMaker: CKMediaURLMaker, sessionPublisher: CKSessionPublisher, timestampMaker: CKTimestampMaker) {
+    self.mediaUrlMaker = mediaUrlMaker
     self.sessionPublisher = sessionPublisher
+    self.timestampMaker = timestampMaker
   }
 
   func requestMediaChunk() {
@@ -44,7 +46,7 @@ final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
     }
   }
 
-  func setup(microphone: CKDevice<CKMicrophoneConfiguration>) throws {
+  func setup(microphone: CKDevice<CKMicrophoneConfiguration>, sessionStartupInfo: CKSessionStartupInfo) throws {
     NotificationCenter.default.addObserver(
       self,
       selector: #selector(wasInterrupted(notification:)),
@@ -52,14 +54,30 @@ final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
       object: nil
     )
     self.microphone = microphone
+    self.sessionStartupInfo = sessionStartupInfo
     try recordInternal()
+  }
+
+  private func makeMediaChunk(deviceId: CKDeviceID, fileType: CKFileType) -> CKMediaChunk {
+    let startedAt = timestampMaker.currentTimestamp
+    let mediaUrl = mediaUrlMaker
+      .makeMediaURL(deviceId: deviceId, sessionStartupInfo: sessionStartupInfo, startedAt: startedAt)
+      .appendingPathExtension(fileType.rawValue)
+    let mediaChunk = CKMediaChunk(
+      startedAt: startedAt,
+      url: mediaUrl,
+      deviceId: deviceId,
+      fileType: fileType,
+      finishedAt: startedAt
+    )
+    return mediaChunk
   }
 
   private func recordInternal() throws {
     stop()
     do {
       guard let microphone = microphone else { return }
-      let mediaChunk = mediaChunkMaker.makeMediaChunk(deviceId: microphone.id, fileType: .m4a)
+      let mediaChunk = makeMediaChunk(deviceId: microphone.id, fileType: .m4a)
       let recorder = try AVAudioRecorder(
         url: mediaChunk.url,
         settings: microphone.configuration.audioQuality.avAudioRecorderSettings
@@ -102,9 +120,11 @@ final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
     record()
   }
 
+  private var sessionStartupInfo = CKSessionStartupInfo()
   private let sessionPublisher: CKSessionPublisher
   private var recorders = [URL: (AVAudioRecorder, CKMediaChunk)]()
-  private let mediaChunkMaker: CKMediaChunkMaker
+  private let mediaUrlMaker: CKMediaURLMaker
+  private let timestampMaker: CKTimestampMaker
   private var microphone: CKDevice<CKMicrophoneConfiguration>?
 }
 
@@ -123,6 +143,7 @@ extension CKAVMicrophoneRecorderImpl: AVAudioRecorderDelegate {
       return
     }
     recorders.removeValue(forKey: recorder.url)
-    sessionPublisher.outputPublisher.send(mediaChunk)
+    let updatedMediaChunk = mediaChunk.with(finishedAt: timestampMaker.currentTimestamp)
+    sessionPublisher.outputPublisher.send(updatedMediaChunk)
   }
 }

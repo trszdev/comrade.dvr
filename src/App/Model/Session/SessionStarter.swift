@@ -7,7 +7,7 @@ protocol SessionStarter {
   func startSession() -> AnyPublisher<Void, Error>
 }
 
-class SessionStarterImpl: SessionStarter {
+final class SessionStarterImpl: SessionStarter {
   init(
     ckManager: CKManager,
     devicesModel: DevicesModel,

@@ -24,7 +24,7 @@ struct HistoryTableView: UIViewRepresentable {
   }
 }
 
-private class CustomTableView: UITableView {
+private final class CustomTableView: UITableView {
   var theme: Theme = Default.theme
   var locale: AppLocale = Default.appLocale
 }

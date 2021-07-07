@@ -3,7 +3,7 @@ import Combine
 import AutocontainerKit
 
 final class CKAVMicrophoneSession: CKSession, CKSessionPublisherProvider {
-  class Builder: AKBuilder {
+  final class Builder: AKBuilder {
     func makeSession(configuration: CKConfiguration, sessionPublisher: CKSessionPublisher) -> CKAVMicrophoneSession {
       CKAVMicrophoneSession(
         configuration: configuration,
@@ -52,7 +52,7 @@ final class CKAVMicrophoneSession: CKSession, CKSessionPublisherProvider {
         try dataSource.setPreferredPolarPattern(polarPattern)
       }
     }
-    try recorder.setup(microphone: microphone)
+    try recorder.setup(microphone: microphone, sessionStartupInfo: startupInfo)
     self.microphone = CKAVMicrophoneDevice(device: microphone) { [weak self] isMuted in
       if isMuted {
         self?.recorder.stop()

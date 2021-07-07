@@ -6,7 +6,7 @@ protocol CameraKitViewBuilder {
   func makeView(session: CKSession, hostingVc: UIViewController) -> AnyView
 }
 
-class CameraKitViewBuilderImpl: AKBuilder, CameraKitViewBuilder {
+final class CameraKitViewBuilderImpl: AKBuilder, CameraKitViewBuilder {
   func makeView(session: CKSession, hostingVc: UIViewController) -> AnyView {
     let logger = resolve(Logger.self)!
     logger.log("View created for session: \(session.configuration))")

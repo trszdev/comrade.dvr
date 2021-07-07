@@ -23,7 +23,7 @@ struct CustomSwitch: UIViewRepresentable {
     uiView.thumbTintColor = UIColor(theme.mainBackgroundColor)
   }
 
-  class Coordinator {
+  final class Coordinator {
     var isOn: Binding<Bool>?
 
     @objc func valueChanged(uiSwitch: UISwitch) {
