@@ -24,20 +24,27 @@ protocol SessionViewModel: ObservableObject {
 
   func scheduleDismissAlertTimer()
   var dismissAlertPublisher: AnyPublisher<Void, Never> { get }
-  var errors: AnyPublisher<Error, Never> { get }
+  var errorPublisher: AnyPublisher<Error, Never> { get }
 }
 
 struct SessionViewModelBuilder {
   let appLocaleModel: AppLocaleModel
+  let sessionController: SessionController
 
   func makeViewModel(session: CKSession? = nil, devices: [Device] = []) -> SessionViewModelImpl {
-    SessionViewModelImpl(session: session, appLocaleModel: appLocaleModel, devices: devices)
+    SessionViewModelImpl(
+      session: session,
+      appLocaleModel: appLocaleModel,
+      sessionController: sessionController,
+      devices: devices
+    )
   }
 }
 
 final class SessionViewModelImpl: SessionViewModel {
-  init(session: CKSession?, appLocaleModel: AppLocaleModel, devices: [Device]) {
+  init(session: CKSession?, appLocaleModel: AppLocaleModel, sessionController: SessionController, devices: [Device]) {
     self.session = session
+    self.sessionController = sessionController
     microphoneEnabled = session == nil || session?.microphone != nil
     microphoneMuted = session?.microphone?.isMuted == true
     infoText = session.flatMap { $0.description(appLocale: appLocaleModel.appLocale) } ?? "test test"
@@ -53,9 +60,7 @@ final class SessionViewModelImpl: SessionViewModel {
     }
     pressureLevel = session?.pressureLevel ?? .nominal
     session?.outputPublisher
-      .map { [weak self] mediaChunk in
-        self?.receive(mediaChunk: mediaChunk)
-      }
+      .map { _ in () }
       .catch { [weak self] (error: Error) -> Just<Void> in
         self?.errorSubject.send(error)
         return Just(())
@@ -73,16 +78,10 @@ final class SessionViewModelImpl: SessionViewModel {
       .store(in: &cancellables)
   }
 
-  weak var sessionViewController: SessionViewController?
-
   let previews: [AnyView]
 
-  public func receive(mediaChunk: CKMediaChunk) {
-    print("Media: \(mediaChunk)")
-  }
-
   func stopSession() {
-    sessionViewController?.dismiss(animated: true, completion: nil)
+    sessionController.stop()
   }
 
   @Published var microphoneMuted: Bool {
@@ -106,7 +105,6 @@ final class SessionViewModelImpl: SessionViewModel {
   var infoTextPublisher: Published<String>.Publisher { $infoText }
 
   func scheduleDismissAlertTimer() {
-    session?.requestMediaChunk()
     dismissTimer?.invalidate()
     dismissTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { [weak self] timer in
       guard timer.isValid, let self = self else { return }
@@ -115,12 +113,13 @@ final class SessionViewModelImpl: SessionViewModel {
   }
 
   var dismissAlertPublisher: AnyPublisher<Void, Never> { dismissAlertPublisherInternal.eraseToAnyPublisher() }
-  var errors: AnyPublisher<Error, Never> { errorSubject.eraseToAnyPublisher() }
+  var errorPublisher: AnyPublisher<Error, Never> { errorSubject.eraseToAnyPublisher() }
 
+  private let sessionController: SessionController
   private let errorSubject = PassthroughSubject<Error, Never>()
   private var dismissAlertPublisherInternal = PassthroughSubject<Void, Never>()
   private var dismissTimer: Timer?
-  private var session: CKSession?
+  private weak var session: CKSession?
   private var cancellables = Set<AnyCancellable>()
 }
 

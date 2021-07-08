@@ -3,6 +3,7 @@ import CameraKit
 
 struct SessionAssembly: AKAssembly {
   func assemble(container: AKContainer) {
-    container.singleton.autoregister(SessionStarter.self, construct: SessionStarterImpl.init)
+    container.singleton.autoregister(SessionController.self, construct: SessionControllerImpl.init)
+    container.transient.autoregister(SessionMaker.self, construct: SessionMakerImpl.init)
   }
 }

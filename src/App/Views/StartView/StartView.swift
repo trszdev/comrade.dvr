@@ -51,11 +51,24 @@ struct StartView<ViewModel: StartViewModel>: View {
         }
         Spacer()
       }
-      StartButtonView(isBusy: viewModel.isStartButtonBusy, isDisabled: !viewModel.devices.contains(where: \.isActive))
+      StartButtonView(isBusy: isStartButtonBusy, isDisabled: isStartButtonDisabled)
         .frame(maxHeight: 50)
         .onTapGesture(perform: viewModel.start)
     }
     .padding(10)
+  }
+
+  private var isStartButtonBusy: Bool {
+    switch viewModel.sessionStatus {
+    case .isRunning, .isStarting:
+      return true
+    case .none, .notRunning:
+      return false
+    }
+  }
+
+  private var isStartButtonDisabled: Bool {
+    viewModel.sessionStatus == nil
   }
 
   private func alertContent() -> Alert {

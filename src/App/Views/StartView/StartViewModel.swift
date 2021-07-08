@@ -12,9 +12,9 @@ protocol StartViewModel: ObservableObject {
   func openSettingsUrl()
   var errors: AnyPublisher<Error, Never> { get }
 
-  var isStartButtonBusy: Bool { get }
-  var isStartButtonBusyPublished: Published<Bool> { get }
-  var isStartButtonBusyPublisher: Published<Bool>.Publisher { get }
+  var sessionStatus: SessionStatus? { get }
+  var sessionStatusPublished: Published<SessionStatus?> { get }
+  var sessionStatusPublisher: Published<SessionStatus?>.Publisher { get }
 }
 
 struct StartViewModelBuilder {
@@ -24,7 +24,7 @@ struct StartViewModelBuilder {
   let appLocaleModel: AppLocaleModel
   let navigationViewPresenter: NavigationViewPresenter
   let app: UIApplication
-  let sessionModel: SessionStarter
+  let sessionController: SessionController
 
   func makeViewModel() -> StartViewModelImpl {
     StartViewModelImpl(
@@ -34,7 +34,7 @@ struct StartViewModelBuilder {
       appLocaleModel: appLocaleModel,
       navigationViewPresenter: navigationViewPresenter,
       app: app,
-      sessionModel: sessionModel
+      sessionController: sessionController
     )
   }
 }
@@ -47,28 +47,20 @@ final class StartViewModelImpl: StartViewModel {
     appLocaleModel: AppLocaleModel,
     navigationViewPresenter: NavigationViewPresenter,
     app: UIApplication,
-    sessionModel: SessionStarter
+    sessionController: SessionController
   ) {
-    self.devices = devicesModel.devices.map {
-      StartViewModelDevice.from(device: $0, appLocale: appLocaleModel.appLocale)
-    }
     self.devicesModel = devicesModel
     self.configureMicrophoneViewBuilder = configureMicrophoneViewBuilder
     self.configureCameraViewBuilder = configureCameraViewBuilder
     self.navigationViewPresenter = navigationViewPresenter
     self.app = app
-    self.sessionModel = sessionModel
-    devicesModel.devicesPublisher
-      .map { devices in devices.map { StartViewModelDevice.from(device: $0, appLocale: appLocaleModel.appLocale) } }
-      .assignWeak(to: \.devices, on: self)
-      .store(in: &cancellables)
-    appLocaleModel.appLocalePublisher
-      .map { appLocale in devicesModel.devices.map { StartViewModelDevice.from(device: $0, appLocale: appLocale) } }
-      .assignWeak(to: \.devices, on: self)
-      .store(in: &cancellables)
+    self.sessionController = sessionController
+    self.appLocaleModel = appLocaleModel
+    self.sessionStatusInternal = sessionController.status
+    setup()
   }
 
-  @Published private(set) var devices: [StartViewModelDevice]
+  @Published private(set) var devices = [StartViewModelDevice]()
   var devicesPublished: Published<[StartViewModelDevice]> { _devices }
   var devicesPublisher: Published<[StartViewModelDevice]>.Publisher { $devices }
 
@@ -91,20 +83,7 @@ final class StartViewModelImpl: StartViewModel {
   }
 
   func start() {
-    isStartButtonBusy = true
-    sessionModel.startSession()
-      .receive(on: DispatchQueue.main)
-      .catch { [weak self] (error: Error) -> Empty<Void, Never> in
-        if let self = self {
-          self.errorSubject.send(error)
-          self.isStartButtonBusy = false
-        }
-        return Empty()
-      }
-      .sink { [weak self] in
-        self?.isStartButtonBusy = false
-      }
-      .store(in: &cancellables)
+    sessionController.tryStart()
   }
 
   func openSettingsUrl() {
@@ -116,10 +95,47 @@ final class StartViewModelImpl: StartViewModel {
     errorSubject.eraseToAnyPublisher()
   }
 
-  @Published private(set) var isStartButtonBusy: Bool = false
-  var isStartButtonBusyPublished: Published<Bool> { _isStartButtonBusy }
-  var isStartButtonBusyPublisher: Published<Bool>.Publisher { $isStartButtonBusy }
+  @Published private(set) var sessionStatus: SessionStatus? = .notRunning
+  var sessionStatusPublished: Published<SessionStatus?> { _sessionStatus }
+  var sessionStatusPublisher: Published<SessionStatus?>.Publisher { $sessionStatus }
 
+  private func setup() {
+    received(devices: devicesModel.devices)
+    received(status: sessionController.status)
+    sessionController.statusPublisher
+      .receive(on: DispatchQueue.main)
+      .map { [weak self] status in
+        self?.received(status: status)
+      }
+      .catch { [weak self] (error: Error) -> Empty<Void, Never> in
+        self?.errorSubject.send(error)
+        return Empty()
+      }
+      .sink {}
+      .store(in: &cancellables)
+    devicesModel.devicesPublisher
+      .sink { [weak self] devices in self?.received(devices: devices) }
+      .store(in: &cancellables)
+    appLocaleModel.appLocalePublisher
+      .sink { [weak self] appLocale in self?.received(appLocale: appLocale) }
+      .store(in: &cancellables)
+  }
+
+  private func received(status: SessionStatus?) {
+    if let status = status {
+      sessionStatusInternal = status
+    }
+    sessionStatus = devices.contains(where: \.isActive) ? sessionStatusInternal : nil
+  }
+
+  private func received(devices: [Device]? = nil, appLocale: AppLocale? = nil) {
+    self.devices = (devices ?? devicesModel.devices).map {
+      StartViewModelDevice.from(device: $0, appLocale: appLocale ?? appLocaleModel.appLocale)
+    }
+    received(status: nil)
+  }
+
+  private var sessionStatusInternal: SessionStatus
   private let errorSubject = PassthroughSubject<Error, Never>()
   private var cancellables = Set<AnyCancellable>()
   private let devicesModel: DevicesModel
@@ -127,5 +143,6 @@ final class StartViewModelImpl: StartViewModel {
   private let configureCameraViewBuilder: ConfigureCameraViewBuilder
   private let navigationViewPresenter: NavigationViewPresenter
   private let app: UIApplication
-  private let sessionModel: SessionStarter
+  private let sessionController: SessionController
+  private let appLocaleModel: AppLocaleModel
 }

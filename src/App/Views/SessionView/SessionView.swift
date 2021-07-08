@@ -24,7 +24,10 @@ struct SessionView<ViewModel: SessionViewModel>: View {
     .onReceive(viewModel.dismissAlertPublisher) {
       isNotificationVisible = false
     }
-    .onReceive(viewModel.errors) { error in
+    .onChange(of: viewModel.pressureLevel) { pressureLevel in
+      showNotification(text: appLocale.pressureLevelAlertText(pressureLevel))
+    }
+    .onReceive(viewModel.errorPublisher) { error in
       self.error = error
       showAlert = true
     }

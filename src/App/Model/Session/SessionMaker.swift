@@ -1,13 +1,13 @@
-import Combine
 import CameraKit
-import Foundation
+import Combine
 import UIKit
+import AutocontainerKit
 
-protocol SessionStarter {
-  func startSession() -> AnyPublisher<Void, Error>
+protocol SessionMaker {
+  func makeSession() -> AnyPublisher<(CKSession, SessionViewController), Error>
 }
 
-final class SessionStarterImpl: SessionStarter {
+final class SessionMakerImpl: SessionMaker {
   init(
     ckManager: CKManager,
     devicesModel: DevicesModel,
@@ -26,23 +26,28 @@ final class SessionStarterImpl: SessionStarter {
     self.sessionViewBuilder = sessionViewBuilder
     self.sessionViewModelBuilder = sessionViewModelBuilder
     self.rootViewModelBuilder = rootViewModelBuilder
-    self.startSessionPublisher = startSessionSubject
-      .debounce(for: 0.5, scheduler: RunLoop.main)
-      .removeDuplicates { _, _ in true }
-      .flatMap(makeSessionPublisher)
-      .eraseToAnyPublisher()
   }
 
-  func startSession() -> AnyPublisher<Void, Error> {
-    DispatchQueue.main.async(execute: startSessionSubject.send)
-    return startSessionPublisher
+  func makeSession() -> AnyPublisher<(CKSession, SessionViewController), Error> {
+    let orientation = ckOrientation(orientationSetting.value)
+    let devices = devicesModel.devices
+    return ckManager.sessionMakerPublisher
+      .delay(for: 0.5, scheduler: RunLoop.main)
+      .tryCompactMap { [weak self] sessionMaker in
+        guard let self = self else { return nil }
+        return try sessionMaker.makeSession(configuration: self.configuration(orientation))
+      }
+      .compactMap { [weak self] (session: CKSession) -> (CKSession, SessionViewController)? in
+        self?.makeSessionVc(session: session, orientation: orientation, devices: devices)
+      }
+      .eraseToAnyPublisher()
   }
 
   private func configuration(_ orientation: CKOrientation) -> CKConfiguration {
     devicesModel.devices.configuration(orientation: orientation)
   }
 
-  private func ckOrientatsion(_ orientation: OrientationSetting) -> CKOrientation {
+  private func ckOrientation(_ orientation: OrientationSetting) -> CKOrientation {
     let interfaceOrientation = application.windows.first?.windowScene?.interfaceOrientation ?? .portrait
     switch orientation {
     case .portrait:
@@ -67,39 +72,15 @@ final class SessionStarterImpl: SessionStarter {
     session: CKSession,
     orientation: CKOrientation,
     devices: [Device]
-  ) -> SessionViewController {
+  ) -> (CKSession, SessionViewController) {
     let viewModel = sessionViewModelBuilder.makeViewModel(session: session, devices: devices)
     let sessionView = sessionViewBuilder.makeView(viewModel: viewModel, orientation: orientation)
     let rootViewModel = rootViewModelBuilder.makeViewModel()
     let rootView = RootView(viewModel: rootViewModel, content: { sessionView }).eraseToAnyView()
     let sessionVc = sessionViewControllerBuilder.makeViewController(orientation: orientation, rootView: rootView)
-    viewModel.sessionViewController = sessionVc
-    return sessionVc
+    return (session, sessionVc)
   }
 
-  private func makeSessionPublisher() -> AnyPublisher<Void, Error> {
-    let orientation = ckOrientatsion(orientationSetting.value)
-    let devices = devicesModel.devices
-    return ckManager.sessionMakerPublisher
-      .tryCompactMap { [weak self] sessionMaker in
-        guard let self = self else { return nil }
-        return try sessionMaker.makeSession(configuration: self.configuration(orientation))
-      }
-      .compactMap { [weak self] (session: CKSession) -> SessionViewController? in
-        guard let self = self else { return nil }
-        return self.makeSessionVc(session: session, orientation: orientation, devices: devices)
-      }
-      .receive(on: DispatchQueue.main)
-      .flatMap { sessionViewController in
-        Deferred {
-          sessionViewController.present()
-        }
-      }
-      .eraseToAnyPublisher()
-  }
-
-  private var startSessionSubject = PassthroughSubject<Void, Never>()
-  private var startSessionPublisher: AnyPublisher<Void, Error>!
   private let ckManager: CKManager
   private let devicesModel: DevicesModel
   private let orientationSetting: AnySetting<OrientationSetting>
