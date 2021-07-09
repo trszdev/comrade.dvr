@@ -32,7 +32,7 @@ final class SessionMakerImpl: SessionMaker {
     let orientation = ckOrientation(orientationSetting.value)
     let devices = devicesModel.devices
     return ckManager.sessionMakerPublisher
-      .delay(for: 0.5, scheduler: RunLoop.main)
+      .delay(for: 0.5, scheduler: DispatchQueue.main) // TODO: fix CameraKit executing thread
       .tryCompactMap { [weak self] sessionMaker in
         guard let self = self else { return nil }
         return try sessionMaker.makeSession(configuration: self.configuration(orientation))

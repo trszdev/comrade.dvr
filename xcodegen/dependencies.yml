@@ -7,6 +7,9 @@ targets:
     dependencies:
       - package: AutocontainerKit
       - package: CameraKit
+  ComradeDVRTests:
+    dependencies:
+      - target: ComradeDVR
   TestCameraKitApp:
     dependencies:
       - package: CameraKit

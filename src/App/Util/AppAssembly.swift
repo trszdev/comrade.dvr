@@ -34,6 +34,7 @@ struct AppAssembly: AKAssembly {
     SessionViewAssembly(),
     SessionAssembly(),
     CKAVAssembly(),
+    CoreDataAssembly(),
   ]
 
   private let previewAssemblies: [AKAssembly]  = [

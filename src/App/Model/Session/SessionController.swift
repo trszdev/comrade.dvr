@@ -8,7 +8,8 @@ protocol SessionController {
   func tryStart()
   func stop()
   var status: SessionStatus { get }
-  var statusPublisher: AnyPublisher<SessionStatus, Error> { get }
+  var statusPublisher: AnyPublisher<SessionStatus, Never> { get }
+  var errorPublisher: AnyPublisher<Error, Never> { get }
 }
 
 final class SessionControllerImpl: AKBuilder, SessionController {
@@ -17,26 +18,28 @@ final class SessionControllerImpl: AKBuilder, SessionController {
       guard status == .notRunning else { return }
       statusSubject.value = .isStarting
       sessionMaker.makeSession()
-        .zip(Just(0).setFailureType(to: Error.self).delay(for: 0.5, scheduler: RunLoop.main))
-        .map(\.0)
         .compactMap { [weak self] (session, viewController) in
           guard let self = self else { return nil }
           return self.sessionQueue.sync {
             guard self.status == .isStarting else { return nil }
             self.statusSubject.value = .isRunning
             self.session = session
+            self.outputCancellable = session.outputPublisher
+              .map { [weak self] mediaChunk in self?.sessionOutputSaver.save(mediaChunk: mediaChunk) }
+              .sink(receiveCompletion: { _ in }, receiveValue: { })
             self.sessionViewController = viewController
             return viewController
           }
         }
-        .flatMap { (viewController: SessionViewController) in
-          Deferred(createPublisher: viewController.present)
+        .catch { [weak self] (error: Error) -> Empty<SessionViewController, Never> in
+          self?.statusSubject.value = .notRunning
+          self?.errorSubject.send(error)
+          return Empty()
         }
-        .catch { [weak self] (error: Error) -> Just<Void> in
-          guard let self = self else { return Just(()) }
-          self.statusSubject.value = .notRunning
-          self.statusSubject.send(completion: .failure(error))
-          return Just(())
+        .flatMap { (viewController: SessionViewController) in
+          Deferred {
+            viewController.present()
+          }
         }
         .sink {}
         .store(in: &cancellables)
@@ -67,13 +70,17 @@ final class SessionControllerImpl: AKBuilder, SessionController {
   }
 
   var status: SessionStatus { statusSubject.value }
-  var statusPublisher: AnyPublisher<SessionStatus, Error> { statusSubject.eraseToAnyPublisher() }
+  var statusPublisher: AnyPublisher<SessionStatus, Never> { statusSubject.eraseToAnyPublisher() }
+  var errorPublisher: AnyPublisher<Error, Never> { errorSubject.eraseToAnyPublisher() }
 
-  private let statusSubject = CurrentValueSubject<SessionStatus, Error>(.notRunning)
+  private let statusSubject = CurrentValueSubject<SessionStatus, Never>(.notRunning)
+  private let errorSubject = PassthroughSubject<Error, Never>()
 
   private var session: CKSession?
   private weak var sessionViewController: UIViewController?
   private lazy var sessionMaker = resolve(SessionMaker.self)!
   private var cancellables = Set<AnyCancellable>()
   private let sessionQueue = DispatchQueue()
+  private lazy var sessionOutputSaver = resolve(SessionOutputSaver.self)!
+  private var outputCancellable: AnyCancellable!
 }

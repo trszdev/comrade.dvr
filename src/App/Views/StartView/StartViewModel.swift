@@ -92,7 +92,7 @@ final class StartViewModelImpl: StartViewModel {
   }
 
   var errors: AnyPublisher<Error, Never> {
-    errorSubject.eraseToAnyPublisher()
+    sessionController.errorPublisher.receive(on: DispatchQueue.main).eraseToAnyPublisher()
   }
 
   @Published private(set) var sessionStatus: SessionStatus? = .notRunning
@@ -107,10 +107,7 @@ final class StartViewModelImpl: StartViewModel {
       .map { [weak self] status in
         self?.received(status: status)
       }
-      .catch { [weak self] (error: Error) -> Empty<Void, Never> in
-        self?.errorSubject.send(error)
-        return Empty()
-      }
+
       .sink {}
       .store(in: &cancellables)
     devicesModel.devicesPublisher
@@ -136,7 +133,6 @@ final class StartViewModelImpl: StartViewModel {
   }
 
   private var sessionStatusInternal: SessionStatus
-  private let errorSubject = PassthroughSubject<Error, Never>()
   private var cancellables = Set<AnyCancellable>()
   private let devicesModel: DevicesModel
   private let configureMicrophoneViewBuilder: ConfigureMicrophoneViewBuilder
