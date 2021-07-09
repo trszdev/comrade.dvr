@@ -1,34 +1,46 @@
 import Foundation
 import CoreData
+import Combine
 
 protocol CoreDataController {
-
+  var viewContext: AnyPublisher<NSManagedObjectContext, Error> { get }
+  var backgroundContext: AnyPublisher<NSManagedObjectContext, Error> { get }
 }
 
 class CoreDataControllerImpl: CoreDataController {
-  var persistentContainer: NSPersistentContainer = {
-    let container = NSPersistentContainer(name: "Model")
-    container.loadPersistentStores(completionHandler: { (_, error) in
-      if let error = error as NSError? {
-        fatalError("Unresolved error \(error), \(error.userInfo)")
-      }
-    })
-    return container
-  }()
-
-  var context: NSManagedObjectContext {
-    persistentContainer.viewContext
+  var viewContext: AnyPublisher<NSManagedObjectContext, Error> {
+    containerPublisher.map(\.viewContext).eraseToAnyPublisher()
   }
 
-  func saveContext () {
-    if context.hasChanges {
-      do {
-        try context.save()
-      } catch {
-        context.rollback()
-        let nserror = error as NSError
-        fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+  var backgroundContext: AnyPublisher<NSManagedObjectContext, Error> {
+    containerPublisher
+      .map { $0.newBackgroundContext() }
+      .subscribe(on: DispatchQueue.global(qos: .background))
+      .eraseToAnyPublisher()
+  }
+
+  private var containerFuture: Future<NSPersistentContainer, Error>?
+  private let containerQueue = DispatchQueue()
+
+  private var containerPublisher: AnyPublisher<NSPersistentContainer, Error> {
+    containerQueue.sync {
+      if let future = containerFuture {
+        return future.eraseToAnyPublisher()
       }
+      let future = Future<NSPersistentContainer, Error> { promise in
+        let container = NSPersistentContainer(name: "Model")
+        container.loadPersistentStores { (_, error) in
+          guard let error = error else {
+            container.viewContext.automaticallyMergesChangesFromParent = true
+            container.viewContext.mergePolicy = NSMergePolicy.overwrite
+            return promise(.success(container))
+          }
+          print(error.localizedDescription)
+          promise(.failure(error))
+        }
+      }
+      containerFuture = future
+      return future.eraseToAnyPublisher()
     }
   }
 }
