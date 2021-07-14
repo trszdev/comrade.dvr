@@ -5,7 +5,7 @@ struct TableCellView: View {
   @Environment(\.geometry) var geometry: Geometry
   let centerView: AnyView
   let rightView: AnyView
-  let sfSymbol: SFSymbol
+  var sfSymbol: SFSymbol?
   var separator = [Edge.bottom]
   var isDisabled = false
 
@@ -13,11 +13,13 @@ struct TableCellView: View {
     let backgroundColor = isHovered ? theme.accentColorHover : theme.mainBackgroundColor
     let textColor = isDisabled ? theme.disabledTextColor : theme.textColor
     HStack(spacing: 0) {
-      Image(sfSymbol: sfSymbol).frame(width: 40)
-        .frame(maxHeight: .infinity)
-        .padding(.leading, geometry.safeAreaInsets.leading)
-        .foregroundColor(textColor)
-        .touchdownOverlay(isHovered: $isHovered)
+      sfSymbol.flatMap {
+        Image(sfSymbol: $0).frame(width: 40)
+          .frame(maxHeight: .infinity)
+          .padding(.leading, geometry.safeAreaInsets.leading)
+          .foregroundColor(textColor)
+          .touchdownOverlay(isHovered: $isHovered)
+      }
       HStack {
         centerView.touchdownOverlay(isHovered: $isHovered)
         Spacer()

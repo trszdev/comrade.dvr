@@ -7,7 +7,7 @@ struct HistoryCellViewModel: Identifiable {
     case preview(image: UIImage)
   }
 
-  var id = UUID()
+  var id: URL
   var preview: Preview
   let date: Date
   let duration: TimeInterval
@@ -16,6 +16,12 @@ struct HistoryCellViewModel: Identifiable {
 
 extension Default {
   static var historyCellViewModel: HistoryCellViewModel {
-    HistoryCellViewModel(preview: .cameraPreview, date: Date(), duration: 1, fileSize: FileSize(bytes: 0))
+    HistoryCellViewModel(
+      id: URL(string: "/dev/null")!,
+      preview: .cameraPreview,
+      date: Date(),
+      duration: 1,
+      fileSize: FileSize(bytes: 0)
+    )
   }
 }

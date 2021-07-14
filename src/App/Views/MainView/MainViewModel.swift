@@ -10,10 +10,12 @@ protocol MainViewModel {
 final class MainViewModelImpl: MainViewModel {
   init(
     startViewModelBuilder: StartViewModelBuilder,
-    settingsViewBuilder: SettingsView.Builder
+    settingsViewBuilder: SettingsView.Builder,
+    historyViewBuilder: HistoryViewBuilder
   ) {
     self.startViewModelBuilder = startViewModelBuilder
     self.settingsViewBuilder = settingsViewBuilder
+    self.historyViewBuilder = historyViewBuilder
   }
 
   var startView: AnyView {
@@ -22,7 +24,7 @@ final class MainViewModelImpl: MainViewModel {
   }
 
   var historyView: AnyView {
-    HistoryView().eraseToAnyView()
+    historyViewBuilder.makeView()
   }
 
   var settingsView: AnyView {
@@ -31,4 +33,5 @@ final class MainViewModelImpl: MainViewModel {
 
   private let startViewModelBuilder: StartViewModelBuilder
   private let settingsViewBuilder: SettingsView.Builder
+  private let historyViewBuilder: HistoryViewBuilder
 }

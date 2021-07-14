@@ -1,15 +1,20 @@
 import SwiftUI
 import Combine
 import CameraKit
+import AutocontainerKit
 
-struct SessionViewBuilder {
-  let haptics: Haptics
-
+final class SessionViewBuilder: AKBuilder {
   func makeView<ViewModel: SessionViewModel>(
     viewModel: ViewModel,
     orientation: CKOrientation
   ) -> AnyView {
-    SessionView(viewModel: viewModel, haptics: haptics, orientation: orientation).eraseToAnyView()
+    SessionView(
+      viewModel: viewModel,
+      haptics: resolve(Haptics.self),
+      mediaChunkRepository: resolve(CKMediaChunkRepository.self),
+      orientation: orientation
+    )
+    .eraseToAnyView()
   }
 }
 
@@ -17,6 +22,7 @@ struct SessionView<ViewModel: SessionViewModel>: View {
   @ObservedObject var viewModel: ViewModel
   @Environment(\.appLocale) var appLocale: AppLocale
   let haptics: Haptics
+  let mediaChunkRepository: CKMediaChunkRepository
   let orientation: CKOrientation
 
   var body: some View {
@@ -28,6 +34,10 @@ struct SessionView<ViewModel: SessionViewModel>: View {
       showNotification(text: appLocale.pressureLevelAlertText(pressureLevel))
     }
     .onReceive(viewModel.errorPublisher) { error in
+      self.error = error
+      showAlert = true
+    }
+    .onReceive(mediaChunkRepository.errorPublisher) { error in
       self.error = error
       showAlert = true
     }

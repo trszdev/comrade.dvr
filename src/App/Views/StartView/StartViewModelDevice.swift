@@ -20,7 +20,7 @@ struct StartViewModelDevice: Identifiable {
   static func from(cameraDevice: CameraDevice, appLocale: AppLocale) -> StartViewModelDevice {
     StartViewModelDevice(
       id: cameraDevice.id,
-      name: knownIds(appLocale: appLocale)[cameraDevice.id] ?? cameraDevice.id.value,
+      name: appLocale.deviceName(cameraDevice.id),
       details: [
         appLocale.size(cameraDevice.configuration.size),
         appLocale.fps(cameraDevice.configuration.fps),
@@ -34,7 +34,7 @@ struct StartViewModelDevice: Identifiable {
   static func from(microphoneDevice: MicrophoneDevice, appLocale: AppLocale) -> StartViewModelDevice {
     StartViewModelDevice(
       id: microphoneDevice.id,
-      name: knownIds(appLocale: appLocale)[microphoneDevice.id] ?? microphoneDevice.id.value,
+      name: appLocale.deviceName(microphoneDevice.id),
       details: [
         appLocale.polarPattern(microphoneDevice.configuration.polarPattern),
         appLocale.qualityLong(microphoneDevice.configuration.audioQuality),
@@ -43,12 +43,4 @@ struct StartViewModelDevice: Identifiable {
       isActive: microphoneDevice.isEnabled
     )
   }
-}
-
-private func knownIds(appLocale: AppLocale) -> [CKDeviceID: String] {
-  [
-    CKAVCamera.back.value: appLocale.backCameraString,
-    CKAVCamera.front.value: appLocale.frontCameraString,
-    CKAVMicrophone.builtIn.value: appLocale.microphoneString,
-  ]
 }

@@ -5,6 +5,8 @@ struct HistoryMenuView: View {
   @Environment(\.geometry) var geometry: Geometry
   let title: String
   let subtitle: String
+  var didTapSelectDay: () -> Void = {}
+  var didTapSelectDevice: () -> Void = {}
 
   var body: some View {
     let isLittle = geometry.size.height < 500
@@ -13,7 +15,10 @@ struct HistoryMenuView: View {
     let horizontalPadding = CGFloat(isLittle ? 4 : 0)
     let textScale = CGFloat(isLittle ? 0.85 : 1)
     return HStack {
-      HistoryMenuButtonView(sfSymbol: .calendar).padding(padding).frame(height: height)
+      HistoryMenuButtonView(sfSymbol: .calendar)
+        .padding(padding)
+        .frame(height: height)
+        .onTapGesture(perform: didTapSelectDay)
       Spacer()
       VStack {
         Text(title)
@@ -28,7 +33,10 @@ struct HistoryMenuView: View {
       .scaleEffect(textScale)
       .frame(height: height)
       Spacer()
-      HistoryMenuButtonView(sfSymbol: .selectDevice).padding(padding).frame(height: height)
+      HistoryMenuButtonView(sfSymbol: .selectDevice)
+        .padding(padding)
+        .frame(height: height)
+        .onTapGesture(perform: didTapSelectDevice)
     }
     .padding(.horizontal, horizontalPadding)
     .background(theme.mainBackgroundColor)

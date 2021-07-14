@@ -1,8 +1,16 @@
 import SwiftUI
+import AutocontainerKit
 
-struct HistoryTableView: UIViewRepresentable {
+final class HistoryTableViewBuilder: AKBuilder {
+  func makeView() -> AnyView {
+    HistoryTableView(viewModel: resolve(HistoryTableViewModelImpl.self)).eraseToAnyView()
+  }
+}
+
+struct HistoryTableView<ViewModel: HistoryTableViewModel>: UIViewRepresentable {
   @Environment(\.theme) var theme: Theme
   @Environment(\.appLocale) var appLocale: AppLocale
+  let viewModel: ViewModel
 
   func makeUIView(context: Context) -> UITableView {
     let tableView = CustomTableView()
@@ -11,22 +19,26 @@ struct HistoryTableView: UIViewRepresentable {
     tableView.register(HistoryCellView.self)
     tableView.rowHeight = UITableView.automaticDimension
     tableView.estimatedRowHeight = 44
+    tableView.didRemove = viewModel.didRemove(cell:)
     return tableView
   }
 
   func updateUIView(_ uiView: UITableView, context: Context) {
-    uiView.reloadData()
     guard let customTableView = uiView as? CustomTableView else { return }
     customTableView.theme = theme
     customTableView.locale = appLocale
+    customTableView.cells = viewModel.cells
     customTableView.backgroundColor = UIColor(theme.mainBackgroundColor)
     customTableView.separatorColor = UIColor(theme.disabledTextColor)
+    customTableView.reloadData()
   }
 }
 
 private final class CustomTableView: UITableView {
   var theme: Theme = Default.theme
   var locale: AppLocale = Default.appLocale
+  var cells = [HistoryCellViewModel]()
+  var didRemove: (HistoryCellViewModel) -> Void = { _ in }
 }
 
 extension CustomTableView: UITableViewDelegate {
@@ -38,14 +50,14 @@ extension CustomTableView: UITableViewDataSource {
   }
 
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    20
+    cells.count
   }
 
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
     let cell = tableView.dequeue(HistoryCellView.self, for: indexPath)
     cell.theme = theme
     cell.locale = locale
-    cell.viewModel = Default.historyCellViewModel
+    cell.viewModel = cells[indexPath.row]
     cell.selectionStyle = .none
     return cell
   }
@@ -66,7 +78,8 @@ extension CustomTableView: UITableViewDataSource {
     commit editingStyle: UITableViewCell.EditingStyle,
     forRowAt indexPath: IndexPath
   ) {
-    print("\(indexPath.row) delete=\(editingStyle == .delete)")
+    guard editingStyle == .delete else { return }
+    didRemove(cells[indexPath.row])
   }
 
   func tableView(
@@ -74,11 +87,12 @@ extension CustomTableView: UITableViewDataSource {
     contextMenuConfigurationForRowAt indexPath: IndexPath,
     point: CGPoint
   ) -> UIContextMenuConfiguration? {
-    UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [locale] _ in
+    UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
+      guard let self = self else { return UIMenu(title: "", children: []) }
       let children = [
-        UIAction(title: locale.playString, sfSymbol: .play, handler: {}),
-        UIAction(title: locale.shareString, sfSymbol: .share, handler: {}),
-        UIAction(title: locale.deleteString, sfSymbol: .trash, attributes: .destructive, handler: {}),
+        UIAction(title: self.locale.playString, sfSymbol: .play, handler: {}),
+        UIAction(title: self.locale.shareString, sfSymbol: .share, handler: {}),
+        UIAction(title: self.locale.deleteString, sfSymbol: .trash, attributes: .destructive, handler: {}),
       ]
       return UIMenu(title: "", children: children)
     }
@@ -89,9 +103,7 @@ extension CustomTableView: UITableViewDataSource {
 
 struct HistoryTableViewPreview: PreviewProvider {
   static var previews: some View {
-    HistoryTableView()
-      .environment(\.theme, DarkTheme())
-      .environment(\.appLocale, LocaleImpl(languageCode: .ru))
+    locator.resolve(HistoryTableViewBuilder.self).makeView()
   }
 }
 

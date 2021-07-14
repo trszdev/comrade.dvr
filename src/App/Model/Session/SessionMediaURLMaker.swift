@@ -17,24 +17,36 @@ struct SessionMediaURLMaker: CKMediaURLMaker {
     guard let date = calendar.date(byAdding: .nanosecond, value: offset, to: sessionStartupInfo.startedAt) else {
       return tempFileUrl
     }
-    let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy-MM-dd"
-    let dateString = formatter.string(from: date)
     let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
     let sessionDirectory = documentsDirectory
-      .appendingPathComponent(dateString)
+      .appendingPathComponent(date.dayMonthYear)
       .appendingPathComponent(sessionStartupInfo.id.uuidString)
+      .appendingPathComponent(deviceId.value)
     var isDirectory: ObjCBool = false
     if fileManager.fileExists(atPath: sessionDirectory.path, isDirectory: &isDirectory), isDirectory.boolValue {
-      return sessionDirectory.appendingPathComponent(deviceId.value)
+      return sessionDirectory.appendingPathComponent(date.hourMinuteSecond)
     } else {
       do {
         try fileManager.createDirectory(at: sessionDirectory, withIntermediateDirectories: true, attributes: nil)
-        return sessionDirectory.appendingPathComponent(deviceId.value)
+        return sessionDirectory.appendingPathComponent(date.hourMinuteSecond)
       } catch {
         print(error.localizedDescription)
       }
     }
     return tempFileUrl
+  }
+}
+
+private extension Date {
+  var dayMonthYear: String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd"
+    return formatter.string(from: self)
+  }
+
+  var hourMinuteSecond: String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "HH-mm-ss"
+    return formatter.string(from: self)
   }
 }

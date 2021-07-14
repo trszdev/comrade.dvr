@@ -4,6 +4,7 @@ import CameraKit
 
 protocol AppLocale {
   var currentLocale: Locale? { get }
+  func deviceName(_ deviceId: CKDeviceID) -> String
   func pressureLevelAlertText(_ pressureLevel: CKPressureLevel) -> String
   func yesNo(_ value: Bool) -> String
   func fieldOfView(_ fov: Int) -> String
@@ -98,6 +99,14 @@ struct LocaleImpl: AppLocale {
   }
 
   var currentLocale: Locale?
+
+  func deviceName(_ deviceId: CKDeviceID) -> String {
+    [
+      CKAVCamera.back.value: backCameraString,
+      CKAVCamera.front.value: frontCameraString,
+      CKAVMicrophone.builtIn.value: microphoneString,
+    ][deviceId] ?? deviceId.value
+  }
 
   func pressureLevelAlertText(_ pressureLevel: CKPressureLevel) -> String {
     switch pressureLevel {
