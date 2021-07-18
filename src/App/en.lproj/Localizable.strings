@@ -107,3 +107,6 @@
 "SYSTEM_PRESSURE_SHUTDOWN_DESC" = "System load: critical; recording quality may be downgraded or shutdown may occur";
 
 "EMPTY" = "Empty";
+
+"REMOVE_MEDIA_CHUNK_ASK" = "Do you really want to delete file?";
+"REMOVE_MEDIA_CHUNK_CONFIRM" = "Yes, delete file";

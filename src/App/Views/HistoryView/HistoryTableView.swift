@@ -114,21 +114,17 @@ extension CustomTableView: UITableViewDataSource {
     didSelect(indexPath.row)
   }
 
-  func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-    true
-  }
-
-  func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
-    .delete
-  }
-
   func tableView(
     _ tableView: UITableView,
-    commit editingStyle: UITableViewCell.EditingStyle,
-    forRowAt indexPath: IndexPath
-  ) {
-    guard editingStyle == .delete else { return }
-    performRemove(at: indexPath)
+    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
+  ) -> UISwipeActionsConfiguration? {
+    let delete = UIContextualAction(style: .destructive, title: locale.deleteString) { [weak self] (_, _, complete) in
+      self?.askToRemove(at: indexPath)
+      complete(true)
+    }
+    let swipeAction = UISwipeActionsConfiguration(actions: [delete])
+    swipeAction.performsFirstActionWithFullSwipe = false
+    return swipeAction
   }
 
   func tableView(
@@ -142,11 +138,24 @@ extension CustomTableView: UITableViewDataSource {
         UIAction(title: self.locale.playString, sfSymbol: .play) { [weak self] in self?.didSelect(indexPath.row) },
         UIAction(title: self.locale.shareString, sfSymbol: .share) { [weak self] in self?.didShare(indexPath.row) },
         UIAction(title: self.locale.deleteString, sfSymbol: .trash, attributes: .destructive) { [weak self] in
-          self?.performRemove(at: indexPath)
+          self?.askToRemove(at: indexPath)
         },
       ]
       return UIMenu(title: "", children: children)
     }
+  }
+
+  private func askToRemove(at indexPath: IndexPath) {
+    let alertVc = UIAlertController(
+      title: locale.warningString,
+      message: locale.removeMediaChunkAsk,
+      preferredStyle: .alert
+    )
+    alertVc.addAction(UIAlertAction(title: locale.cancelString, style: .cancel, handler: { _ in }))
+    alertVc.addAction(UIAlertAction(title: locale.removeMediaChunkConfirm, style: .destructive) { [weak self] _ in
+      self?.performRemove(at: indexPath)
+    })
+    parentViewController?.present(alertVc, animated: true, completion: nil)
   }
 
   private func performRemove(at indexPath: IndexPath) {

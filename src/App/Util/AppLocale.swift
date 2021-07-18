@@ -76,6 +76,8 @@ protocol AppLocale {
   var microphoneMutedString: String { get }
   var microphoneUnmutedString: String { get }
   var emptyString: String { get }
+  var removeMediaChunkAsk: String { get }
+  var removeMediaChunkConfirm: String { get }
 }
 
 extension Default {
@@ -373,6 +375,8 @@ struct LocaleImpl: AppLocale {
   var microphoneMutedString: String { localizedString("MICROPHONE_MUTED") }
   var microphoneUnmutedString: String { localizedString("MICROPHONE_UNMUTED") }
   var emptyString: String { localizedString("EMPTY") }
+  var removeMediaChunkAsk: String { localizedString("REMOVE_MEDIA_CHUNK_ASK") }
+  var removeMediaChunkConfirm: String { localizedString("REMOVE_MEDIA_CHUNK_CONFIRM") }
 
   private func localizedString(_ key: String) -> String {
     if let bundle = bundle {

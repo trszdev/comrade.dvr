@@ -31,6 +31,7 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
       .compactMap { [weak self] mediaChunks in
         self.flatMap { mediaChunks.map($0.cellViewModel(from:)) }
       }
+      .receive(on: DispatchQueue.main)
       .assignWeak(to: \.cells, on: self)
       .store(in: &cancellables)
   }

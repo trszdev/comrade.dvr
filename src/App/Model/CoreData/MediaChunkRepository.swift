@@ -16,9 +16,10 @@ enum MediaChunkRepositoryError: Error {
 }
 
 final class MediaChunkRepositoryImpl: MediaChunkRepository {
-  init(coreDataController: CoreDataController, mediaChunkConverter: MediaChunkConverter) {
+  init(coreDataController: CoreDataController, mediaChunkConverter: MediaChunkConverter, fileManager: FileManager) {
     self.coreDataController = coreDataController
     self.mediaChunkConverter = mediaChunkConverter
+    self.fileManager = fileManager
   }
 
   var mediaChunkPublisher: AnyPublisher<MediaChunk, Never> { mediaChunkSubject.eraseToAnyPublisher() }
@@ -68,11 +69,12 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
   }
 
   func deleteMediaChunks(with url: URL) {
-    withBackgroundCtx { ctx in
+    withBackgroundCtx { [weak self] ctx in
       let fetchRequest = HistoryEntity.fetchRequest()
       fetchRequest.predicate = NSPredicate(format: "url == %@", url as CVarArg)
       let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
       try ctx.execute(deleteRequest)
+      try self?.fileManager.removeItem(at: url)
     }
   }
 
@@ -108,6 +110,7 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
 
   private let mediaChunkConverter: MediaChunkConverter
   private let coreDataController: CoreDataController
+  private let fileManager: FileManager
   private let mediaChunkSubject = PassthroughSubject<MediaChunk, Never>()
   private let errorSubject = PassthroughSubject<Error, Never>()
   private var cancellables = Set<AnyCancellable>()
