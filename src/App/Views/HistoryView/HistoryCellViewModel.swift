@@ -1,6 +1,10 @@
 import SwiftUI
 
-struct HistoryCellViewModel: Identifiable {
+struct HistoryCellViewModel: Identifiable, Equatable {
+  static func == (lhs: HistoryCellViewModel, rhs: HistoryCellViewModel) -> Bool {
+    lhs.id == rhs.id
+  }
+
   enum Preview {
     case cameraPreview
     case microphonePreview

@@ -105,3 +105,5 @@
 "SYSTEM_PRESSURE_NOMINAL_DESC" = "System load: normal";
 "SYSTEM_PRESSURE_SERIOUS_DESC" = "System load: icreased; recording quality may be downgraded";
 "SYSTEM_PRESSURE_SHUTDOWN_DESC" = "System load: critical; recording quality may be downgraded or shutdown may occur";
+
+"EMPTY" = "Empty";

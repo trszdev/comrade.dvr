@@ -13,6 +13,7 @@ final class HistoryCellView: UITableViewCell {
   }
 
   override func setHighlighted(_ highlighted: Bool, animated: Bool) {
+    super.setHighlighted(highlighted, animated: animated)
     let whatToDo: () -> Void
     if isSelected {
       whatToDo = setSelected
@@ -25,6 +26,7 @@ final class HistoryCellView: UITableViewCell {
   }
 
   override func setSelected(_ selected: Bool, animated: Bool) {
+    super.setSelected(selected, animated: animated)
     let whatToDo: () -> Void
     if selected {
       whatToDo = setSelected
@@ -70,6 +72,18 @@ final class HistoryCellView: UITableViewCell {
     }
   }
 
+  func setNormal() {
+    setColors(background: theme.mainBackgroundColor, text: theme.textColor)
+  }
+
+  func setHighlighted() {
+    setColors(background: theme.accentColorHover, text: theme.textColor)
+  }
+
+  func setSelected() {
+    setColors(background: theme.accentColor, text: theme.startHeaderBackgroundColor)
+  }
+
   private func updateLabels() {
     titleLabel.text = locale.timeOnly(date: viewModel.date)
     let parts = [
@@ -83,18 +97,6 @@ final class HistoryCellView: UITableViewCell {
     backgroundColor = UIColor(background)
     titleLabel.textColor = UIColor(text)
     descriptionLabel.textColor = UIColor(text)
-  }
-
-  private func setNormal() {
-    setColors(background: theme.mainBackgroundColor, text: theme.textColor)
-  }
-
-  private func setHighlighted() {
-    setColors(background: theme.accentColorHover, text: theme.textColor)
-  }
-
-  private func setSelected() {
-    setColors(background: theme.accentColor, text: theme.startHeaderBackgroundColor)
   }
 
   private func configureConstraints() {
@@ -117,6 +119,7 @@ final class HistoryCellView: UITableViewCell {
     for view in [customImageView, textContainer, container, titleLabel, descriptionLabel] {
       view.translatesAutoresizingMaskIntoConstraints = false
     }
+    selectedBackgroundView = UIView()
     textContainer.axis = .vertical
     textContainer.spacing = 0
     container.axis = .horizontal

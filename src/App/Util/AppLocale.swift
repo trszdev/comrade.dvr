@@ -22,6 +22,7 @@ protocol AppLocale {
   func themeName(_ themeSetting: ThemeSetting) -> String
   func languageName(_ languageSetting: LanguageSetting) -> String
   func timeOnly(date: Date) -> String
+  func day(date: Date) -> String
   func assetSize(_ fileSize: FileSize?) -> String
   func assetDuration(_ timeInterval: TimeInterval) -> String
   var durationString: String { get }
@@ -74,6 +75,7 @@ protocol AppLocale {
   var pressButtonTwiceString: String { get }
   var microphoneMutedString: String { get }
   var microphoneUnmutedString: String { get }
+  var emptyString: String { get }
 }
 
 extension Default {
@@ -284,6 +286,14 @@ struct LocaleImpl: AppLocale {
     return dateFormatter.string(from: date)
   }
 
+  func day(date: Date) -> String {
+    let dateFormatter = DateFormatter()
+    dateFormatter.locale = currentLocale
+    dateFormatter.timeStyle = .none
+    dateFormatter.dateStyle = .medium
+    return dateFormatter.string(from: date)
+  }
+
   func assetSize(_ fileSize: FileSize?) -> String {
     guard let fileSize = fileSize else {
       return "∞"
@@ -362,6 +372,7 @@ struct LocaleImpl: AppLocale {
   var pressButtonTwiceString: String { localizedString("PRESS_BUTTON_TWICE") }
   var microphoneMutedString: String { localizedString("MICROPHONE_MUTED") }
   var microphoneUnmutedString: String { localizedString("MICROPHONE_UNMUTED") }
+  var emptyString: String { localizedString("EMPTY") }
 
   private func localizedString(_ key: String) -> String {
     if let bundle = bundle {

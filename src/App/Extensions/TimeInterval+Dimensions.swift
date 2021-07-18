@@ -1,6 +1,10 @@
 import Foundation
 
 extension TimeInterval {
+  static func from(nanoseconds: Double) -> TimeInterval {
+    TimeInterval(nanoseconds * 1e-9)
+  }
+
   static func from(seconds: Double) -> TimeInterval {
     TimeInterval(seconds)
   }
@@ -15,6 +19,10 @@ extension TimeInterval {
 
   static func from(days: Double) -> TimeInterval {
     self.init(days * 24 * 3600)
+  }
+
+  var nanoseconds: Double {
+    self * 1e+9
   }
 
   var seconds: Double {

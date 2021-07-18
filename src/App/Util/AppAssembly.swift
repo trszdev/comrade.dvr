@@ -34,17 +34,19 @@ struct AppAssembly: AKAssembly {
     SessionViewAssembly(),
     SessionAssembly(),
     CKAVAssembly(),
-    CoreDataAssembly(),
-    HistoryViewAssembly(),
   ]
 
   private let previewAssemblies: [AKAssembly]  = [
     PreviewSettingsAssembly(),
+    HistoryViewAssembly(isPreview: true),
     DevicesAssembly(isPreview: true),
+    CoreDataAssembly(isPreview: true),
   ]
 
   private let releaseAssemblies: [AKAssembly]  = [
     SettingsAssembly(),
+    HistoryViewAssembly(isPreview: false),
     DevicesAssembly(isPreview: false),
+    CoreDataAssembly(isPreview: false),
   ]
 }

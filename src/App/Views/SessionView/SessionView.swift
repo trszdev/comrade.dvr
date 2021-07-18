@@ -11,7 +11,7 @@ final class SessionViewBuilder: AKBuilder {
     SessionView(
       viewModel: viewModel,
       haptics: resolve(Haptics.self),
-      mediaChunkRepository: resolve(CKMediaChunkRepository.self),
+      mediaChunkRepository: resolve(MediaChunkRepository.self),
       orientation: orientation
     )
     .eraseToAnyView()
@@ -22,7 +22,7 @@ struct SessionView<ViewModel: SessionViewModel>: View {
   @ObservedObject var viewModel: ViewModel
   @Environment(\.appLocale) var appLocale: AppLocale
   let haptics: Haptics
-  let mediaChunkRepository: CKMediaChunkRepository
+  let mediaChunkRepository: MediaChunkRepository
   let orientation: CKOrientation
 
   var body: some View {

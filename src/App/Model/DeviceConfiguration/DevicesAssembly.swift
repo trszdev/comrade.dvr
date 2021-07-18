@@ -9,10 +9,6 @@ struct DevicesAssembly: AKAssembly {
     if isPreview {
       let tempDevicesStore = TempDevicesStore()
       container.singleton.autoregister(DevicesStore.self, value: tempDevicesStore)
-      container.singleton.autoregister(
-        CKNearestConfigurationPicker.self,
-        value: ForcedConfigurationPicker(devices: tempDevicesStore.loadStoredDevices())
-      )
     } else {
       container.singleton.autoregister(DevicesStore.self, construct: UserDefaultsDevicesStore.init)
     }

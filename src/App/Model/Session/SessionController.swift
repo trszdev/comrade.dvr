@@ -25,7 +25,9 @@ final class SessionControllerImpl: AKBuilder, SessionController {
             self.statusSubject.value = .isRunning
             self.session = session
             self.outputCancellable = session.outputPublisher
-              .map { [weak self] mediaChunk in self?.sessionOutputSaver.save(mediaChunk: mediaChunk) }
+              .map { [weak self] mediaChunk in
+                self?.sessionOutputSaver.save(mediaChunk: mediaChunk, sessionStartupInfo: session.startupInfo)
+              }
               .sink(receiveCompletion: { _ in }, receiveValue: { })
             self.sessionViewController = viewController
             return viewController

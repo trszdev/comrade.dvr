@@ -1,6 +1,7 @@
 import SwiftUI
 import CameraKit
 import AutocontainerKit
+import AVKit
 
 final class HistoryViewBuilder: AKBuilder {
   func makeView() -> AnyView {
@@ -19,42 +20,40 @@ struct HistoryView<ViewModel: HistoryViewModel>: View {
   let tableView: AnyView
 
   var body: some View {
-    if let selectedDay = viewModel.selectedDay, let selectedDevice = viewModel.selectedDevice {
-      return GeometryReader { geometry in
-        VStack(spacing: 0) {
-          menuView(selectedDevice: selectedDevice, selectedDay: selectedDay)
-          playerView(height: geometry.size.height)
-          tableView
-        }
-        .background(theme.mainBackgroundColor.ignoresSafeArea())
-        .navigationBarHidden(true)
-      }
-      .eraseToAnyView()
+    guard let playerUrl = viewModel.selectedPlayerUrl,
+      let selectedDay = viewModel.selectedDay,
+      let selectedDevice = viewModel.selectedDevice
+    else {
+      return Text(appLocale.emptyString).foregroundColor(theme.textColor).eraseToAnyView()
     }
-    return EmptyView().eraseToAnyView()
+    return GeometryReader { geometry in
+      VStack(spacing: 0) {
+        menuView(selectedDevice: selectedDevice, selectedDay: selectedDay)
+        playerView(height: geometry.size.height, playerUrl: playerUrl)
+        tableView
+      }
+      .background(theme.mainBackgroundColor.ignoresSafeArea())
+      .navigationBarHidden(true)
+    }
+    .background(theme.mainBackgroundColor.ignoresSafeArea())
+    .navigationBarHidden(true)
+    .eraseToAnyView()
   }
 
   func menuView(selectedDevice: CKDeviceID, selectedDay: Date) -> some View {
     HistoryMenuView(
       title: appLocale.deviceName(selectedDevice),
-      subtitle: appLocale.timeOnly(date: selectedDay),
+      subtitle: appLocale.day(date: selectedDay),
       didTapSelectDay: viewModel.presentSelectDayScreen,
       didTapSelectDevice: viewModel.presentSelectDeviceScreen
     )
   }
 
-  func playerView(height: CGFloat) -> some View {
-    // use avPlayer with viewModel.selectedPlayerUrl
+  func playerView(height: CGFloat, playerUrl: URL) -> some View {
     let idealHeight = min(height / 2, 300)
-    return Rectangle()
-      .overlay(
-        Image(sfSymbol: .play)
-          .fitResizable
-          .foregroundColor(.white)
-          .frame(maxWidth: 50)
-      )
+    return VideoPlayer(player: AVPlayer(url: playerUrl))
       .frame(height: idealHeight)
-      .background(Color.red.edgesIgnoringSafeArea(.horizontal).frame(height: idealHeight))
+      .background(Color.black.edgesIgnoringSafeArea(.horizontal).frame(height: idealHeight))
   }
 }
 

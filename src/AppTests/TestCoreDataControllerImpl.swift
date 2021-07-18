@@ -71,6 +71,7 @@ final class TestCoreDataControllerImpl: XCTestCase {
     ent.fileExtension = "mov"
     ent.finishedAt = 300
     ent.startedAt = 1
+    ent.day = Date()
     return ent
   }
 

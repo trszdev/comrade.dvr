@@ -5,37 +5,82 @@ protocol HistoryTableViewModel: ObservableObject {
   var cells: [HistoryCellViewModel] { get }
   var cellsPublished: Published<[HistoryCellViewModel]> { get }
   var cellsPublisher: Published<[HistoryCellViewModel]>.Publisher { get }
-  func didRemove(cell: HistoryCellViewModel)
-  func didShare(cell: HistoryCellViewModel)
+  var selectedIndex: Int { get set }
+  var selectedIndexPublished: Published<Int> { get }
+  var selectedIndexPublisher: Published<Int>.Publisher { get }
+  func didRemove(at index: Int)
+  func didShare(at index: Int)
 }
 
 final class HistoryTableViewModelImpl: HistoryTableViewModel {
-  init(historySelectionViewModel: HistorySelectionViewModel, repository: CKMediaChunkRepository) {
+  init(
+    historySelectionViewModel: HistorySelectionViewModel,
+    repository: MediaChunkRepository,
+    shareViewPresenter: ShareViewPresenter,
+    historySelectionComputer: HistorySelectionComputer
+  ) {
+    self.historySelectionViewModel = historySelectionViewModel
     self.repository = repository
+    self.shareViewPresenter = shareViewPresenter
+    self.historySelectionComputer = historySelectionComputer
     historySelectionViewModel.selectedDayPublisher.compactMap { $0 }
       .zip(historySelectionViewModel.selectedDevicePublisher.compactMap { $0 })
       .flatMap { (selectedDay, selectedDevice) in
         repository.mediaChunks(device: selectedDevice, day: selectedDay)
       }
-      .map { _ in
-        // feed media chunks to table view
+      .compactMap { [weak self] mediaChunks in
+        self.flatMap { mediaChunks.map($0.cellViewModel(from:)) }
       }
-      .sink {}
+      .assignWeak(to: \.cells, on: self)
       .store(in: &cancellables)
   }
 
-  @Published private(set) var cells = [HistoryCellViewModel]()
+  @Published private(set) var cells = [HistoryCellViewModel]() {
+    didSet {
+      selectedIndex = 0
+    }
+  }
   var cellsPublished: Published<[HistoryCellViewModel]> { _cells }
   var cellsPublisher: Published<[HistoryCellViewModel]>.Publisher { $cells }
 
-  func didRemove(cell: HistoryCellViewModel) {
+  @Published var selectedIndex = 0 {
+    didSet {
+      historySelectionViewModel.selectedPlayerUrl = cells.isEmpty ? nil : cells[selectedIndex].id
+    }
+  }
+  var selectedIndexPublished: Published<Int> { _selectedIndex }
+  var selectedIndexPublisher: Published<Int>.Publisher { $selectedIndex }
+
+  func didRemove(at index: Int) {
+    let newSelectedIndex = historySelectionComputer.computeSelection(
+      cells: cells,
+      selectedIndex: selectedIndex,
+      indexToRemove: index
+    )
+    let cell = cells.remove(at: index)
+    selectedIndex = newSelectedIndex
     repository.deleteMediaChunks(with: cell.id)
   }
 
-  func didShare(cell: HistoryCellViewModel) {
-
+  func didShare(at index: Int) {
+    shareViewPresenter.presentFile(url: cells[index].id)
   }
 
-  private let repository: CKMediaChunkRepository
+  private func cellViewModel(from mediaChunk: MediaChunk) -> HistoryCellViewModel {
+    let started = TimeInterval.from(nanoseconds: Double(mediaChunk.startedAt.nanoseconds))
+    let finished = TimeInterval.from(nanoseconds: Double(mediaChunk.finishedAt.nanoseconds))
+    return HistoryCellViewModel(
+      id: mediaChunk.url,
+      preview: .cameraPreview,
+      date: mediaChunk.day.addingTimeInterval(started),
+      duration: finished - started,
+      fileSize: FileSize(bytes: 1024)
+    )
+  }
+
+  private var historySelectionViewModel: HistorySelectionViewModel
+  private let repository: MediaChunkRepository
   private var cancellables = Set<AnyCancellable>()
+  private let shareViewPresenter: ShareViewPresenter
+  private let historySelectionComputer: HistorySelectionComputer
 }

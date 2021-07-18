@@ -1,6 +1,7 @@
 import SwiftUI
 
 protocol NavigationViewPresenter: ViewPresenter {
+  func popViewController()
 }
 
 extension UINavigationController: NavigationViewPresenter {
@@ -11,5 +12,9 @@ extension UINavigationController: NavigationViewPresenter {
 
   func presentViewController(animated: Bool, viewController: UIViewController) {
     pushViewController(viewController, animated: animated)
+  }
+
+  func popViewController() {
+    popViewController(animated: true)
   }
 }

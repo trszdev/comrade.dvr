@@ -18,7 +18,7 @@ struct HistoryMenuView: View {
       HistoryMenuButtonView(sfSymbol: .calendar)
         .padding(padding)
         .frame(height: height)
-        .onTapGesture(perform: didTapSelectDay)
+        .simultaneousGesture(TapGesture.from(tapGesture: didTapSelectDay))
       Spacer()
       VStack {
         Text(title)
@@ -36,7 +36,7 @@ struct HistoryMenuView: View {
       HistoryMenuButtonView(sfSymbol: .selectDevice)
         .padding(padding)
         .frame(height: height)
-        .onTapGesture(perform: didTapSelectDevice)
+        .simultaneousGesture(TapGesture.from(tapGesture: didTapSelectDevice))
     }
     .padding(.horizontal, horizontalPadding)
     .background(theme.mainBackgroundColor)

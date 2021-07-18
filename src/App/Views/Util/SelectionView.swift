@@ -7,6 +7,16 @@ struct SelectionView<T>: View {
   let options: [(T, (AppLocale, T) -> String)]
   let onSelect: (T) -> Void
 
+  init(options: [(T, (AppLocale, T) -> String)], onSelect: @escaping (T) -> Void) {
+    self.options = options
+    self.onSelect = onSelect
+  }
+
+  init(values: [T], localize: @escaping (AppLocale, T) -> String, onSelect: @escaping (T) -> Void) {
+    self.options = values.map { ($0, localize) }
+    self.onSelect = onSelect
+  }
+
   var body: some View {
     TableView(sections: [
       options.enumerated().map { (index, option) in
