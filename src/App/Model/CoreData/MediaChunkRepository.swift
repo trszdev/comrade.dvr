@@ -46,7 +46,8 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
   }
 
   func mediaChunks(device: CKDeviceID, day: Date) -> Future<[MediaChunk], Never> {
-    Future { [weak self] promise in
+    let documentsPath = fileManager.documentsDirectory.path
+    return Future { [weak self] promise in
       guard let self = self else { return promise(.success([])) }
       self.withBackgroundCtx { ctx in
         let fetchRequest = HistoryEntity.fetchRequest { request in
@@ -56,7 +57,7 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
         let mediaChunks = ents.map { ent in
           MediaChunk(
             startedAt: CKTimestamp(nanoseconds: UInt64(ent.startedAt)),
-            url: ent.url,
+            url: URL(fileURLWithPath: documentsPath + ent.url.path),
             deviceId: CKDeviceID(value: ent.deviceId),
             fileType: CKFileType(rawValue: ent.fileExtension) ?? .mov,
             finishedAt: CKTimestamp(nanoseconds: UInt64(ent.finishedAt)),
@@ -69,12 +70,13 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
   }
 
   func deleteMediaChunks(with url: URL) {
+    let path = fileManager.documentsDirectory.path + url.path
     withBackgroundCtx { [weak self] ctx in
       let fetchRequest = HistoryEntity.fetchRequest()
       fetchRequest.predicate = NSPredicate(format: "url == %@", url as CVarArg)
       let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
       try ctx.execute(deleteRequest)
-      try self?.fileManager.removeItem(at: url)
+      try self?.fileManager.removeItem(atPath: path)
     }
   }
 
@@ -83,13 +85,15 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
       errorSubject.send(MediaChunkRepositoryError.failedToConvertMediaChunk)
       return
     }
+    var filePath = chunk.url.path
+    filePath.removeFirst(fileManager.documentsDirectory.path.count)
     withBackgroundCtx { [weak self] ctx in
       let historyEnt = HistoryEntity(context: ctx)
       historyEnt.deviceId = chunk.deviceId.value
       historyEnt.fileExtension = chunk.fileType.rawValue
       historyEnt.finishedAt = Int64(chunk.finishedAt.nanoseconds)
       historyEnt.startedAt = Int64(chunk.startedAt.nanoseconds)
-      historyEnt.url = chunk.url
+      historyEnt.url = URL(fileURLWithPath: filePath)
       historyEnt.day = chunk.day
       ctx.insert(historyEnt)
       try ctx.save()

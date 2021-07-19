@@ -40,7 +40,11 @@ final class HistoryCellView: UITableViewCell {
 
   var theme: Theme = Default.theme {
     didSet {
-      customImageView.tintColor = UIColor(theme.accentColor)
+      customImageView.tintColor = UIColor(
+        viewModel.preview == .notAvailable ?
+          theme.destructiveTextColor :
+          theme.accentColor
+      )
       customImageView.backgroundColor = UIColor(theme.startHeaderBackgroundColor)
       if isSelected {
         setSelected()
@@ -62,6 +66,8 @@ final class HistoryCellView: UITableViewCell {
     didSet {
       updateLabels()
       switch viewModel.preview {
+      case .notAvailable:
+        customImageView.image = UIImage(sfSymbol: .cross)
       case .cameraPreview:
         customImageView.image = UIImage(sfSymbol: .camera)
       case .microphonePreview:
@@ -88,7 +94,7 @@ final class HistoryCellView: UITableViewCell {
     titleLabel.text = locale.timeOnly(date: viewModel.date)
     let parts = [
       "\(locale.durationString): \(locale.assetDuration(viewModel.duration))",
-      "\(locale.sizeString): \(locale.assetSize(viewModel.fileSize))",
+      "\(locale.sizeString): \(locale.fileSize(viewModel.fileSize))",
     ]
     descriptionLabel.text = parts.joined(separator: "\n")
   }

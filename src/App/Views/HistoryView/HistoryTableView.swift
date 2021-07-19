@@ -82,9 +82,11 @@ private final class CustomTableView: UITableView {
   }
 
   func selectCurrentRow() {
-    let cell = cellForRow(at: selectedIndexPath)
-    let historyCell = cell as? HistoryCellView
-    historyCell?.setSelected()
+    if window != nil {
+      let cell = cellForRow(at: selectedIndexPath)
+      let historyCell = cell as? HistoryCellView
+      historyCell?.setSelected()
+    }
     selectRow(at: selectedIndexPath, animated: false, scrollPosition: .none)
   }
 }
@@ -103,9 +105,9 @@ extension CustomTableView: UITableViewDataSource {
 
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
     let cell = tableView.dequeue(HistoryCellView.self, for: indexPath)
-    cell.theme = theme
     cell.locale = locale
     cell.viewModel = cells[indexPath.row]
+    cell.theme = theme
     return cell
   }
 
@@ -132,11 +134,14 @@ extension CustomTableView: UITableViewDataSource {
     contextMenuConfigurationForRowAt indexPath: IndexPath,
     point: CGPoint
   ) -> UIContextMenuConfiguration? {
-    UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
+    let shareAttributes: UIMenuElement.Attributes = cells[indexPath.row].fileSize == nil ? .disabled : []
+    return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
       guard let self = self else { return UIMenu(title: "", children: []) }
       let children = [
         UIAction(title: self.locale.playString, sfSymbol: .play) { [weak self] in self?.didSelect(indexPath.row) },
-        UIAction(title: self.locale.shareString, sfSymbol: .share) { [weak self] in self?.didShare(indexPath.row) },
+        UIAction(title: self.locale.shareString, sfSymbol: .share, attributes: shareAttributes) { [weak self] in
+          self?.didShare(indexPath.row)
+        },
         UIAction(title: self.locale.deleteString, sfSymbol: .trash, attributes: .destructive) { [weak self] in
           self?.askToRemove(at: indexPath)
         },

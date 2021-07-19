@@ -1,4 +1,5 @@
 // swiftlint:disable type_body_length
+// swiftlint:disable file_length
 import Foundation
 import CameraKit
 
@@ -23,6 +24,7 @@ protocol AppLocale {
   func languageName(_ languageSetting: LanguageSetting) -> String
   func timeOnly(date: Date) -> String
   func day(date: Date) -> String
+  func fileSize(_ fileSize: FileSize?) -> String
   func assetSize(_ fileSize: FileSize?) -> String
   func assetDuration(_ timeInterval: TimeInterval) -> String
   var durationString: String { get }
@@ -296,9 +298,9 @@ struct LocaleImpl: AppLocale {
     return dateFormatter.string(from: date)
   }
 
-  func assetSize(_ fileSize: FileSize?) -> String {
+  func fileSize(_ fileSize: FileSize?) -> String {
     guard let fileSize = fileSize else {
-      return "∞"
+      return "N/A"
     }
     let unitFormatter = MeasurementFormatter()
     unitFormatter.unitStyle = .short
@@ -314,6 +316,13 @@ struct LocaleImpl: AppLocale {
     let size = Decimal(fileSize.bytes) / pow(1024, unitIndex)
     let sizeDouble = NSDecimalNumber(decimal: size).doubleValue
     return unitFormatter.string(from: Measurement(value: sizeDouble, unit: units[unitIndex]))
+  }
+
+  func assetSize(_ fileSize: FileSize?) -> String {
+    guard let fileSize = fileSize else {
+      return "∞"
+    }
+    return self.fileSize(fileSize)
   }
 
   func assetDuration(_ timeInterval: TimeInterval) -> String {

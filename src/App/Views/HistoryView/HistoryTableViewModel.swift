@@ -17,12 +17,14 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
     historySelectionViewModel: HistorySelectionViewModel,
     repository: MediaChunkRepository,
     shareViewPresenter: ShareViewPresenter,
-    historySelectionComputer: HistorySelectionComputer
+    historySelectionComputer: HistorySelectionComputer,
+    fileManager: FileManager
   ) {
     self.historySelectionViewModel = historySelectionViewModel
     self.repository = repository
     self.shareViewPresenter = shareViewPresenter
     self.historySelectionComputer = historySelectionComputer
+    self.fileManager = fileManager
     historySelectionViewModel.selectedDayPublisher.compactMap { $0 }
       .zip(historySelectionViewModel.selectedDevicePublisher.compactMap { $0 })
       .flatMap { (selectedDay, selectedDevice) in
@@ -70,15 +72,17 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
   private func cellViewModel(from mediaChunk: MediaChunk) -> HistoryCellViewModel {
     let started = TimeInterval.from(nanoseconds: Double(mediaChunk.startedAt.nanoseconds))
     let finished = TimeInterval.from(nanoseconds: Double(mediaChunk.finishedAt.nanoseconds))
+    let fileSize = fileManager.fileSize(url: mediaChunk.url)
     return HistoryCellViewModel(
       id: mediaChunk.url,
-      preview: .cameraPreview,
+      preview: fileSize == nil ? .notAvailable : (mediaChunk.fileType == .m4a ? .microphonePreview : .cameraPreview),
       date: mediaChunk.day.addingTimeInterval(started),
       duration: finished - started,
-      fileSize: FileSize(bytes: 1024)
+      fileSize: fileSize
     )
   }
 
+  private let fileManager: FileManager
   private var historySelectionViewModel: HistorySelectionViewModel
   private let repository: MediaChunkRepository
   private var cancellables = Set<AnyCancellable>()

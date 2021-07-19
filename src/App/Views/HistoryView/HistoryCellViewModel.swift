@@ -1,13 +1,10 @@
 import SwiftUI
 
-struct HistoryCellViewModel: Identifiable, Equatable {
-  static func == (lhs: HistoryCellViewModel, rhs: HistoryCellViewModel) -> Bool {
-    lhs.id == rhs.id
-  }
-
-  enum Preview {
+struct HistoryCellViewModel: Equatable {
+  enum Preview: Equatable {
     case cameraPreview
     case microphonePreview
+    case notAvailable
     case preview(image: UIImage)
   }
 
@@ -15,14 +12,14 @@ struct HistoryCellViewModel: Identifiable, Equatable {
   var preview: Preview
   let date: Date
   let duration: TimeInterval
-  let fileSize: FileSize
+  let fileSize: FileSize?
 }
 
 extension Default {
   static var historyCellViewModel: HistoryCellViewModel {
     HistoryCellViewModel(
       id: URL(string: "/dev/null")!,
-      preview: .cameraPreview,
+      preview: .notAvailable,
       date: Date(),
       duration: 1,
       fileSize: FileSize(bytes: 0)
