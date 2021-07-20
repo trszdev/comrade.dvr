@@ -1,5 +1,6 @@
 import UIKit
 import SwiftUI
+import AutocontainerKit
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   var window: UIWindow?
@@ -11,10 +12,13 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   ) {
     guard let windowScene = scene as? UIWindowScene else { return }
     let window = UIWindow(windowScene: windowScene)
-    let container = AppAssembly(isPreview: false).locator
-    let rootViewController = container.resolve(RootHostingControllerBuilder.self).makeViewController()
+    let rootViewController = locator.resolve(RootHostingControllerBuilder.self).makeViewController()
     window.rootViewController = rootViewController
     self.window = window
     window.makeKeyAndVisible()
   }
+
+  private lazy var locator: AKLocator = {
+    AppAssembly(isPreview: false).locator
+  }()
 }

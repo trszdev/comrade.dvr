@@ -24,6 +24,7 @@ protocol AppLocale {
   func languageName(_ languageSetting: LanguageSetting) -> String
   func timeOnly(date: Date) -> String
   func day(date: Date) -> String
+  func full(date: Date) -> String
   func fileSize(_ fileSize: FileSize?) -> String
   func assetSize(_ fileSize: FileSize?) -> String
   func assetDuration(_ timeInterval: TimeInterval) -> String
@@ -78,8 +79,9 @@ protocol AppLocale {
   var microphoneMutedString: String { get }
   var microphoneUnmutedString: String { get }
   var emptyString: String { get }
-  var removeMediaChunkAsk: String { get }
-  var removeMediaChunkConfirm: String { get }
+  var removeMediaChunkAskString: String { get }
+  var removeMediaChunkConfirmString: String { get }
+  var unavailableString: String { get }
 }
 
 extension Default {
@@ -283,24 +285,20 @@ struct LocaleImpl: AppLocale {
   }
 
   func timeOnly(date: Date) -> String {
-    let dateFormatter = DateFormatter()
-    dateFormatter.locale = currentLocale
-    dateFormatter.timeStyle = .medium
-    dateFormatter.dateStyle = .none
-    return dateFormatter.string(from: date)
+    format(date: date, timeStyle: .medium, dateStyle: .none)
   }
 
   func day(date: Date) -> String {
-    let dateFormatter = DateFormatter()
-    dateFormatter.locale = currentLocale
-    dateFormatter.timeStyle = .none
-    dateFormatter.dateStyle = .medium
-    return dateFormatter.string(from: date)
+    format(date: date, timeStyle: .none, dateStyle: .medium)
+  }
+
+  func full(date: Date) -> String {
+    format(date: date, timeStyle: .medium, dateStyle: .medium)
   }
 
   func fileSize(_ fileSize: FileSize?) -> String {
     guard let fileSize = fileSize else {
-      return "N/A"
+      return unavailableString
     }
     let unitFormatter = MeasurementFormatter()
     unitFormatter.unitStyle = .short
@@ -353,7 +351,16 @@ struct LocaleImpl: AppLocale {
   var startRecordingString: String { localizedString("START_RECORDING") }
   var lastCaptureString: String { localizedString("LAST_CAPTURE") }
   var updatedAtString: String { localizedString("UPDATED_AT") }
-  var fullAppName: String { "ComradeDVR v1.0.0" }
+  var fullAppName: String {
+    var infoPlist = (bundle ?? .main).infoDictionary ?? [:]
+    infoPlist.merge((bundle ?? .main).localizedInfoDictionary ?? [:], uniquingKeysWith: { _, second in second })
+    guard let appVersion = infoPlist["CFBundleShortVersionString"] as? String,
+      let appName = infoPlist["CFBundleDisplayName"] as? String
+    else {
+      return ""
+    }
+    return "\(appName) v\(appVersion)"
+  }
   var okString: String { localizedString("OK") }
   var cancelString: String { localizedString("CANCEL") }
   var appContactEmail: String { "help@comradedvr.app" }
@@ -384,8 +391,17 @@ struct LocaleImpl: AppLocale {
   var microphoneMutedString: String { localizedString("MICROPHONE_MUTED") }
   var microphoneUnmutedString: String { localizedString("MICROPHONE_UNMUTED") }
   var emptyString: String { localizedString("EMPTY") }
-  var removeMediaChunkAsk: String { localizedString("REMOVE_MEDIA_CHUNK_ASK") }
-  var removeMediaChunkConfirm: String { localizedString("REMOVE_MEDIA_CHUNK_CONFIRM") }
+  var removeMediaChunkAskString: String { localizedString("REMOVE_MEDIA_CHUNK_ASK") }
+  var removeMediaChunkConfirmString: String { localizedString("REMOVE_MEDIA_CHUNK_CONFIRM") }
+  var unavailableString: String { localizedString("UNAVAILABLE") }
+
+  private func format(date: Date, timeStyle: DateFormatter.Style, dateStyle: DateFormatter.Style) -> String {
+    let dateFormatter = DateFormatter()
+    dateFormatter.locale = currentLocale
+    dateFormatter.timeStyle = timeStyle
+    dateFormatter.dateStyle = dateStyle
+    return dateFormatter.string(from: date)
+  }
 
   private func localizedString(_ key: String) -> String {
     if let bundle = bundle {

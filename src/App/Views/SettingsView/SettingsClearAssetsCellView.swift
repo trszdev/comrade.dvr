@@ -1,7 +1,16 @@
 import SwiftUI
 
 struct SettingsClearAssetsCellView: View {
+  struct Builder {
+    let mediaChunkRepository: MediaChunkRepository
+
+    func makeView() -> AnyView {
+      SettingsClearAssetsCellView(clearAssets: mediaChunkRepository.deleteAllMediaChunks).eraseToAnyView()
+    }
+  }
+
   @Environment(\.appLocale) var appLocale: AppLocale
+  var clearAssets: () -> Void = {}
 
   var body: some View {
     SettingsCellButtonView(text: appLocale.clearAssetsString)
@@ -16,10 +25,6 @@ struct SettingsClearAssetsCellView: View {
           secondaryButton: .destructive(Text(appLocale.clearAllAssetsConfirmString), action: clearAssets)
         )
       })
-  }
-
-  private func clearAssets() {
-
   }
 
   @State private var showAlert = false

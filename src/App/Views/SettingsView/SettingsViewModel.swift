@@ -1,39 +1,32 @@
 import SwiftUI
+import AutocontainerKit
 
 protocol SettingsViewModel {
   var sections: [[AnyView]] { get }
 }
 
-struct SettingsViewModelImpl: SettingsViewModel {
-  let settingsContactUsCellViewBuilder: SettingsContactUsCellView.Builder
-  let settingsAssetsLimitCellViewBuilder: SettingsPickerCellViewBuilder<AssetLimitSetting>
-  let settingsLanguageCellViewBuilder: SettingsPickerCellViewBuilder<LanguageSetting>
-  let settingsAssetLengthCellViewBuilder: SettingsPickerCellViewBuilder<AssetLengthSetting>
-  let settingsThemeCellViewBuilder: SettingsPickerCellViewBuilder<ThemeSetting>
-  let settingsOrientationCellViewBuilder: SettingsPickerCellViewBuilder<OrientationSetting>
-  let settingsRateAppCellViewBuilder: SettingsRateAppCellView.Builder
-
+final class SettingsViewModelImpl: AKBuilder, SettingsViewModel {
   var sections: [[AnyView]] {[
     [
-      settingsAssetsLimitCellView.eraseToAnyView(),
-      settingsAssetLengthCellView.eraseToAnyView(),
-      SettingsUsedSpaceCellView().eraseToAnyView(),
-      settingsOrientationCellView.eraseToAnyView(),
+      settingsAssetsLimitCellView,
+      settingsAssetLengthCellView,
+      resolve(SettingsUsedSpaceCellViewBuilder.self).makeView(),
+      settingsOrientationCellView,
     ],
     [
-      settingsLanguageCellView.eraseToAnyView(),
-      settingsThemeCellView.eraseToAnyView(),
+      settingsLanguageCellView,
+      settingsThemeCellView,
     ],
     [
-      SettingsRestoreCellView().eraseToAnyView(),
-      settingsContactUsCellViewBuilder.makeView().eraseToAnyView(),
-      settingsRateAppCellViewBuilder.makeView().eraseToAnyView(),
-      SettingsClearAssetsCellView().eraseToAnyView(),
+      // TODO: SettingsRestoreCellView().eraseToAnyView(),
+      resolve(SettingsContactUsCellView.Builder.self).makeView().eraseToAnyView(),
+      resolve(SettingsRateAppCellView.Builder.self).makeView().eraseToAnyView(),
+      resolve(SettingsClearAssetsCellView.Builder.self).makeView(),
     ],
   ]}
 
-  private var settingsOrientationCellView: some View {
-    settingsOrientationCellViewBuilder.makeView(
+  private var settingsOrientationCellView: AnyView {
+    resolve(SettingsPickerCellViewBuilder<OrientationSetting>.self).makeView(
       title: { $0.orientationString },
       rightText: { $0.orientation($1) },
       sfSymbol: .orientation,
@@ -42,9 +35,9 @@ struct SettingsViewModelImpl: SettingsViewModel {
     )
   }
 
-  private var settingsAssetsLimitCellView: some View {
+  private var settingsAssetsLimitCellView: AnyView {
     let availableOptions: [Int?] = [1, 5, 10, 20, 30, nil]
-    return settingsAssetsLimitCellViewBuilder.makeView(
+    return resolve(SettingsPickerCellViewBuilder<AssetLimitSetting>.self).makeView(
       title: { $0.assetsLimitString },
       rightText: { $0.assetSize($1.value) },
       sfSymbol: .assetLimit,
@@ -54,8 +47,8 @@ struct SettingsViewModelImpl: SettingsViewModel {
     )
   }
 
-  private var settingsLanguageCellView: some View {
-    settingsLanguageCellViewBuilder.makeView(
+  private var settingsLanguageCellView: AnyView {
+    resolve(SettingsPickerCellViewBuilder<LanguageSetting>.self).makeView(
       title: { $0.languageString },
       rightText: { $0.languageName($1) },
       sfSymbol: .language,
@@ -63,8 +56,8 @@ struct SettingsViewModelImpl: SettingsViewModel {
     )
   }
 
-  private var settingsAssetLengthCellView: some View {
-    settingsAssetLengthCellViewBuilder.makeView(
+  private var settingsAssetLengthCellView: AnyView {
+    resolve(SettingsPickerCellViewBuilder<AssetLengthSetting>.self).makeView(
       title: { $0.assetLengthString },
       rightText: { $0.assetDuration($1.value) },
       sfSymbol: .assetLength,
@@ -72,8 +65,8 @@ struct SettingsViewModelImpl: SettingsViewModel {
     )
   }
 
-  private var settingsThemeCellView: some View {
-    settingsThemeCellViewBuilder.makeView(
+  private var settingsThemeCellView: AnyView {
+    resolve(SettingsPickerCellViewBuilder<ThemeSetting>.self).makeView(
       title: { $0.themeString },
       rightText: { $0.themeName($1) },
       sfSymbol: .theme,

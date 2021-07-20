@@ -153,11 +153,11 @@ extension CustomTableView: UITableViewDataSource {
   private func askToRemove(at indexPath: IndexPath) {
     let alertVc = UIAlertController(
       title: locale.warningString,
-      message: locale.removeMediaChunkAsk,
+      message: locale.removeMediaChunkAskString,
       preferredStyle: .alert
     )
     alertVc.addAction(UIAlertAction(title: locale.cancelString, style: .cancel, handler: { _ in }))
-    alertVc.addAction(UIAlertAction(title: locale.removeMediaChunkConfirm, style: .destructive) { [weak self] _ in
+    alertVc.addAction(UIAlertAction(title: locale.removeMediaChunkConfirmString, style: .destructive) { [weak self] _ in
       self?.performRemove(at: indexPath)
     })
     parentViewController?.present(alertVc, animated: true, completion: nil)

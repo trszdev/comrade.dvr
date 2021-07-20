@@ -11,6 +11,8 @@ struct SettingsViewAssembly: AKAssembly {
     container.transient.autoregister(construct: SettingsView.Builder.init)
     container.transient.autoregister(construct: SettingsContactUsCellView.Builder.init)
     container.transient.autoregister(construct: SettingsRateAppCellView.Builder.init)
+    container.transient.autoregister(construct: SettingsClearAssetsCellView.Builder.init)
+    container.transient.autoregister(construct: SettingsUsedSpaceCellViewBuilder.init)
   }
 
   private func registerSetting<Value: SettingValue>(container: AKContainer, _ valueType: Value.Type) {

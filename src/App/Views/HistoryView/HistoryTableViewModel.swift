@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import AVFoundation
 
 protocol HistoryTableViewModel: ObservableObject {
   var cells: [HistoryCellViewModel] { get }
@@ -25,7 +26,7 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
     self.shareViewPresenter = shareViewPresenter
     self.historySelectionComputer = historySelectionComputer
     self.fileManager = fileManager
-    historySelectionViewModel.selectedDayPublisher.compactMap { $0 }
+    self.repositoryCancellable = historySelectionViewModel.selectedDayPublisher.compactMap { $0 }
       .zip(historySelectionViewModel.selectedDevicePublisher.compactMap { $0 })
       .flatMap { (selectedDay, selectedDevice) in
         repository.mediaChunks(device: selectedDevice, day: selectedDay)
@@ -34,15 +35,13 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
         self.flatMap { mediaChunks.map($0.cellViewModel(from:)) }
       }
       .receive(on: DispatchQueue.main)
-      .assignWeak(to: \.cells, on: self)
-      .store(in: &cancellables)
+      .sink { [weak self] cells in
+        self?.cells = cells
+        self?.selectedIndex = 0
+      }
   }
 
-  @Published private(set) var cells = [HistoryCellViewModel]() {
-    didSet {
-      selectedIndex = 0
-    }
-  }
+  @Published private(set) var cells = [HistoryCellViewModel]()
   var cellsPublished: Published<[HistoryCellViewModel]> { _cells }
   var cellsPublisher: Published<[HistoryCellViewModel]>.Publisher { $cells }
 
@@ -82,10 +81,15 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
     )
   }
 
+  private func loadPreviewImage(for asset: URL) -> Future<(UIImage, URL)?, Never> {
+    fatalError()
+  }
+
   private let fileManager: FileManager
   private var historySelectionViewModel: HistorySelectionViewModel
   private let repository: MediaChunkRepository
-  private var cancellables = Set<AnyCancellable>()
+  private var repositoryCancellable: AnyCancellable!
+  private var thumbnailCancellable: AnyCancellable!
   private let shareViewPresenter: ShareViewPresenter
   private let historySelectionComputer: HistorySelectionComputer
 }

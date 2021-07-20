@@ -3,6 +3,14 @@ import CameraKit
 import Foundation
 
 struct PreviewMediaChunkRepository: MediaChunkRepository {
+  var lastCapturePublisher: AnyPublisher<Date?, Never> {
+    CurrentValueSubject<Date?, Never>(nil).eraseToAnyPublisher()
+  }
+
+  var totalFileSizePublisher: AnyPublisher<FileSize?, Never> {
+    CurrentValueSubject<FileSize?, Never>(nil).eraseToAnyPublisher()
+  }
+
   var mediaChunkPublisher: AnyPublisher<MediaChunk, Never> {
     PassthroughSubject<MediaChunk, Never>().eraseToAnyPublisher()
   }
@@ -20,6 +28,9 @@ struct PreviewMediaChunkRepository: MediaChunkRepository {
   }
 
   func deleteMediaChunks(with url: URL) {
+  }
+
+  func deleteAllMediaChunks() {
   }
 
   func save(mediaChunk: CKMediaChunk, sessionStartupInfo: CKSessionStartupInfo) {

@@ -1,11 +1,24 @@
 import SwiftUI
 import Combine
 import CameraKit
+import AutocontainerKit
 
 protocol StartViewModel: ObservableObject {
   var devices: [StartViewModelDevice] { get }
   var devicesPublished: Published<[StartViewModelDevice]> { get }
   var devicesPublisher: Published<[StartViewModelDevice]>.Publisher { get }
+
+  var usedSpace: FileSize? { get }
+  var usedSpacePublished: Published<FileSize?> { get }
+  var usedSpacePublisher: Published<FileSize?>.Publisher { get }
+
+  var spaceLimit: FileSize? { get }
+  var spaceLimitPublished: Published<FileSize?> { get }
+  var spaceLimitPublisher: Published<FileSize?>.Publisher { get }
+
+  var lastCapture: Date? { get }
+  var lastCapturePublished: Published<Date?> { get }
+  var lastCapturePublisher: Published<Date?>.Publisher { get }
 
   func presentConfigureDeviceScreen(for device: StartViewModelDevice)
   func start()
@@ -17,24 +30,18 @@ protocol StartViewModel: ObservableObject {
   var sessionStatusPublisher: Published<SessionStatus?>.Publisher { get }
 }
 
-struct StartViewModelBuilder {
-  let devicesModel: DevicesModel
-  let configureMicrophoneViewBuilder: ConfigureMicrophoneViewBuilder
-  let configureCameraViewBuilder: ConfigureCameraViewBuilder
-  let appLocaleModel: AppLocaleModel
-  let navigationViewPresenter: NavigationViewPresenter
-  let app: UIApplication
-  let sessionController: SessionController
-
+final class StartViewModelBuilder: AKBuilder {
   func makeViewModel() -> StartViewModelImpl {
     StartViewModelImpl(
-      devicesModel: devicesModel,
-      configureMicrophoneViewBuilder: configureMicrophoneViewBuilder,
-      configureCameraViewBuilder: configureCameraViewBuilder,
-      appLocaleModel: appLocaleModel,
-      navigationViewPresenter: navigationViewPresenter,
-      app: app,
-      sessionController: sessionController
+      devicesModel: resolve(DevicesModel.self),
+      configureMicrophoneViewBuilder: resolve(ConfigureMicrophoneViewBuilder.self),
+      configureCameraViewBuilder: resolve(ConfigureCameraViewBuilder.self),
+      appLocaleModel: resolve(AppLocaleModel.self),
+      navigationViewPresenter: resolve(NavigationViewPresenter.self),
+      app: resolve(UIApplication.self),
+      sessionController: resolve(SessionController.self),
+      mediaChunkRepository: resolve(MediaChunkRepository.self),
+      assetLimitSetting: resolve(AnySetting<AssetLimitSetting>.self)
     )
   }
 }
@@ -47,7 +54,9 @@ final class StartViewModelImpl: StartViewModel {
     appLocaleModel: AppLocaleModel,
     navigationViewPresenter: NavigationViewPresenter,
     app: UIApplication,
-    sessionController: SessionController
+    sessionController: SessionController,
+    mediaChunkRepository: MediaChunkRepository,
+    assetLimitSetting: AnySetting<AssetLimitSetting>
   ) {
     self.devicesModel = devicesModel
     self.configureMicrophoneViewBuilder = configureMicrophoneViewBuilder
@@ -57,12 +66,26 @@ final class StartViewModelImpl: StartViewModel {
     self.sessionController = sessionController
     self.appLocaleModel = appLocaleModel
     self.sessionStatusInternal = sessionController.status
+    self.mediaChunkRepository = mediaChunkRepository
+    self.assetLimitSetting = assetLimitSetting
     setup()
   }
 
   @Published private(set) var devices = [StartViewModelDevice]()
   var devicesPublished: Published<[StartViewModelDevice]> { _devices }
   var devicesPublisher: Published<[StartViewModelDevice]>.Publisher { $devices }
+
+  @Published private(set) var usedSpace: FileSize?
+  var usedSpacePublished: Published<FileSize?> { _usedSpace }
+  var usedSpacePublisher: Published<FileSize?>.Publisher { $usedSpace }
+
+  @Published private(set) var spaceLimit: FileSize?
+  var spaceLimitPublished: Published<FileSize?> { _spaceLimit }
+  var spaceLimitPublisher: Published<FileSize?>.Publisher { $spaceLimit }
+
+  @Published private(set) var lastCapture: Date?
+  var lastCapturePublished: Published<Date?> { _lastCapture }
+  var lastCapturePublisher: Published<Date?>.Publisher { $lastCapture }
 
   func presentConfigureDeviceScreen(for device: StartViewModelDevice) {
     guard let device = devicesModel.device(id: device.id) else { return }
@@ -100,6 +123,18 @@ final class StartViewModelImpl: StartViewModel {
   var sessionStatusPublisher: Published<SessionStatus?>.Publisher { $sessionStatus }
 
   private func setup() {
+    mediaChunkRepository.lastCapturePublisher
+      .receive(on: DispatchQueue.main)
+      .assignWeak(to: \.lastCapture, on: self)
+      .store(in: &cancellables)
+    mediaChunkRepository.totalFileSizePublisher
+      .receive(on: DispatchQueue.main)
+      .assignWeak(to: \.usedSpace, on: self)
+      .store(in: &cancellables)
+    assetLimitSetting.publisher
+      .map(\.value)
+      .assignWeak(to: \.spaceLimit, on: self)
+      .store(in: &cancellables)
     received(devices: devicesModel.devices)
     received(status: sessionController.status)
     sessionController.statusPublisher
@@ -107,7 +142,6 @@ final class StartViewModelImpl: StartViewModel {
       .map { [weak self] status in
         self?.received(status: status)
       }
-
       .sink {}
       .store(in: &cancellables)
     devicesModel.devicesPublisher
@@ -132,6 +166,8 @@ final class StartViewModelImpl: StartViewModel {
     received(status: nil)
   }
 
+  private let assetLimitSetting: AnySetting<AssetLimitSetting>
+  private let mediaChunkRepository: MediaChunkRepository
   private var sessionStatusInternal: SessionStatus
   private var cancellables = Set<AnyCancellable>()
   private let devicesModel: DevicesModel

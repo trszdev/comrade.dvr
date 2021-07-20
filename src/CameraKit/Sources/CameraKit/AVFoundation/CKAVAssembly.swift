@@ -7,7 +7,7 @@ public struct CKAVAssembly: AKAssembly {
 
   public func assemble(container: AKContainer) {
     container.singleton.autoregister(CKTempFileMaker.self, construct: CKTempFileMakerImpl.init)
-    container.transient.autoregister(CKTimestampMaker.self, construct: CKTimestampMakerImpl.init)
+    container.transient.autoregister(CKTimestampMakerBuilder.self, construct: CKTimestampMakerBuilderImpl.init)
     container.singleton.autoregister(value: FileManager.default)
     container.singleton.autoregister(value: AVAudioSession.sharedInstance())
     container.transient.autoregister(construct: CKAVMicrophoneRecorderImpl.Builder.init)

@@ -21,7 +21,7 @@ final class CKAVCameraRecorderBuilderImpl: AKBuilder, CKAVCameraRecorderBuilder 
       mapper: resolve(CKAVConfigurationMapper.self),
       mediaUrlMaker: resolve(CKMediaURLMaker.self),
       sessionPublisher: sessionPublisher,
-      timestampMaker: resolve(CKTimestampMaker.self)
+      timestampMakerBuilder: resolve(CKTimestampMakerBuilder.self)
     )
   }
 }
@@ -31,12 +31,13 @@ final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
     mapper: CKAVConfigurationMapper,
     mediaUrlMaker: CKMediaURLMaker,
     sessionPublisher: CKSessionPublisher,
-    timestampMaker: CKTimestampMaker
+    timestampMakerBuilder: CKTimestampMakerBuilder
   ) {
     self.mapper = mapper
     self.mediaUrlMaker = mediaUrlMaker
     self.sessionPublisher = sessionPublisher
-    self.timestampMaker = timestampMaker
+    self.timestampMakerBuilder = timestampMakerBuilder
+    self.timestampMaker = timestampMakerBuilder.makeTimestampMaker()
   }
 
   func requestMediaChunk() {
@@ -61,6 +62,7 @@ final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
       name: .AVCaptureSessionInterruptionEnded,
       object: nil
     )
+    timestampMaker = timestampMakerBuilder.makeTimestampMaker()
     output.tryChangePixelFormat(quality: camera.configuration.videoQuality)
     self.camera = camera
     self.sessionStartupInfo = sessionStartupInfo
@@ -133,7 +135,8 @@ final class CKAVCameraRecorderImpl: NSObject, CKAVCameraRecorder {
   private var videoWriter: AVAssetWriter?
   private var camera: CKDevice<CKCameraConfiguration>?
   private let mediaUrlMaker: CKMediaURLMaker
-  private let timestampMaker: CKTimestampMaker
+  private var timestampMaker: CKTimestampMaker
+  private let timestampMakerBuilder: CKTimestampMakerBuilder
   private let mapper: CKAVConfigurationMapper
 }
 

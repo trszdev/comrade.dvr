@@ -3,7 +3,7 @@ import XCTest
 
 final class CKTimestampMakerTests: CKTestCase {
   func testNearlyMonotonic() {
-    let timestampMaker = avLocator.resolve(CKTimestampMaker.self)!
+    let timestampMaker = avLocator.resolve(CKTimestampMakerBuilder.self).makeTimestampMaker()
     var timestamps = [CKTimestamp]()
     timestamps.append(timestampMaker.currentTimestamp)
     timestamps.append(timestampMaker.currentTimestamp)
@@ -13,7 +13,7 @@ final class CKTimestampMakerTests: CKTestCase {
   }
 
   func testFirstTimestampNearZero() {
-    let timestampMaker = avLocator.resolve(CKTimestampMaker.self)!
+    let timestampMaker = avLocator.resolve(CKTimestampMakerBuilder.self).makeTimestampMaker()
     let timestamp = timestampMaker.currentTimestamp
     let nanosecondsInMs = UInt64(1e6)
     XCTAssert(timestamp.nanoseconds < nanosecondsInMs / 2)

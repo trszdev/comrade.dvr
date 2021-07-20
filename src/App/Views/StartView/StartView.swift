@@ -41,13 +41,24 @@ struct StartView<ViewModel: StartViewModel>: View {
   }
 
   func startHeaderView() -> some View {
-    VStack(spacing: 10) {
+    let unavailableString = appLocale.unavailableString.lowercased()
+    let lastCaptureString = viewModel.lastCapture.flatMap(appLocale.full(date:)) ?? unavailableString
+    var usedSpaceString = unavailableString
+    if let usedSpace = viewModel.usedSpace {
+      if let limitSize = viewModel.spaceLimit {
+        let ratio = Double(usedSpace.bytes) / Double(limitSize.bytes)
+        usedSpaceString = "\(appLocale.fileSize(usedSpace)) / \(appLocale.fileSize(limitSize)) [\(Int(ratio * 100))%]"
+      } else {
+        usedSpaceString = appLocale.fileSize(usedSpace)
+      }
+    }
+    return VStack(spacing: 10) {
       HStack(spacing: 10) {
         theme.startIcon
         VStack(alignment: .leading) {
           Text(appLocale.fullAppName).foregroundColor(theme.textColor).font(.caption2)
-          Text("\(appLocale.lastCaptureString): 10.12.2021 15:00").foregroundColor(theme.textColor).font(.caption2)
-          Text("\(appLocale.usedSpaceString): 100mb / 10gb [100%]").foregroundColor(theme.textColor).font(.caption2)
+          Text("\(appLocale.lastCaptureString): \(lastCaptureString)").foregroundColor(theme.textColor).font(.caption2)
+          Text("\(appLocale.usedSpaceString): \(usedSpaceString)").foregroundColor(theme.textColor).font(.caption2)
         }
         Spacer()
       }

@@ -16,15 +16,20 @@ final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
       CKAVMicrophoneRecorderImpl(
         mediaUrlMaker: resolve(CKMediaURLMaker.self),
         sessionPublisher: sessionPublisher,
-        timestampMaker: resolve(CKTimestampMaker.self)
+        timestampMakerBuilder: resolve(CKTimestampMakerBuilder.self)
       )
     }
   }
 
-  init(mediaUrlMaker: CKMediaURLMaker, sessionPublisher: CKSessionPublisher, timestampMaker: CKTimestampMaker) {
+  init(
+    mediaUrlMaker: CKMediaURLMaker,
+    sessionPublisher: CKSessionPublisher,
+    timestampMakerBuilder: CKTimestampMakerBuilder
+  ) {
     self.mediaUrlMaker = mediaUrlMaker
     self.sessionPublisher = sessionPublisher
-    self.timestampMaker = timestampMaker
+    self.timestampMakerBuilder = timestampMakerBuilder
+    self.timestampMaker = timestampMakerBuilder.makeTimestampMaker()
   }
 
   func requestMediaChunk() {
@@ -47,6 +52,7 @@ final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
   }
 
   func setup(microphone: CKDevice<CKMicrophoneConfiguration>, sessionStartupInfo: CKSessionStartupInfo) throws {
+    timestampMaker = timestampMakerBuilder.makeTimestampMaker()
     NotificationCenter.default.addObserver(
       self,
       selector: #selector(wasInterrupted(notification:)),
@@ -124,7 +130,8 @@ final class CKAVMicrophoneRecorderImpl: NSObject, CKAVMicrophoneRecorder {
   private let sessionPublisher: CKSessionPublisher
   private var recorders = [URL: (AVAudioRecorder, CKMediaChunk)]()
   private let mediaUrlMaker: CKMediaURLMaker
-  private let timestampMaker: CKTimestampMaker
+  private var timestampMaker: CKTimestampMaker
+  private let timestampMakerBuilder: CKTimestampMakerBuilder
   private var microphone: CKDevice<CKMicrophoneConfiguration>?
 }
 

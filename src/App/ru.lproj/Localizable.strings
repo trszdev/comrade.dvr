@@ -110,3 +110,5 @@
 
 "REMOVE_MEDIA_CHUNK_ASK" = "Вы действительно хотите удалить файл?";
 "REMOVE_MEDIA_CHUNK_CONFIRM" = "Да, удалить файл";
+
+"UNAVAILABLE" = "Недоступно";
