@@ -11,7 +11,9 @@ final class SettingsUsedSpaceCellViewBuilder: AKBuilder {
 
 final class SettingsUsedSpaceCellViewModel: ObservableObject {
   init(mediaChunkRepository: MediaChunkRepository) {
-    cancellable = mediaChunkRepository.totalFileSizePublisher.assignWeak(to: \.fileSize, on: self)
+    cancellable = mediaChunkRepository.totalFileSizePublisher
+      .receive(on: DispatchQueue.main)
+      .assignWeak(to: \.fileSize, on: self)
   }
 
   @Published private(set) var fileSize: FileSize?

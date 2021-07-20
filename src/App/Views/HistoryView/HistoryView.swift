@@ -16,7 +16,7 @@ final class HistoryViewBuilder: AKBuilder {
 struct HistoryView<ViewModel: HistoryViewModel>: View {
   @Environment(\.theme) var theme: Theme
   @Environment(\.appLocale) var appLocale: AppLocale
-  let viewModel: ViewModel
+  @ObservedObject var viewModel: ViewModel
   let tableView: AnyView
 
   var body: some View {

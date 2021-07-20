@@ -14,23 +14,25 @@ protocol MediaChunkRepository: SessionOutputSaver {
   func deleteAllMediaChunks()
 }
 
-enum MediaChunkRepositoryError: Error {
-  case failedToConvertMediaChunk
-}
-
 final class MediaChunkRepositoryImpl: MediaChunkRepository {
   init(
     coreDataController: CoreDataController,
-    mediaChunkConverter: MediaChunkConverter,
     fileManager: FileManager,
+    assetLimitSetting: AnySetting<AssetLimitSetting>,
     calendar: Calendar
   ) {
     self.coreDataController = coreDataController
-    self.mediaChunkConverter = mediaChunkConverter
     self.fileManager = fileManager
+    self.assetLimitSetting = assetLimitSetting
     self.calendar = calendar
+    assetLimitSetting.publisher
+      .sink { [weak self] setting in
+        self?.updateAssetLimit(setting: setting)
+      }
+      .store(in: &cancellables)
     updateLastCapture()
     updateDirectorySize()
+    updateAssetLimit()
   }
 
   var lastCapturePublisher: AnyPublisher<Date?, Never> { lastCaptureSubject.eraseToAnyPublisher() }
@@ -90,6 +92,7 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
       fetchRequest.predicate = NSPredicate(format: "url == %@", url as CVarArg)
       let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
       try ctx.execute(deleteRequest)
+      try ctx.save()
       try self.fileManager.removeItem(atPath: path)
       self.updateDirectorySize()
       self.updateLastCapture()
@@ -102,6 +105,7 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
       let fetched = try ctx.fetch(HistoryEntity.fetchRequest { _ in })
       let deleteRequest = NSBatchDeleteRequest(fetchRequest: HistoryEntity.fetchRequest())
       try ctx.execute(deleteRequest)
+      try ctx.save()
       self.lastCaptureCancellable = nil
       self.lastCaptureSubject.value = nil
       for url in fetched.map(\.url) {
@@ -112,24 +116,30 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
           print(error.localizedDescription)
         }
       }
+      self.updateDirectorySize()
     }
   }
 
   func save(mediaChunk: CKMediaChunk, sessionStartupInfo: CKSessionStartupInfo) {
-    guard let chunk = mediaChunkConverter.makeMediaChunk(from: mediaChunk, with: sessionStartupInfo) else {
-      errorSubject.send(MediaChunkRepositoryError.failedToConvertMediaChunk)
-      return
-    }
-    var filePath = chunk.url.path
+    var filePath = mediaChunk.url.path
     filePath.removeFirst(fileManager.documentsDirectory.path.count)
+    let dateStarted = sessionStartupInfo.startedAt.addingTimeInterval(
+      .from(nanoseconds: Double(mediaChunk.startedAt.nanoseconds))
+    )
+    let dateFinished = sessionStartupInfo.startedAt.addingTimeInterval(
+      .from(nanoseconds: Double(mediaChunk.finishedAt.nanoseconds))
+    )
+    let day = calendar.startOfDay(for: dateStarted)
+    let startedAt = dateStarted.timeIntervalSince(day)
+    let finishedAt = dateFinished.timeIntervalSince(day)
     withBackgroundCtx { [weak self] ctx in
       let historyEnt = HistoryEntity(context: ctx)
-      historyEnt.deviceId = chunk.deviceId.value
-      historyEnt.fileExtension = chunk.fileType.rawValue
-      historyEnt.finishedAt = Int64(chunk.finishedAt.nanoseconds)
-      historyEnt.startedAt = Int64(chunk.startedAt.nanoseconds)
+      historyEnt.deviceId = mediaChunk.deviceId.value
+      historyEnt.fileExtension = mediaChunk.fileType.rawValue
+      historyEnt.finishedAt = Int64(finishedAt.nanoseconds)
+      historyEnt.startedAt = Int64(startedAt.nanoseconds)
       historyEnt.url = URL(fileURLWithPath: filePath)
-      historyEnt.day = chunk.day
+      historyEnt.day = day
       ctx.insert(historyEnt)
       try ctx.save()
       guard let self = self else { return }
@@ -137,7 +147,16 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
       let date = self.lastCapture(ent: historyEnt)
       self.updateDirectorySize()
       self.lastCaptureSubject.send(date)
-      self.mediaChunkSubject.send(chunk)
+      let mediaChunk = MediaChunk(
+        startedAt: CKTimestamp(nanoseconds: UInt64(startedAt.nanoseconds)),
+        url: mediaChunk.url,
+        deviceId: mediaChunk.deviceId,
+        fileType: mediaChunk.fileType,
+        finishedAt: CKTimestamp(nanoseconds: UInt64(finishedAt.nanoseconds)),
+        day: day
+      )
+      self.mediaChunkSubject.send(mediaChunk)
+      self.updateAssetLimit()
     }
   }
 
@@ -160,6 +179,38 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
     }
   }
 
+  private func updateAssetLimit(setting: AssetLimitSetting? = nil) {
+    guard let limitSize = setting?.value ?? assetLimitSetting.value.value,
+      let totalSize = fileManager.fileSize(url: fileManager.documentsDirectory),
+      limitSize < totalSize
+    else {
+      return
+    }
+    assetLimitCancellable = coreDataController.backgroundContext
+      .tryMap { [weak self] ctx in
+        guard let self = self else { return }
+        let fetchRequest = HistoryEntity.fetchRequest { request in
+          request.sortDescriptors = [
+            NSSortDescriptor(key: #keyPath(HistoryEntity.day), ascending: true),
+            NSSortDescriptor(key: #keyPath(HistoryEntity.startedAt), ascending: true),
+          ]
+          request.fetchLimit = 2
+        }
+        let ents = try ctx.fetch(fetchRequest)
+        guard ents.count == 2 else { return }
+        let path = self.fileManager.documentsDirectory.path + ents[0].url.path
+        ctx.delete(ents[0])
+        try ctx.save()
+        try self.fileManager.removeItem(atPath: path)
+        self.updateDirectorySize()
+      }
+      .catch { [weak self] (error: Error) -> Empty<Void, Never> in
+        self?.errorSubject.send(error)
+        return Empty()
+      }
+      .sink {}
+  }
+
   private func updateLastCapture() {
     lastCaptureCancellable = lastCapture().assignWeak(to: \.lastCaptureSubject.value, on: self)
   }
@@ -169,11 +220,7 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
   }
 
   private func lastCapture(ent: HistoryEntity) -> Date? {
-    calendar.date(
-      byAdding: .nanosecond,
-      value: Int(ent.finishedAt),
-      to: ent.day
-    )
+    ent.day.addingTimeInterval(.from(nanoseconds: Double(ent.finishedAt)))
   }
 
   private func withBackgroundCtx(block: @escaping (NSManagedObjectContext) throws -> Void) {
@@ -181,14 +228,16 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
       .tryMap(block)
       .catch { [weak self] (error: Error) -> Empty<Void, Never> in
         self?.errorSubject.send(error)
+        print(error.localizedDescription)
         return Empty()
       }
       .sink {}
       .store(in: &cancellables)
   }
 
+  private var assetLimitCancellable: AnyCancellable?
+  private let assetLimitSetting: AnySetting<AssetLimitSetting>
   private let calendar: Calendar
-  private let mediaChunkConverter: MediaChunkConverter
   private let coreDataController: CoreDataController
   private let fileManager: FileManager
   private let lastCaptureSubject = CurrentValueSubject<Date?, Never>(nil)

@@ -4,7 +4,6 @@ import AutocontainerKit
 
 struct SessionMediaURLMaker: CKMediaURLMaker {
   let fileManager: FileManager
-  let calendar: Calendar
   let tempMediaURLMaker: CKTempMediaURLMaker
 
   func makeMediaURL(deviceId: CKDeviceID, sessionStartupInfo: CKSessionStartupInfo, startedAt: CKTimestamp) -> URL {
@@ -13,10 +12,7 @@ struct SessionMediaURLMaker: CKMediaURLMaker {
       sessionStartupInfo: sessionStartupInfo,
       startedAt: startedAt
     )
-    let offset = Int(startedAt.nanoseconds)
-    guard let date = calendar.date(byAdding: .nanosecond, value: offset, to: sessionStartupInfo.startedAt) else {
-      return tempFileUrl
-    }
+    let date = sessionStartupInfo.startedAt.addingTimeInterval(.from(nanoseconds: Double(startedAt.nanoseconds)))
     let sessionDirectory = fileManager.documentsDirectory
       .appendingPathComponent(date.dayMonthYear)
       .appendingPathComponent(sessionStartupInfo.id.uuidString)

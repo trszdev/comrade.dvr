@@ -19,19 +19,7 @@ final class SessionControllerImpl: AKBuilder, SessionController {
       statusSubject.value = .isStarting
       sessionMaker.makeSession()
         .compactMap { [weak self] (session, viewController) in
-          guard let self = self else { return nil }
-          return self.sessionQueue.sync {
-            guard self.status == .isStarting else { return nil }
-            self.statusSubject.value = .isRunning
-            self.session = session
-            self.outputCancellable = session.outputPublisher
-              .map { [weak self] mediaChunk in
-                self?.sessionOutputSaver.save(mediaChunk: mediaChunk, sessionStartupInfo: session.startupInfo)
-              }
-              .sink(receiveCompletion: { _ in }, receiveValue: { })
-            self.sessionViewController = viewController
-            return viewController
-          }
+          self?.retainSession(session: session, viewController: viewController)
         }
         .catch { [weak self] (error: Error) -> Empty<SessionViewController, Never> in
           self?.statusSubject.value = .notRunning
@@ -75,9 +63,30 @@ final class SessionControllerImpl: AKBuilder, SessionController {
   var statusPublisher: AnyPublisher<SessionStatus, Never> { statusSubject.eraseToAnyPublisher() }
   var errorPublisher: AnyPublisher<Error, Never> { errorSubject.eraseToAnyPublisher() }
 
+  private func retainSession(session: CKSession, viewController: SessionViewController) -> SessionViewController? {
+    sessionQueue.sync {
+      guard status == .isStarting else { return nil }
+      Timer.publish(every: assetLengthSetting.value.value, on: .main, in: .common)
+        .autoconnect()
+        .sink { [weak self] _ in
+          self?.session?.requestMediaChunk()
+        }
+        .store(in: &cancellables)
+      statusSubject.value = .isRunning
+      self.session = session
+      outputCancellable = session.outputPublisher
+        .map { [weak self] mediaChunk in
+          self?.sessionOutputSaver.save(mediaChunk: mediaChunk, sessionStartupInfo: session.startupInfo)
+        }
+        .sink(receiveCompletion: { _ in }, receiveValue: { })
+      sessionViewController = viewController
+      return viewController
+    }
+  }
+
   private let statusSubject = CurrentValueSubject<SessionStatus, Never>(.notRunning)
   private let errorSubject = PassthroughSubject<Error, Never>()
-
+  private lazy var assetLengthSetting = resolve(AnySetting<AssetLengthSetting>.self)!
   private var session: CKSession?
   private weak var sessionViewController: UIViewController?
   private lazy var sessionMaker = resolve(SessionMaker.self)!
