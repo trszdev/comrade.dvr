@@ -19,8 +19,8 @@ struct PreviewMediaChunkRepository: MediaChunkRepository {
     PassthroughSubject<Error, Never>().eraseToAnyPublisher()
   }
 
-  func availableSelections() -> Future<[CKDeviceID: Set<Date>], Never> {
-    Future<[CKDeviceID: Set<Date>], Never> { promise in promise(.success([:])) }
+  var availableSelectionsPublisher: AnyPublisher<[CKDeviceID: Set<Date>], Never> {
+    CurrentValueSubject<[CKDeviceID: Set<Date>], Never>([:]).eraseToAnyPublisher()
   }
 
   func mediaChunks(device: CKDeviceID, day: Date) -> Future<[MediaChunk], Never> {

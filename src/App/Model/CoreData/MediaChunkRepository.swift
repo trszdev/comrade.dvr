@@ -8,7 +8,7 @@ protocol MediaChunkRepository: SessionOutputSaver {
   var lastCapturePublisher: AnyPublisher<Date?, Never> { get }
   var mediaChunkPublisher: AnyPublisher<MediaChunk, Never> { get }
   var errorPublisher: AnyPublisher<Error, Never> { get }
-  func availableSelections() -> Future<[CKDeviceID: Set<Date>], Never>
+  var availableSelectionsPublisher: AnyPublisher<[CKDeviceID: Set<Date>], Never> { get }
   func mediaChunks(device: CKDeviceID, day: Date) -> Future<[MediaChunk], Never>
   func deleteMediaChunks(with url: URL)
   func deleteAllMediaChunks()
@@ -33,31 +33,15 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
     updateLastCapture()
     updateDirectorySize()
     updateAssetLimit()
+    updateAvailableSelections()
   }
 
   var lastCapturePublisher: AnyPublisher<Date?, Never> { lastCaptureSubject.eraseToAnyPublisher() }
   var totalFileSizePublisher: AnyPublisher<FileSize?, Never> { totalFileSizeSubject.eraseToAnyPublisher() }
   var mediaChunkPublisher: AnyPublisher<MediaChunk, Never> { mediaChunkSubject.eraseToAnyPublisher() }
   var errorPublisher: AnyPublisher<Error, Never> { errorSubject.eraseToAnyPublisher() }
-
-  func availableSelections() -> Future<[CKDeviceID: Set<Date>], Never> {
-    Future { [weak self] promise in
-      guard let self = self else { return promise(.success([:])) }
-      self.withBackgroundCtx { ctx in
-        let deviceIds = try ctx.fetchDistinctDeviceIds()
-        var result = [CKDeviceID: Set<Date>]()
-        for deviceId in deviceIds {
-          let fetchRequest = HistoryEntity.fetchRequest()
-          fetchRequest.predicate = NSPredicate(format: "deviceId == %@", deviceId.value)
-          fetchRequest.resultType = .dictionaryResultType
-          fetchRequest.propertiesToFetch = ["day"]
-          fetchRequest.returnsDistinctResults = true
-          guard let ents = try ctx.fetch(fetchRequest) as? [[String: Date]] else { continue }
-          result[deviceId] = Set(ents.compactMap { $0["day"] })
-        }
-        promise(.success(result))
-      }
-    }
+  var availableSelectionsPublisher: AnyPublisher<[CKDeviceID: Set<Date>], Never> {
+    availableSelectionsSubject.eraseToAnyPublisher()
   }
 
   func mediaChunks(device: CKDeviceID, day: Date) -> Future<[MediaChunk], Never> {
@@ -85,30 +69,32 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
   }
 
   func deleteMediaChunks(with url: URL) {
-    let path = fileManager.documentsDirectory.path + url.path
+    var dbPath = url.path
+    var fsPath = url.path
+    if url.path.starts(with: fileManager.documentsDirectory.path) {
+      dbPath.removeFirst(fileManager.documentsDirectory.path.count)
+    } else {
+      fsPath = fileManager.documentsDirectory.path + fsPath
+    }
     withBackgroundCtx { [weak self] ctx in
       guard let self = self else { return }
-      let fetchRequest = HistoryEntity.fetchRequest()
-      fetchRequest.predicate = NSPredicate(format: "url == %@", url as CVarArg)
-      let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-      try ctx.execute(deleteRequest)
-      try ctx.save()
-      try self.fileManager.removeItem(atPath: path)
+      try ctx.delete(url: URL(fileURLWithPath: dbPath))
+      try self.fileManager.removeItem(atPath: fsPath)
       self.updateDirectorySize()
       self.updateLastCapture()
+      self.updateAvailableSelections()
     }
   }
 
   func deleteAllMediaChunks() {
     withBackgroundCtx { [weak self] ctx in
       guard let self = self else { return }
-      let fetched = try ctx.fetch(HistoryEntity.fetchRequest { _ in })
-      let deleteRequest = NSBatchDeleteRequest(fetchRequest: HistoryEntity.fetchRequest())
-      try ctx.execute(deleteRequest)
-      try ctx.save()
+      let deletedEnts = try ctx.deleteAll()
       self.lastCaptureCancellable = nil
+      self.availableSelectionsCancellable = nil
       self.lastCaptureSubject.value = nil
-      for url in fetched.map(\.url) {
+      self.availableSelectionsSubject.value = [:]
+      for url in deletedEnts.map(\.url) {
         do {
           let path = self.fileManager.documentsDirectory.path + url.path
           try self.fileManager.removeItem(atPath: path)
@@ -156,6 +142,7 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
         day: day
       )
       self.mediaChunkSubject.send(mediaChunk)
+      self.updateAvailableSelections()
       self.updateAssetLimit()
     }
   }
@@ -188,19 +175,8 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
     }
     assetLimitCancellable = coreDataController.backgroundContext
       .tryMap { [weak self] ctx in
-        guard let self = self else { return }
-        let fetchRequest = HistoryEntity.fetchRequest { request in
-          request.sortDescriptors = [
-            NSSortDescriptor(key: #keyPath(HistoryEntity.day), ascending: true),
-            NSSortDescriptor(key: #keyPath(HistoryEntity.startedAt), ascending: true),
-          ]
-          request.fetchLimit = 2
-        }
-        let ents = try ctx.fetch(fetchRequest)
-        guard ents.count == 2 else { return }
-        let path = self.fileManager.documentsDirectory.path + ents[0].url.path
-        ctx.delete(ents[0])
-        try ctx.save()
+        guard let self = self, let deletedEnt = try ctx.deleteLatest() else { return }
+        let path = self.fileManager.documentsDirectory.path + deletedEnt.url.path
         try self.fileManager.removeItem(atPath: path)
         self.updateDirectorySize()
         self.updateAssetLimit()
@@ -210,6 +186,27 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
         return Empty()
       }
       .sink {}
+  }
+
+  private func availableSelections() -> Future<[CKDeviceID: Set<Date>], Never> {
+    Future { [weak self] promise in
+      guard let self = self else { return promise(.success([:])) }
+      self.withBackgroundCtx { ctx in
+        let deviceIds = try ctx.fetchDistinctDeviceIds()
+        var result = [CKDeviceID: Set<Date>]()
+        for deviceId in deviceIds {
+          guard let dates = try ctx.fetchDates(deviceId: deviceId) else { continue }
+          result[deviceId] = dates
+        }
+        promise(.success(result))
+      }
+    }
+  }
+
+  private func updateAvailableSelections() {
+    availableSelectionsCancellable = availableSelections().sink { [weak self] selections in
+      self?.availableSelectionsSubject.send(selections)
+    }
   }
 
   private func updateLastCapture() {
@@ -236,7 +233,9 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
       .store(in: &cancellables)
   }
 
+  private let availableSelectionsSubject = CurrentValueSubject<[CKDeviceID: Set<Date>], Never>([:])
   private var assetLimitCancellable: AnyCancellable?
+  private var availableSelectionsCancellable: AnyCancellable?
   private let assetLimitSetting: AnySetting<AssetLimitSetting>
   private let calendar: Calendar
   private let coreDataController: CoreDataController
@@ -247,15 +246,4 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
   private let errorSubject = PassthroughSubject<Error, Never>()
   private var cancellables = Set<AnyCancellable>()
   private var lastCaptureCancellable: AnyCancellable?
-}
-
-private extension NSManagedObjectContext {
-  func fetchDistinctDeviceIds() throws -> Set<CKDeviceID> {
-    let fetchRequest = HistoryEntity.fetchRequest()
-    fetchRequest.resultType = .dictionaryResultType
-    fetchRequest.propertiesToFetch = ["deviceId"]
-    fetchRequest.returnsDistinctResults = true
-    guard let ents = try fetch(fetchRequest) as? [[String: String]] else { return Set() }
-    return Set(ents.compactMap { $0["deviceId"] }.map(CKDeviceID.init(value:)))
-  }
 }

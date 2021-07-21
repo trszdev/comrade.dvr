@@ -16,7 +16,6 @@ struct TableCellView: View {
       sfSymbol.flatMap {
         Image(sfSymbol: $0).frame(width: 40)
           .frame(maxHeight: .infinity)
-          .padding(.leading, geometry.safeAreaInsets.leading)
           .foregroundColor(textColor)
           .touchdownOverlay(isHovered: $isHovered)
       }
@@ -31,6 +30,7 @@ struct TableCellView: View {
       .border(width: 0.5, edges: separator, color: theme.textColor)
       .foregroundColor(textColor)
     }
+    .padding(.leading, geometry.safeAreaInsets.leading)
     .background(backgroundColor.ignoresSafeArea().touchdownOverlay(isHovered: $isHovered))
     .frame(height: 40)
     .allowsHitTesting(!isDisabled)

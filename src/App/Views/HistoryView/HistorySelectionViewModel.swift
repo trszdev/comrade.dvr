@@ -1,7 +1,7 @@
 import SwiftUI
 import CameraKit
 
-protocol HistorySelectionViewModel {
+protocol HistorySelectionViewModel: AnyObject {
   var selectedDevice: CKDeviceID? { get }
   var selectedDevicePublished: Published<CKDeviceID?> { get }
   var selectedDevicePublisher: Published<CKDeviceID?>.Publisher { get }

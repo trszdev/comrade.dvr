@@ -28,35 +28,13 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
     self.historySelectionComputer = historySelectionComputer
     self.fileManager = fileManager
     historySelectionViewModel.selectedDayPublisher
-      .flatMap { [weak self] (selectedDay: Date?) -> AnyPublisher<[MediaChunk], Never> in
-        guard let self = self, let device = historySelectionViewModel.selectedDevice, let day = selectedDay else {
-          return Empty<[MediaChunk], Never>().eraseToAnyPublisher()
-        }
-        return self.repository.mediaChunks(device: device, day: day).eraseToAnyPublisher()
-      }
-      .compactMap { [weak self] (mediaChunks: [MediaChunk]) in
-        self.flatMap { mediaChunks.map($0.cellViewModel(from:)) }
-      }
-      .receive(on: DispatchQueue.main)
-      .sink { [weak self] cells in
-        self?.cells = cells
-        self?.selectedIndex = 0
+      .sink { [weak self] selectedDay in
+        self?.scheduleUpdate(selectedDay: selectedDay)
       }
       .store(in: &repositoryCancellables)
     historySelectionViewModel.selectedDevicePublisher
-      .flatMap { [weak self] (selectedDevice: CKDeviceID?) -> AnyPublisher<[MediaChunk], Never> in
-        guard let self = self, let device = selectedDevice, let day = historySelectionViewModel.selectedDay else {
-          return Empty<[MediaChunk], Never>().eraseToAnyPublisher()
-        }
-        return self.repository.mediaChunks(device: device, day: day).eraseToAnyPublisher()
-      }
-      .compactMap { [weak self] (mediaChunks: [MediaChunk]) in
-        self.flatMap { mediaChunks.map($0.cellViewModel(from:)) }
-      }
-      .receive(on: DispatchQueue.main)
-      .sink { [weak self] cells in
-        self?.cells = cells
-        self?.selectedIndex = 0
+      .sink { [weak self] selectedDevice in
+        self?.scheduleUpdate(selectedDevice: selectedDevice)
       }
       .store(in: &repositoryCancellables)
   }
@@ -67,7 +45,7 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
 
   @Published var selectedIndex = 0 {
     didSet {
-      historySelectionViewModel.selectedPlayerUrl = cells.isEmpty ? nil : cells[selectedIndex].id
+      historySelectionViewModel?.selectedPlayerUrl = cells.isEmpty ? nil : cells[selectedIndex].id
     }
   }
   var selectedIndexPublished: Published<Int> { _selectedIndex }
@@ -88,6 +66,23 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
     shareViewPresenter.presentFile(url: cells[index].id)
   }
 
+  private func scheduleUpdate(selectedDay: Date? = nil, selectedDevice: CKDeviceID? = nil) {
+    guard let day = selectedDay ?? historySelectionViewModel?.selectedDay,
+      let device = selectedDevice ?? historySelectionViewModel?.selectedDevice
+    else {
+      return
+    }
+    updateCancellable = repository.mediaChunks(device: device, day: day)
+      .compactMap { [weak self] (mediaChunks: [MediaChunk]) in
+        self.flatMap { mediaChunks.map($0.cellViewModel(from:)) }
+      }
+      .receive(on: DispatchQueue.main)
+      .sink { [weak self] cells in
+        self?.cells = cells
+        self?.selectedIndex = 0
+      }
+  }
+
   private func cellViewModel(from mediaChunk: MediaChunk) -> HistoryCellViewModel {
     let started = TimeInterval.from(nanoseconds: Double(mediaChunk.startedAt.nanoseconds))
     let finished = TimeInterval.from(nanoseconds: Double(mediaChunk.finishedAt.nanoseconds))
@@ -105,11 +100,11 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
     fatalError()
   }
 
+  private var updateCancellable: AnyCancellable?
   private let fileManager: FileManager
-  private var historySelectionViewModel: HistorySelectionViewModel
+  private weak var historySelectionViewModel: HistorySelectionViewModel?
   private let repository: MediaChunkRepository
   private var repositoryCancellables = Set<AnyCancellable>()
-  private var thumbnailCancellable: AnyCancellable!
   private let shareViewPresenter: ShareViewPresenter
   private let historySelectionComputer: HistorySelectionComputer
 }
