@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import AVFoundation
+import CameraKit
 
 protocol HistoryTableViewModel: ObservableObject {
   var cells: [HistoryCellViewModel] { get }
@@ -26,12 +27,14 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
     self.shareViewPresenter = shareViewPresenter
     self.historySelectionComputer = historySelectionComputer
     self.fileManager = fileManager
-    self.repositoryCancellable = historySelectionViewModel.selectedDayPublisher.compactMap { $0 }
-      .zip(historySelectionViewModel.selectedDevicePublisher.compactMap { $0 })
-      .flatMap { (selectedDay, selectedDevice) in
-        repository.mediaChunks(device: selectedDevice, day: selectedDay)
+    historySelectionViewModel.selectedDayPublisher
+      .flatMap { [weak self] (selectedDay: Date?) -> AnyPublisher<[MediaChunk], Never> in
+        guard let self = self, let device = historySelectionViewModel.selectedDevice, let day = selectedDay else {
+          return Empty<[MediaChunk], Never>().eraseToAnyPublisher()
+        }
+        return self.repository.mediaChunks(device: device, day: day).eraseToAnyPublisher()
       }
-      .compactMap { [weak self] mediaChunks in
+      .compactMap { [weak self] (mediaChunks: [MediaChunk]) in
         self.flatMap { mediaChunks.map($0.cellViewModel(from:)) }
       }
       .receive(on: DispatchQueue.main)
@@ -39,6 +42,23 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
         self?.cells = cells
         self?.selectedIndex = 0
       }
+      .store(in: &repositoryCancellables)
+    historySelectionViewModel.selectedDevicePublisher
+      .flatMap { [weak self] (selectedDevice: CKDeviceID?) -> AnyPublisher<[MediaChunk], Never> in
+        guard let self = self, let device = selectedDevice, let day = historySelectionViewModel.selectedDay else {
+          return Empty<[MediaChunk], Never>().eraseToAnyPublisher()
+        }
+        return self.repository.mediaChunks(device: device, day: day).eraseToAnyPublisher()
+      }
+      .compactMap { [weak self] (mediaChunks: [MediaChunk]) in
+        self.flatMap { mediaChunks.map($0.cellViewModel(from:)) }
+      }
+      .receive(on: DispatchQueue.main)
+      .sink { [weak self] cells in
+        self?.cells = cells
+        self?.selectedIndex = 0
+      }
+      .store(in: &repositoryCancellables)
   }
 
   @Published private(set) var cells = [HistoryCellViewModel]()
@@ -88,7 +108,7 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
   private let fileManager: FileManager
   private var historySelectionViewModel: HistorySelectionViewModel
   private let repository: MediaChunkRepository
-  private var repositoryCancellable: AnyCancellable!
+  private var repositoryCancellables = Set<AnyCancellable>()
   private var thumbnailCancellable: AnyCancellable!
   private let shareViewPresenter: ShareViewPresenter
   private let historySelectionComputer: HistorySelectionComputer

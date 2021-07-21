@@ -12,7 +12,9 @@ final class HistoryViewModelImpl: HistoryViewModel {
     self.repository = repository
     self.navigationViewPresenter = navigationViewPresenter
     repository.mediaChunkPublisher
+      .receive(on: DispatchQueue.main)
       .sink { [weak self] mediaChunk in
+        print(Date())
         print(mediaChunk)
         self?.requestSelections()
       }
@@ -57,6 +59,7 @@ final class HistoryViewModelImpl: HistoryViewModel {
 
   private func requestSelections() {
     selectionCancellable = repository.availableSelections()
+      .receive(on: DispatchQueue.main)
       .sink { [weak self] selections in
         self?.availableSelections = selections
         self?.recomputeSelection()

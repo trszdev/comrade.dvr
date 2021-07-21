@@ -203,6 +203,7 @@ final class MediaChunkRepositoryImpl: MediaChunkRepository {
         try ctx.save()
         try self.fileManager.removeItem(atPath: path)
         self.updateDirectorySize()
+        self.updateAssetLimit()
       }
       .catch { [weak self] (error: Error) -> Empty<Void, Never> in
         self?.errorSubject.send(error)

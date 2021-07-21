@@ -9,6 +9,7 @@ final class HistoryViewBuilder: AKBuilder {
       viewModel: resolve(HistoryViewModelImpl.self),
       tableView: resolve(HistoryTableViewBuilder.self).makeView()
     )
+    .navigationBarHidden(true)
     .eraseToAnyView()
   }
 }
@@ -33,10 +34,7 @@ struct HistoryView<ViewModel: HistoryViewModel>: View {
         tableView
       }
       .background(theme.mainBackgroundColor.ignoresSafeArea())
-      .navigationBarHidden(true)
     }
-    .background(theme.mainBackgroundColor.ignoresSafeArea())
-    .navigationBarHidden(true)
     .eraseToAnyView()
   }
 
@@ -51,9 +49,10 @@ struct HistoryView<ViewModel: HistoryViewModel>: View {
 
   func playerView(height: CGFloat, playerUrl: URL) -> some View {
     let idealHeight = min(height / 2, 300)
-    return VideoPlayer(player: AVPlayer(url: playerUrl))
+    return AVPlayerView(url: playerUrl)
       .frame(height: idealHeight)
       .background(Color.black.edgesIgnoringSafeArea(.horizontal).frame(height: idealHeight))
+      .navigationBarHidden(true)
   }
 }
 
