@@ -10,6 +10,9 @@ protocol HistoryTableViewModel: ObservableObject {
   var selectedIndex: Int { get set }
   var selectedIndexPublished: Published<Int> { get }
   var selectedIndexPublisher: Published<Int>.Publisher { get }
+  var previews: [URL: UIImage] { get }
+  var previewsPublished: Published<[URL: UIImage]> { get }
+  var previewsPublisher: Published<[URL: UIImage]>.Publisher { get }
   func didRemove(at index: Int)
   func didShare(at index: Int)
 }
@@ -51,6 +54,10 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
   var selectedIndexPublished: Published<Int> { _selectedIndex }
   var selectedIndexPublisher: Published<Int>.Publisher { $selectedIndex }
 
+  @Published private(set) var previews = [URL: UIImage]()
+  var previewsPublished: Published<[URL: UIImage]> { _previews }
+  var previewsPublisher: Published<[URL: UIImage]>.Publisher { $previews }
+
   func didRemove(at index: Int) {
     let newSelectedIndex = historySelectionComputer.computeSelection(
       cells: cells,
@@ -78,8 +85,26 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
       }
       .receive(on: DispatchQueue.main)
       .sink { [weak self] cells in
-        self?.cells = cells
-        self?.selectedIndex = 0
+        guard let self = self else { return }
+        self.previews = [:]
+        self.cells = cells
+        self.selectedIndex = 0
+        self.previewCancellable = cells.publisher
+          .subscribe(on: DispatchQueue.global(qos: .userInitiated))
+          .filter { $0.preview == .cameraPreview }
+          .map(\.id)
+          .flatMap { [weak self] (url: URL) -> AnyPublisher<(URL, UIImage)?, Never> in
+            guard let self = self else {
+              return Empty().eraseToAnyPublisher()
+            }
+            return self.loadPreviewImage(for: url).eraseToAnyPublisher()
+          }
+          .compactMap { (preview: (URL, UIImage)?) -> (URL, UIImage)? in preview }
+          .collect()
+          .receive(on: DispatchQueue.main)
+          .sink { previews in
+            self.previews = Dictionary(previews) { $1 }
+          }
       }
   }
 
@@ -96,10 +121,24 @@ final class HistoryTableViewModelImpl: HistoryTableViewModel {
     )
   }
 
-  private func loadPreviewImage(for asset: URL) -> Future<(UIImage, URL)?, Never> {
-    fatalError()
+  private func loadPreviewImage(for url: URL) -> Future<(URL, UIImage)?, Never> {
+    Future { promise in
+      let asset = AVAsset(url: url)
+      let imageGenerator = AVAssetImageGenerator(asset: asset)
+      let time = CMTime(seconds: asset.duration.seconds / 2, preferredTimescale: asset.duration.timescale)
+      let times = [NSValue(time: time)]
+      imageGenerator.generateCGImagesAsynchronously(forTimes: times, completionHandler: { _, image, _, _, _ in
+        if let image = image {
+          let result = (url, UIImage(cgImage: image))
+          promise(.success(result))
+        } else {
+          promise(.success(nil))
+        }
+      })
+    }
   }
 
+  private var previewCancellable: AnyCancellable?
   private var updateCancellable: AnyCancellable?
   private let fileManager: FileManager
   private weak var historySelectionViewModel: HistorySelectionViewModel?

@@ -57,7 +57,6 @@ final class HistoryViewModelImpl: HistoryViewModel {
   }
 
   private func recomputeSelection() {
-    dump(availableSelections)
     guard availableSelections != [:] else {
       select(device: nil, day: nil)
       return

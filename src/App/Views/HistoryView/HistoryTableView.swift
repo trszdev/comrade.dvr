@@ -54,7 +54,9 @@ struct HistoryTableView<ViewModel: HistoryTableViewModel>: UIViewRepresentable {
     let needsReload = customTableView.theme.textColor != theme.textColor ||
       customTableView.locale.currentLocale != appLocale.currentLocale ||
       viewModel.cells != customTableView.cells ||
-      customTableView.selectedIndexPath.row != viewModel.selectedIndex
+      customTableView.selectedIndexPath.row != viewModel.selectedIndex ||
+      customTableView.previews != viewModel.previews
+    customTableView.previews = viewModel.previews
     customTableView.theme = theme
     customTableView.locale = appLocale
     customTableView.backgroundColor = UIColor(theme.mainBackgroundColor)
@@ -75,6 +77,7 @@ private final class CustomTableView: UITableView {
   var didSelect: (Int) -> Void = { _ in }
   var didShare: (Int) -> Void = { _ in }
   var selectedIndexPath = IndexPath(row: 0, section: 0)
+  var previews =  [URL: UIImage]()
 
   override func reloadData() {
     super.reloadData()
@@ -105,9 +108,11 @@ extension CustomTableView: UITableViewDataSource {
 
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
     let cell = tableView.dequeue(HistoryCellView.self, for: indexPath)
+    let cellViewModel = cells[indexPath.row]
     cell.locale = locale
-    cell.viewModel = cells[indexPath.row]
+    cell.viewModel = cellViewModel
     cell.theme = theme
+    cell.setPreview(image: previews[cellViewModel.id])
     return cell
   }
 
@@ -222,6 +227,10 @@ final class PreviewHistoryTableViewModel: AKBuilder, HistoryTableViewModel {
   @Published var selectedIndex = 0
   var selectedIndexPublished: Published<Int> { _selectedIndex }
   var selectedIndexPublisher: Published<Int>.Publisher { $selectedIndex }
+
+  @Published var previews = [URL: UIImage]()
+  var previewsPublished: Published<[URL: UIImage]> { _previews }
+  var previewsPublisher: Published<[URL: UIImage]>.Publisher { $previews }
 }
 
 #if DEBUG

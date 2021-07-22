@@ -65,6 +65,7 @@ final class HistoryCellView: UITableViewCell {
   var viewModel: HistoryCellViewModel = Default.historyCellViewModel {
     didSet {
       updateLabels()
+      customImageView.contentMode = .scaleAspectFit
       switch viewModel.preview {
       case .notAvailable:
         customImageView.image = UIImage(sfSymbol: .cross)
@@ -72,10 +73,14 @@ final class HistoryCellView: UITableViewCell {
         customImageView.image = UIImage(sfSymbol: .camera)
       case .microphonePreview:
         customImageView.image = UIImage(sfSymbol: .mic)
-      case let .preview(image):
-        customImageView.image = image
       }
     }
+  }
+
+  func setPreview(image: UIImage?) {
+    guard let image = image else { return }
+    customImageView.image = image
+    customImageView.contentMode = .scaleAspectFill
   }
 
   func setNormal() {
@@ -137,7 +142,7 @@ final class HistoryCellView: UITableViewCell {
     descriptionLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
     descriptionLabel.numberOfLines = 0
     descriptionLabel.lineBreakMode = .byWordWrapping
-    customImageView.contentMode = .scaleAspectFit
+    customImageView.clipsToBounds = true
   }
 
   private func addSubviews() {

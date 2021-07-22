@@ -5,7 +5,6 @@ struct HistoryCellViewModel: Equatable {
     case cameraPreview
     case microphonePreview
     case notAvailable
-    case preview(image: UIImage)
   }
 
   var id: URL
