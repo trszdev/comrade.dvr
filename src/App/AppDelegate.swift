@@ -1,4 +1,5 @@
 import UIKit
+import AutocontainerKit
 
 @UIApplicationMain
 final class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -10,4 +11,6 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
   ) -> Bool {
     return true
   }
+
+  lazy var locator: AKLocator = AppAssembly(isPreview: false).locator
 }

@@ -10,15 +10,15 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     willConnectTo session: UISceneSession,
     options connectionOptions: UIScene.ConnectionOptions
   ) {
-    guard let windowScene = scene as? UIWindowScene else { return }
+    guard let windowScene = scene as? UIWindowScene,
+      let appDelegate = UIApplication.shared.delegate as? AppDelegate
+    else {
+      return
+    }
     let window = UIWindow(windowScene: windowScene)
-    let rootViewController = locator.resolve(RootHostingControllerBuilder.self).makeViewController()
+    let rootViewController = appDelegate.locator.resolve(RootHostingControllerBuilder.self).makeViewController()
     window.rootViewController = rootViewController
     self.window = window
     window.makeKeyAndVisible()
   }
-
-  private lazy var locator: AKLocator = {
-    AppAssembly(isPreview: false).locator
-  }()
 }
