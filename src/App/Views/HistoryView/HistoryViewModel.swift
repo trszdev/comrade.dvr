@@ -16,7 +16,7 @@ final class HistoryViewModelImpl: HistoryViewModel {
       .sink { [weak self] selections in
         guard let self = self else { return }
         self.availableSelections = selections
-        self.recomputeSelection()
+        self.recomputeSelection(force: true)
       }
   }
 
@@ -56,40 +56,41 @@ final class HistoryViewModelImpl: HistoryViewModel {
     }
   }
 
-  private func recomputeSelection() {
+  private func recomputeSelection(force: Bool = false) {
     guard availableSelections != [:] else {
-      select(device: nil, day: nil)
+      select(device: nil, day: nil, force: force)
       return
     }
     guard let selectedDay = selectedDay,
       let selectedDevice = selectedDevice,
-      availableSelections[selectedDevice]?.contains(selectedDay) == true
+      availableSelections[selectedDevice]?.contains(selectedDay) == true,
+      !force
     else {
-      selectLatestKnownCameraThenOthers()
+      selectLatestKnownCameraThenOthers(force: force)
       return
     }
   }
 
-  private func select(device: CKDeviceID?, day: Date?) {
-    if device != selectedDevice {
+  private func select(device: CKDeviceID?, day: Date?, force: Bool = false) {
+    if device != selectedDevice || force {
       selectedDevice = device
     }
-    if day != selectedDay {
+    if day != selectedDay || force {
       selectedDay = day
     }
   }
 
-  private func selectLatestKnownCameraThenOthers() {
+  private func selectLatestKnownCameraThenOthers(force: Bool = false) {
     if let backCameraDates = availableSelections[CKAVCamera.back.value] {
-      select(device: CKAVCamera.back.value, day: backCameraDates.max())
+      select(device: CKAVCamera.back.value, day: backCameraDates.max(), force: force)
       return
     }
     if let frontCameraDates = availableSelections[CKAVCamera.front.value] {
-      select(device: CKAVCamera.front.value, day: frontCameraDates.max())
+      select(device: CKAVCamera.front.value, day: frontCameraDates.max(), force: force)
       return
     }
     guard let (device, days) = availableSelections.first else { return }
-    select(device: device, day: days.max())
+    select(device: device, day: days.max(), force: force)
   }
 
   private var availableSelections = [CKDeviceID: Set<Date>]()

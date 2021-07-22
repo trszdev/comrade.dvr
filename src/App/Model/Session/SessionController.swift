@@ -13,6 +13,33 @@ protocol SessionController {
 }
 
 final class SessionControllerImpl: AKBuilder, SessionController {
+  override init(locator: AKLocator) {
+    super.init(locator: locator)
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(willResignActiveNotification),
+      name: UIApplication.willResignActiveNotification,
+      object: nil
+    )
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(didBecomeActive),
+      name: UIApplication.didBecomeActiveNotification,
+      object: nil
+    )
+  }
+
+  @objc private func willResignActiveNotification() {
+    guard session != nil else { return }
+    wasStoppedByApp = true
+    stopInternal()
+  }
+
+  @objc private func didBecomeActive() {
+    guard wasStoppedByApp else { return }
+    tryStart()
+  }
+
   func tryStart() {
     sessionQueue.sync {
       guard status == .notRunning else { return }
@@ -37,6 +64,11 @@ final class SessionControllerImpl: AKBuilder, SessionController {
   }
 
   func stop() {
+    wasStoppedByApp = false
+    stopInternal()
+  }
+
+  private func stopInternal() {
     sessionQueue.sync {
       cancellables = Set()
       let deviceCount = (session?.cameras.count ?? 0) + (session?.microphone == nil ? 0 : 1)
@@ -76,7 +108,8 @@ final class SessionControllerImpl: AKBuilder, SessionController {
       self.session = session
       outputCancellable = session.outputPublisher
         .map { [weak self] mediaChunk in
-          self?.sessionOutputSaver.save(mediaChunk: mediaChunk, sessionStartupInfo: session.startupInfo)
+          guard let self = self, let startupInfo = self.session?.startupInfo else { return }
+          self.sessionOutputSaver.save(mediaChunk: mediaChunk, sessionStartupInfo: startupInfo)
         }
         .sink(receiveCompletion: { _ in }, receiveValue: { })
       sessionViewController = viewController
@@ -84,6 +117,7 @@ final class SessionControllerImpl: AKBuilder, SessionController {
     }
   }
 
+  private var wasStoppedByApp = false
   private let statusSubject = CurrentValueSubject<SessionStatus, Never>(.notRunning)
   private let errorSubject = PassthroughSubject<Error, Never>()
   private lazy var assetLengthSetting = resolve(AnySetting<AssetLengthSetting>.self)!
@@ -93,5 +127,5 @@ final class SessionControllerImpl: AKBuilder, SessionController {
   private var cancellables = Set<AnyCancellable>()
   private let sessionQueue = DispatchQueue()
   private lazy var sessionOutputSaver = resolve(SessionOutputSaver.self)!
-  private var outputCancellable: AnyCancellable!
+  private var outputCancellable: AnyCancellable?
 }
