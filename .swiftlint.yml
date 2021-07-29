@@ -53,3 +53,9 @@ custom_rules:
     regex: ': class'
     message: "Use Anyobject instead"
 
+excluded:
+  - Carthage
+  - Pods
+  - .build
+  - src/CameraKit/.build
+

@@ -1,0 +1,5 @@
+# https://docs.fastlane.tools/advanced/#appfile
+
+app_identifier "com.trszdev.ComradeDVR"
+apple_id "r4khimyanov@yandex.ru"
+

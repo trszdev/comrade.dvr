@@ -89,6 +89,10 @@ DerivedData/
 
 # End of https://www.toptal.com/developers/gitignore/api/xcode,macos,vim
 
-ComradeDVR.xcodeproj/
 .swiftpm/
 .build/
+*.xcodeproj/
+
+fastlane/test_output/
+fastlane/keys/
+report.xml

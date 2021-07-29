@@ -1,0 +1,12 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Run all tests"
+  lane :run_all_tests do
+    run_tests(scheme: "ComradeDVR")
+    spm(package_path: "./src/AutocontainerKit", command: "test")
+    # generate project due to UIKit usage
+    spm(package_path: "./src/CameraKit", command: "generate-xcodeproj")
+    run_tests(project: "./src/CameraKit/CameraKit.xcodeproj")
+  end
+end
