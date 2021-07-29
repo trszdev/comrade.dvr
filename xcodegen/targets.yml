@@ -9,8 +9,9 @@ targets:
       base:
         ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: $(inherited)
         CODE_SIGN_IDENTITY: iPhone Developer
-        CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: H6UDD5Y5X5
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: BGJK494M2C
+        PROVISIONING_PROFILE_SPECIFIER: "ComradeDVR Developer profile"
         DEFINES_MODULE: YES
         INFOPLIST_FILE: src/App/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.trszdev.ComradeDVR
@@ -42,9 +43,6 @@ targets:
     settings:
       base:
         ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: $(inherited)
-        CODE_SIGN_IDENTITY: iPhone Developer
-        CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: H6UDD5Y5X5
         DEFINES_MODULE: YES
         PRODUCT_BUNDLE_IDENTIFIER: com.trszdev.ComradeDVRTests
         TARGETED_DEVICE_FAMILY: 1
@@ -72,8 +70,9 @@ targets:
       base:
         ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: $(inherited)
         CODE_SIGN_IDENTITY: iPhone Developer
-        CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: H6UDD5Y5X5
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: BGJK494M2C
+        PROVISIONING_PROFILE_SPECIFIER: "TestCameraKitApp Developer profile"
         DEFINES_MODULE: YES
         INFOPLIST_FILE: src/TestCameraKitApp/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.trszdev.TestCameraKitApp

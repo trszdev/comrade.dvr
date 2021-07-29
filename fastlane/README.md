@@ -21,6 +21,11 @@ or alternatively using `brew install fastlane`
 fastlane ios run_all_tests
 ```
 Run all tests
+### ios test_flight
+```
+fastlane ios test_flight
+```
+Testflight build
 
 ----
 

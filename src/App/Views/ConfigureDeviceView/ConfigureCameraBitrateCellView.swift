@@ -149,6 +149,8 @@ private let resolutionSuggestions: [Int: [String: Double]] = [
   ],
 ]
 
+#if DEBUG
+
 struct ConfigureCameraBitrateCellViewPreviews: PreviewProvider {
   static var previews: some View {
     let view = locator.resolve(ConfigureCameraBitrateCellViewBuilder .self).makeView(
@@ -167,3 +169,5 @@ struct ConfigureCameraBitrateCellViewPreviews: PreviewProvider {
     .background(Color.gray)
   }
 }
+
+#endif

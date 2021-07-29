@@ -96,3 +96,7 @@ DerivedData/
 fastlane/test_output/
 fastlane/keys/
 report.xml
+
+*.ipa
+*.dSYM.zip
+
