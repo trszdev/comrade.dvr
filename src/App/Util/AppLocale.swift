@@ -363,7 +363,7 @@ struct LocaleImpl: AppLocale {
   }
   var okString: String { localizedString("OK") }
   var cancelString: String { localizedString("CANCEL") }
-  var appContactEmail: String { "help@comradedvr.app" }
+  var appContactEmail: String { "comrade.dvr@gmail.com" }
   var warningString: String { localizedString("WARNING") }
   var clearAllAssetsAskString: String { localizedString("CLEAR_ALL_ASSETS_ASK") }
   var clearAllAssetsConfirmString: String { localizedString("CLEAR_ALL_ASSETS_CONFIRM") }
