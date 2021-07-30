@@ -17,10 +17,6 @@ final class PreviewSessionController: SessionController {
 
   func tryStart() {
     statusSubject.value = .isRunning
-    previewSessionViewModel.previews = [
-      Image("PreviewBackCamera").resizable().aspectRatio(contentMode: .fill).eraseToAnyView(),
-      Image("PreviewFrontCamera").resizable().aspectRatio(contentMode: .fill).eraseToAnyView(),
-    ]
     previewSessionViewModel.onStop = { [weak self] in
       self?.stop()
     }

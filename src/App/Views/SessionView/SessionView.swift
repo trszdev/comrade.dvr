@@ -205,6 +205,10 @@ struct SessionView<ViewModel: SessionViewModel>: View {
 struct SessionViewPreviews: PreviewProvider {
   static var previews: some View {
     let viewModel = locator.resolve(SessionViewModelBuilder.self).makeViewModel()
+    locator.resolve(SessionViewBuilder.self).makeView(
+      viewModel: locator.resolve(PreviewSessionViewModel.self),
+      orientation: .portrait
+    )
     locator.resolve(SessionViewBuilder.self).makeView(viewModel: viewModel, orientation: .portrait)
     locator.resolve(SessionViewBuilder.self).makeView(viewModel: viewModel, orientation: .landscapeRight)
     locator.resolve(SessionViewBuilder.self).makeView(viewModel: viewModel, orientation: .landscapeLeft)

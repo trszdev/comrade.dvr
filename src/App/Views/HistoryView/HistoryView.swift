@@ -3,7 +3,7 @@ import CameraKit
 import AutocontainerKit
 import AVKit
 
-final class HistoryViewBuilder: AKBuilder {
+final class HistoryViewBuilderImpl: AKBuilder, HistoryViewBuilder {
   func makeView() -> AnyView {
     HistoryView(
       viewModel: resolve(HistoryViewModelImpl.self),
@@ -12,6 +12,21 @@ final class HistoryViewBuilder: AKBuilder {
     .navigationBarHidden(true)
     .eraseToAnyView()
   }
+}
+
+final class PreviewHistoryViewBuilder: AKBuilder, HistoryViewBuilder {
+  func makeView() -> AnyView {
+    HistoryView(
+      viewModel: resolve(PreviewHistoryViewModel.self),
+      tableView: resolve(HistoryTableViewBuilder.self).makeView()
+    )
+    .navigationBarHidden(true)
+    .eraseToAnyView()
+  }
+}
+
+protocol HistoryViewBuilder {
+  func makeView() -> AnyView
 }
 
 struct HistoryView<ViewModel: HistoryViewModel>: View {

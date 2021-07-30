@@ -92,6 +92,8 @@ schemes:
         ScreenshotTool: [test]
     run:
       config: Debug
+      commandLineArguments:
+        "IS_RUNNING_PREVIEW": true
       targets:
         ComradeDVR: all
     test:

@@ -1,4 +1,5 @@
 import SwiftUI
+import Accessibility
 
 final class HistoryCellView: UITableViewCell {
   override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -143,6 +144,7 @@ final class HistoryCellView: UITableViewCell {
     descriptionLabel.numberOfLines = 0
     descriptionLabel.lineBreakMode = .byWordWrapping
     customImageView.clipsToBounds = true
+    accessibilityLabel = Accessibility.historyCell.rawValue
   }
 
   private func addSubviews() {

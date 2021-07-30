@@ -184,55 +184,6 @@ extension CustomTableView: UITableViewDataSource {
   }
 }
 
-final class PreviewHistoryTableViewModel: AKBuilder, HistoryTableViewModel {
-  func didRemove(at index: Int) {
-    let historySelectionComputer = resolve(HistorySelectionComputer.self)!
-    selectedIndex = historySelectionComputer.computeSelection(
-      cells: cells,
-      selectedIndex: selectedIndex,
-      indexToRemove: index
-    )
-    cells.remove(at: index)
-  }
-
-  func didShare(at index: Int) {
-  }
-
-  @Published var cells = [
-    HistoryCellViewModel(
-      id: URL(string: "/dev/null")!,
-      preview: .cameraPreview,
-      date: Date(),
-      duration: .from(minutes: 2),
-      fileSize: .from(megabytes: 2)
-    ),
-    HistoryCellViewModel(
-      id: URL(string: "/dev/null/2")!,
-      preview: .cameraPreview,
-      date: Date(),
-      duration: .from(minutes: 2),
-      fileSize: .from(megabytes: 2)
-    ),
-    HistoryCellViewModel(
-      id: URL(string: "/dev/null/3")!,
-      preview: .cameraPreview,
-      date: Date(),
-      duration: .from(minutes: 2),
-      fileSize: .from(megabytes: 2)
-    ),
-  ]
-  var cellsPublished: Published<[HistoryCellViewModel]> { _cells }
-  var cellsPublisher: Published<[HistoryCellViewModel]>.Publisher { $cells }
-
-  @Published var selectedIndex = 0
-  var selectedIndexPublished: Published<Int> { _selectedIndex }
-  var selectedIndexPublisher: Published<Int>.Publisher { $selectedIndex }
-
-  @Published var previews = [URL: UIImage]()
-  var previewsPublished: Published<[URL: UIImage]> { _previews }
-  var previewsPublisher: Published<[URL: UIImage]>.Publisher { $previews }
-}
-
 #if DEBUG
 
 struct HistoryTableViewPreview: PreviewProvider {

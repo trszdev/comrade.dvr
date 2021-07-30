@@ -4,11 +4,11 @@ import Foundation
 
 struct PreviewMediaChunkRepository: MediaChunkRepository {
   var lastCapturePublisher: AnyPublisher<Date?, Never> {
-    CurrentValueSubject<Date?, Never>(nil).eraseToAnyPublisher()
+    CurrentValueSubject<Date?, Never>(PreviewHistoryViewModel.captureDate).eraseToAnyPublisher()
   }
 
   var totalFileSizePublisher: AnyPublisher<FileSize?, Never> {
-    CurrentValueSubject<FileSize?, Never>(nil).eraseToAnyPublisher()
+    CurrentValueSubject<FileSize?, Never>(FileSize.from(megabytes: 112 * 5)).eraseToAnyPublisher()
   }
 
   var mediaChunkPublisher: AnyPublisher<MediaChunk, Never> {

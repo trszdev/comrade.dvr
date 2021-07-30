@@ -3,7 +3,14 @@ import CameraKit
 import Combine
 
 final class PreviewSessionViewModel: SessionViewModel {
-  var previews = [AnyView]()
+  var previews: [AnyView] = {
+    let backCamera = UIImage(contentsOfFile: Bundle.main.path(forResource: "PreviewBackCamera", ofType: "png")!)!
+    let frontCamera = UIImage(contentsOfFile: Bundle.main.path(forResource: "PreviewFrontCamera", ofType: "png")!)!
+    return [
+      Rectangle().overlay(Image(uiImage: backCamera).resizable()).eraseToAnyView(),
+      Image(uiImage: frontCamera).resizable().aspectRatio(contentMode: .fill).eraseToAnyView(),
+    ]
+  }()
 
   func stopSession() {
     onStop()

@@ -4,4 +4,5 @@ public enum Accessibility: String {
   case tabBarHistoryButton
   case tabBarSettingsButton
   case settingsRateUsButton
+  case historyCell
 }
