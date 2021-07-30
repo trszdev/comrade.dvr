@@ -1,5 +1,6 @@
 import UIKit
 import AutocontainerKit
+import Accessibility
 
 @UIApplicationMain
 final class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -12,5 +13,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     return true
   }
 
-  lazy var locator: AKLocator = AppAssembly(isPreview: false).locator
+  lazy var locator: AKLocator = AppAssembly(isPreview: isPreview).locator
+
+  private var isPreview: Bool {
+    CommandLine.arguments.contains(LaunchArgs.isRunningPreview.rawValue)
+  }
 }

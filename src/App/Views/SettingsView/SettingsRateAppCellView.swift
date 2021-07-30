@@ -26,6 +26,7 @@ struct SettingsRateAppCellView: View {
       }
       SKStoreReviewController.requestReview(in: scene)
     }
+    .accessibility(.settingsRateUsButton)
   }
 
   let application: UIApplication

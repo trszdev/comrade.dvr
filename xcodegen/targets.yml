@@ -34,27 +34,23 @@ targets:
           brew bundle exec swiftlint -- autocorrect
           brew bundle exec swiftlint -- --no-cache --strict
         name: SwiftLint
+  ScreenshotTool:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: 14.0
+    sources:
+      - path: ../src/ScreenshotTool
+    postCompileScripts:
+      - script: |
+          brew bundle exec swiftlint --autocorrect
+          brew bundle exec swiftlint -- --no-cache --strict
+        name: SwiftLint
   ComradeDVRTests:
     type: bundle.unit-test
     platform: iOS
     deploymentTarget: 14.0
     sources:
       - path: ../src/AppTests
-    settings:
-      base:
-        ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: $(inherited)
-        DEFINES_MODULE: YES
-        PRODUCT_BUNDLE_IDENTIFIER: com.trszdev.ComradeDVRTests
-        TARGETED_DEVICE_FAMILY: 1
-        INFOPLIST_FILE: src/AppTests/Info.plist
-        XCODEGEN_STATE: YES
-      configs:
-        Production:
-          ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        Staging:
-          ASSETCATALOG_COMPILER_APPICON_NAME: AppIconInverted
-        Debug:
-          ASSETCATALOG_COMPILER_APPICON_NAME: AppIconInverted
     postCompileScripts:
       - script: |
           brew bundle exec swiftlint -- autocorrect
@@ -87,4 +83,24 @@ targets:
           brew bundle exec swiftlint -- autocorrect
           brew bundle exec swiftlint -- --no-cache --strict
         name: SwiftLint
+
+schemes:
+  ScreenshotTool:
+    build:
+      targets:
+        ComradeDVR: [run, test]
+        ScreenshotTool: [test]
+    run:
+      config: Debug
+      targets:
+        ComradeDVR: all
+    test:
+      targets:
+        - ScreenshotTool
+    profile:
+      config: Production
+    analyze:
+      config: Debug
+    archive:
+      config: Production
 

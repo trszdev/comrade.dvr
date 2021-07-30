@@ -6,12 +6,11 @@ struct DevicesAssembly: AKAssembly {
   let isPreview: Bool
 
   func assemble(container: AKContainer) {
+    container.singleton.autoregister(DevicesStore.self, construct: UserDefaultsDevicesStore.init)
     if isPreview {
-      let tempDevicesStore = TempDevicesStore()
-      container.singleton.autoregister(DevicesStore.self, value: tempDevicesStore)
+      container.singleton.autoregister(DevicesModel.self, construct: PreviewDevicesModel.init)
     } else {
-      container.singleton.autoregister(DevicesStore.self, construct: UserDefaultsDevicesStore.init)
+      container.singleton.autoregister(DevicesModel.self, construct: DevicesModelImpl.init)
     }
-    container.singleton.autoregister(DevicesModel.self, construct: DevicesModelImpl.init)
   }
 }

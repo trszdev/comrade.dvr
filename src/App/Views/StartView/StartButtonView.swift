@@ -27,6 +27,7 @@ struct StartButtonView: View {
       .defaultAnimation
       .allowsHitTesting(!isBusy && !isDisabled)
     }
+    .accessibility(.startButton)
   }
 
   @State private var isHovered = false

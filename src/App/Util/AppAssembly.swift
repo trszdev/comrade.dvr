@@ -32,7 +32,6 @@ struct AppAssembly: AKAssembly {
     ConfigureDeviceViewAssembly(),
     StartViewAssembly(),
     SessionViewAssembly(),
-    SessionAssembly(),
     CKAVAssembly(),
   ]
 
@@ -41,6 +40,7 @@ struct AppAssembly: AKAssembly {
     HistoryViewAssembly(isPreview: true),
     DevicesAssembly(isPreview: true),
     CoreDataAssembly(isPreview: true),
+    SessionAssembly(isPreview: true),
   ]
 
   private let releaseAssemblies: [AKAssembly]  = [
@@ -48,5 +48,6 @@ struct AppAssembly: AKAssembly {
     HistoryViewAssembly(isPreview: false),
     DevicesAssembly(isPreview: false),
     CoreDataAssembly(isPreview: false),
+    SessionAssembly(isPreview: false),
   ]
 }

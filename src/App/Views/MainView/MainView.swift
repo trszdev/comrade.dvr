@@ -23,9 +23,9 @@ struct MainView: View {
             viewModel.settingsView,
           ],
           labels: [
-            (.play, { $0.playString }),
-            (.history, { $0.historyString }),
-            (.settings, { $0.settingsString }),
+            CustomTabViewLabel(sfSymbol: .play, accessibility: .tabBarPlayButton) { $0.playString },
+            CustomTabViewLabel(sfSymbol: .history, accessibility: .tabBarHistoryButton) { $0.historyString },
+            CustomTabViewLabel(sfSymbol: .settings, accessibility: .tabBarSettingsButton) { $0.settingsString },
           ]
         )
         .ignoresSafeArea()

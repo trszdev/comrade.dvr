@@ -1,12 +1,18 @@
 localPackages:
   - ./src/AutocontainerKit
   - ./src/CameraKit
+  - ./src/Accessibility
 
 targets:
   ComradeDVR:
     dependencies:
       - package: AutocontainerKit
       - package: CameraKit
+      - package: Accessibility
+  ScreenshotTool:
+    dependencies:
+      - target: ComradeDVR
+      - package: Accessibility
   ComradeDVRTests:
     dependencies:
       - target: ComradeDVR

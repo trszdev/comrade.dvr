@@ -1,8 +1,9 @@
 import SwiftUI
+import Accessibility
 
 struct CustomTabView: UIViewControllerRepresentable {
   let views: [AnyView]
-  let labels: [(SFSymbol, (AppLocale) -> String)]
+  let labels: [CustomTabViewLabel]
   @Environment(\.theme) var theme: Theme
   @Environment(\.appLocale) var appLocale: AppLocale
 
@@ -11,9 +12,10 @@ struct CustomTabView: UIViewControllerRepresentable {
     uiViewController.tabBar.tintColor = UIColor(theme.accentColor)
     uiViewController.tabBar.unselectedItemTintColor = UIColor(theme.accentColorHover)
     let vcs = uiViewController.viewControllers ?? []
-    for (tag, (hostingVc, (sfSymbol, text))) in zip(vcs, labels).enumerated() {
-      let image = UIImage(systemName: sfSymbol.rawValue)
-      let tabBarItem = UITabBarItem(title: text(appLocale), image: image, tag: tag)
+    for (tag, (hostingVc, label)) in zip(vcs, labels).enumerated() {
+      let image = UIImage(systemName: label.sfSymbol.rawValue)
+      let tabBarItem = UITabBarItem(title: label.localize(appLocale), image: image, tag: tag)
+      tabBarItem.accessibilityLabel = label.accessibility.rawValue
       hostingVc.tabBarItem = tabBarItem
     }
   }
@@ -24,6 +26,12 @@ struct CustomTabView: UIViewControllerRepresentable {
     tabVc.delegate = tabVc
     return tabVc
   }
+}
+
+struct CustomTabViewLabel {
+  let sfSymbol: SFSymbol
+  let accessibility: Accessibility
+  let localize: (AppLocale) -> String
 }
 
 private class CustomTabBarController: UITabBarController, UITabBarControllerDelegate {

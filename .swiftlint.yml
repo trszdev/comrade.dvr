@@ -58,4 +58,5 @@ excluded:
   - Pods
   - .build
   - src/CameraKit/.build
+  - src/ScreenshotTool/SnapshotHelper.swift
 
