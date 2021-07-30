@@ -78,9 +78,11 @@ final class SessionControllerImpl: AKBuilder, SessionController {
         .prefix(deviceCount)
         .collect()
         .replaceError(with: [])
+        .receive(on: DispatchQueue.main)
         .sink { [weak self] _ in
           guard let self = self else { return }
           self.sessionQueue.sync {
+            self.application.isIdleTimerDisabled = false
             self.session = nil
             self.statusSubject.value = .notRunning
           }
@@ -105,6 +107,7 @@ final class SessionControllerImpl: AKBuilder, SessionController {
         }
         .store(in: &cancellables)
       statusSubject.value = .isRunning
+      application.isIdleTimerDisabled = true
       self.session = session
       outputCancellable = session.outputPublisher
         .map { [weak self] mediaChunk in
@@ -117,6 +120,7 @@ final class SessionControllerImpl: AKBuilder, SessionController {
     }
   }
 
+  private lazy var application = resolve(UIApplication.self)!
   private var wasStoppedByApp = false
   private let statusSubject = CurrentValueSubject<SessionStatus, Never>(.notRunning)
   private let errorSubject = PassthroughSubject<Error, Never>()
