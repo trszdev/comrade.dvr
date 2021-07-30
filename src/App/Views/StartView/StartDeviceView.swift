@@ -43,6 +43,12 @@ struct StartDeviceView: View {
     .touchdownOverlay(isHovered: $isHovered)
     .defaultAnimation
     .aspectRatio(1, contentMode: .fill)
+    .if(viewModel.sfSymbol == .camera) { view in
+      view.accessibility(.configureCameraButton)
+    }
+    .if(viewModel.sfSymbol == .mic) { view in
+      view.accessibility(.configureMicrophoneButton)
+    }
     .id(viewModel.id)
   }
 

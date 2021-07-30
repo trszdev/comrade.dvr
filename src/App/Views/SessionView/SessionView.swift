@@ -144,6 +144,7 @@ struct SessionView<ViewModel: SessionViewModel>: View {
         haptics.success()
         viewModel.stopSession()
       }
+      .accessibility(.stopButton)
   }
 
   private var microphoneButtonView: some View {

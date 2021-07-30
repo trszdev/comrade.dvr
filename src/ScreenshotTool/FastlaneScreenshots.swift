@@ -26,6 +26,27 @@ final class FastlaneScreenshots: XCTestCase {
     app.waitForElement(.historyCell)
     app.takeScreenshot(name: "history")
   }
+
+  func testCaptureSessionScreen() {
+    let app = App().launch()
+    app.waitForElement(.startButton).firstMatch.tap()
+    app.waitForElement(.stopButton)
+    app.takeScreenshot(name: "session")
+  }
+
+  func testCaptureConfigureCameraScreen() {
+    let app = App().launch()
+    app.waitForElement(.configureCameraButton).firstMatch.tap()
+    app.waitForElement(.configureCameraView)
+    app.takeScreenshot(name: "configure_camera")
+  }
+
+  func testCaptureConfigureMicrophoneScreen() {
+    let app = App().launch()
+    app.waitForElement(.configureMicrophoneButton).firstMatch.tap()
+    app.waitForElement(.configureMicrophoneView)
+    app.takeScreenshot(name: "configure_microphone")
+  }
 }
 
 private struct App {

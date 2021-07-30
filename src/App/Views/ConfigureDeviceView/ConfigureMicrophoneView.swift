@@ -67,6 +67,7 @@ struct ConfigureMicrophoneView<ViewModel: ConfigureMicrophoneViewModel>: View {
         .eraseToAnyView(),
       ],
     ])
+    .accessibility(.configureMicrophoneView)
   }
 
   private var isDisabled: Bool {

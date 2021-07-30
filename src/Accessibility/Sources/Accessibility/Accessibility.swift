@@ -5,4 +5,9 @@ public enum Accessibility: String {
   case tabBarSettingsButton
   case settingsRateUsButton
   case historyCell
+  case stopButton
+  case configureCameraButton
+  case configureCameraView
+  case configureMicrophoneButton
+  case configureMicrophoneView
 }

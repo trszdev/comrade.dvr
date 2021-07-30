@@ -110,6 +110,7 @@ struct ConfigureCameraView<ViewModel: ConfigureCameraViewModel>: View {
         .eraseToAnyView(),
       ],
     ])
+    .accessibility(.configureCameraView)
   }
 
   private var isDisabled: Bool {
