@@ -352,8 +352,8 @@ struct LocaleImpl: AppLocale {
   var lastCaptureString: String { localizedString("LAST_CAPTURE") }
   var updatedAtString: String { localizedString("UPDATED_AT") }
   var fullAppName: String {
-    var infoPlist = (bundle ?? .main).infoDictionary ?? [:]
-    infoPlist.merge((bundle ?? .main).localizedInfoDictionary ?? [:], uniquingKeysWith: { _, second in second })
+    var infoPlist = Bundle.main.infoDictionary ?? [:]
+    infoPlist.merge(Bundle.main.localizedInfoDictionary ?? [:], uniquingKeysWith: { _, second in second })
     guard let appVersion = infoPlist["CFBundleShortVersionString"] as? String,
       let appName = infoPlist["CFBundleDisplayName"] as? String
     else {
