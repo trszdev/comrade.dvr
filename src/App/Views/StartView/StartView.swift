@@ -12,7 +12,7 @@ struct StartView<ViewModel: StartViewModel>: View {
       VStack(spacing: 0) {
         GeometryReader { geometry in
           ScrollView {
-            devicesView(viewHeight: geometry.size.height)
+            devicesView(size: geometry.size)
           }
         }
         startHeaderView().background(theme.startHeaderBackgroundColor.ignoresSafeArea())
@@ -26,9 +26,18 @@ struct StartView<ViewModel: StartViewModel>: View {
     .navigationBarHidden(true)
   }
 
-  func devicesView(viewHeight: CGFloat) -> some View {
-    let columns = [GridItem(.adaptive(minimum: min(viewHeight, 120), maximum: 300))]
-    return LazyVGrid(columns: columns, alignment: .center) {
+  func devicesView(size: CGSize) -> some View {
+    let minDimenstion = min(size.width, size.height)
+    let minItemSize = max(minDimenstion / 2 - 20, 10)
+    let gridSize: GridItem.Size
+    if minItemSize < 120 {
+      gridSize = .adaptive(minimum: 120, maximum: 300)
+    } else if minItemSize > 300 {
+      gridSize = .adaptive(minimum: 300, maximum: 300)
+    } else {
+      gridSize = .adaptive(minimum: minItemSize, maximum: 300)
+    }
+    return LazyVGrid(columns: [GridItem(gridSize)], alignment: .center) {
       ForEach(viewModel.devices) { device in
         StartDeviceView(viewModel: device)
           .padding(7)

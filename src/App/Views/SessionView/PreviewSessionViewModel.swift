@@ -7,7 +7,14 @@ final class PreviewSessionViewModel: SessionViewModel {
     let backCamera = UIImage(contentsOfFile: Bundle.main.path(forResource: "PreviewBackCamera", ofType: "png")!)!
     let frontCamera = UIImage(contentsOfFile: Bundle.main.path(forResource: "PreviewFrontCamera", ofType: "png")!)!
     return [
-      Rectangle().overlay(Image(uiImage: backCamera).resizable()).eraseToAnyView(),
+      GeometryReader { geometry in
+        Image(uiImage: backCamera)
+          .resizable()
+          .scaledToFill()
+          .frame(width: geometry.size.width, height: geometry.size.height)
+          .clipped()
+      }
+      .eraseToAnyView(),
       Image(uiImage: frontCamera).resizable().aspectRatio(contentMode: .fill).eraseToAnyView(),
     ]
   }()

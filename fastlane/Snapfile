@@ -7,7 +7,7 @@ devices([
 
 concurrent_simulators(false)
 languages(["en-US", "ru-RU"])
-scheme("ComradeDVRUITests")
+scheme("ScreenshotTool")
 output_directory("./screenshots")
 clear_previous_screenshots(true)
 
