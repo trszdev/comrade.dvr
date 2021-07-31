@@ -4,4 +4,7 @@ brew "xcodegen"
 brew "swiftlint"
 brew "pre-commit"
 brew "fastlane"
+brew "libpng"
+brew "jpeg"
+brew "imagemagick"
 

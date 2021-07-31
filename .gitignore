@@ -99,4 +99,5 @@ report.xml
 
 *.ipa
 *.dSYM.zip
+/screenshots/
 

@@ -6,6 +6,7 @@
 brew bundle
 brew bundle exec pre-commit -- install
 brew bundle exec xcodegen
+brew bundle exec frameit setup
 ```
 
 ### Test
@@ -26,5 +27,12 @@ Generate an api key for appstore connect: https://docs.fastlane.tools/app-store-
 
 ```bash
 brew bundle exec fastlane run pilot api_key_path:<PATH_TO_API_KEY.json>
+```
+
+### Capture screenshots
+
+```bash
+brew bundle exec fastlane snapshot
+brew bundle exec fastlane run frame_screenshots white:true path:./screenshots
 ```
 
