@@ -8,9 +8,30 @@ struct CustomTabView: UIViewControllerRepresentable {
   @Environment(\.appLocale) var appLocale: AppLocale
 
   func updateUIViewController(_ uiViewController: UITabBarController, context: Context) {
-    uiViewController.tabBar.barTintColor = UIColor(theme.mainBackgroundColor)
-    uiViewController.tabBar.tintColor = UIColor(theme.accentColor)
-    uiViewController.tabBar.unselectedItemTintColor = UIColor(theme.accentColorHover)
+    if #available(iOS 15.0, *) {
+      let appearance = UITabBarAppearance()
+      appearance.configureWithOpaqueBackground()
+      appearance.backgroundColor = UIColor(theme.mainBackgroundColor)
+      let itemAppearance = UITabBarItemAppearance()
+      itemAppearance.selected.iconColor = UIColor(theme.accentColor)
+      itemAppearance.selected.titleTextAttributes = [
+        NSAttributedString.Key.foregroundColor: UIColor(theme.accentColor),
+      ]
+      itemAppearance.normal.iconColor = UIColor(theme.accentColorHover)
+      itemAppearance.normal.titleTextAttributes = [
+        NSAttributedString.Key.foregroundColor: UIColor(theme.accentColorHover),
+      ]
+      appearance.compactInlineLayoutAppearance = itemAppearance
+      appearance.inlineLayoutAppearance = itemAppearance
+      appearance.stackedLayoutAppearance = itemAppearance
+      uiViewController.tabBar.standardAppearance = appearance
+      uiViewController.tabBar.scrollEdgeAppearance = appearance
+    } else {
+      uiViewController.tabBar.barTintColor = UIColor(theme.mainBackgroundColor)
+      uiViewController.tabBar.tintColor = UIColor(theme.accentColor)
+      uiViewController.tabBar.unselectedItemTintColor = UIColor(theme.accentColorHover)
+    }
+
     let vcs = uiViewController.viewControllers ?? []
     for (tag, (hostingVc, label)) in zip(vcs, labels).enumerated() {
       let image = UIImage(systemName: label.sfSymbol.rawValue)

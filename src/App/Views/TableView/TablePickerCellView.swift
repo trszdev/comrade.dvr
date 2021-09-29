@@ -82,6 +82,7 @@ struct TablePickerCellView<Value: Hashable>: View {
           Text(rightText(appLocale, availableOption)).tag(availableOption)
         }
       }
+      .pickerStyle(.wheel)
       .frame(height: 180)
       .clipped()
     }

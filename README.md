@@ -4,7 +4,7 @@
 
 ```bash
 brew bundle
-brew bundle exec pre-commit -- install
+brew bundle exec pre-commit install
 brew bundle exec xcodegen
 brew bundle exec frameit setup
 ```
