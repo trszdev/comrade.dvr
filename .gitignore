@@ -101,3 +101,8 @@ report.xml
 *.dSYM.zip
 /screenshots/
 
+.gitsecret/keys/random_seed
+!*.secret
+
+/src/App/GoogleService-Info.plist
+
