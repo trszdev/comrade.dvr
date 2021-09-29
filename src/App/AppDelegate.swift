@@ -1,6 +1,7 @@
 import UIKit
 import AutocontainerKit
 import Accessibility
+import Firebase
 
 @UIApplicationMain
 final class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -10,6 +11,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
+    FirebaseApp.configure()
+    Analytics.logEvent("did_finish_launching", parameters: nil)
     return true
   }
 

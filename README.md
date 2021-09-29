@@ -9,6 +9,12 @@ brew bundle exec xcodegen
 brew bundle exec frameit setup
 ```
 
+### Reveal secrets
+
+```bash
+git secret reveal
+```
+
 ### Test
 
 ```bash
