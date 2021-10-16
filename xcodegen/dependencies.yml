@@ -18,6 +18,8 @@ targets:
         product: FirebaseAnalytics
       - package: Firebase
         product: FirebaseCrashlytics
+      - package: Firebase
+        product: FirebasePerformance
   ScreenshotTool:
     dependencies:
       - target: ComradeDVR

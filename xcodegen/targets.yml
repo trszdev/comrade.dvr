@@ -37,7 +37,9 @@ targets:
         name: SwiftLint
     postBuildScripts:
       - script: |
-          ${BUILD_DIR%Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run
+          if [ "${CONFIGURATION}" != "Debug" ]; then
+            ${BUILD_DIR%Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run
+          fi
         name: Upload dSYM to Firebase Crashlytics
   ScreenshotTool:
     type: bundle.ui-testing
