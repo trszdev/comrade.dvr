@@ -17,6 +17,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.trszdev.ComradeDVR
         TARGETED_DEVICE_FAMILY: 1
         XCODEGEN_STATE: YES
+        OTHER_LDFLAGS: -ObjC
       configs:
         Production:
           ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
@@ -34,6 +35,10 @@ targets:
           mint run swiftlint --fix
           mint run swiftlint --no-cache --strict
         name: SwiftLint
+    postBuildScripts:
+      - script: |
+          ${BUILD_DIR%Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run
+        name: Upload dSYM to Firebase Crashlytics
   ScreenshotTool:
     type: bundle.ui-testing
     platform: iOS

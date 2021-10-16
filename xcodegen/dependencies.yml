@@ -16,6 +16,8 @@ targets:
       - package: Accessibility
       - package: Firebase
         product: FirebaseAnalytics
+      - package: Firebase
+        product: FirebaseCrashlytics
   ScreenshotTool:
     dependencies:
       - target: ComradeDVR
