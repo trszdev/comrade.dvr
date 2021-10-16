@@ -1,11 +1,6 @@
 tap "homebrew/bundle"
 tap "homebrew/core"
-brew "xcodegen"
-brew "swiftlint"
 brew "git-secret"
 brew "pre-commit"
-brew "fastlane"
-brew "libpng"
-brew "jpeg"
-brew "imagemagick"
+brew "mint"
 

@@ -31,8 +31,8 @@ targets:
         DYLD_PRINT_STATISTICS: 1
     postCompileScripts:
       - script: |
-          brew bundle exec swiftlint -- autocorrect
-          brew bundle exec swiftlint -- --no-cache --strict
+          mint run swiftlint --fix
+          mint run swiftlint --no-cache --strict
         name: SwiftLint
   ScreenshotTool:
     type: bundle.ui-testing
@@ -42,8 +42,8 @@ targets:
       - path: ../src/ScreenshotTool
     postCompileScripts:
       - script: |
-          brew bundle exec swiftlint --autocorrect
-          brew bundle exec swiftlint -- --no-cache --strict
+          mint run swiftlint --fix
+          mint run swiftlint --no-cache --strict
         name: SwiftLint
   ComradeDVRTests:
     type: bundle.unit-test
@@ -53,8 +53,8 @@ targets:
       - path: ../src/AppTests
     postCompileScripts:
       - script: |
-          brew bundle exec swiftlint -- autocorrect
-          brew bundle exec swiftlint -- --no-cache --strict
+          mint run swiftlint --fix
+          mint run swiftlint --no-cache --strict
         name: SwiftLint
   TestCameraKitApp:
     type: application
@@ -80,8 +80,8 @@ targets:
         DYLD_PRINT_STATISTICS: 1
     postCompileScripts:
       - script: |
-          brew bundle exec swiftlint -- autocorrect
-          brew bundle exec swiftlint -- --no-cache --strict
+          mint run swiftlint --fix
+          mint run swiftlint --no-cache --strict
         name: SwiftLint
 
 schemes:

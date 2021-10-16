@@ -5,8 +5,8 @@
 ```bash
 brew bundle
 brew bundle exec pre-commit install
-brew bundle exec xcodegen
-brew bundle exec frameit setup
+mint bootstrap
+mint run xcodegen
 ```
 
 ### Reveal secrets
