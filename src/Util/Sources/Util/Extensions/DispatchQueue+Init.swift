@@ -1,6 +1,6 @@
 import Foundation
 
-extension DispatchQueue {
+public extension DispatchQueue {
   convenience init() {
     self.init(label: UUID().uuidString)
   }

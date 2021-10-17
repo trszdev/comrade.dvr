@@ -1,4 +1,5 @@
 import SwiftUI
+import Util
 
 struct HistoryCellViewModel: Equatable {
   enum Preview: Equatable {

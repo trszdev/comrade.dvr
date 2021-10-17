@@ -1,6 +1,6 @@
 import Combine
 
-extension Result {
+public extension Result {
   static var success: Result<Void, Failure> {
     .success(())
   }

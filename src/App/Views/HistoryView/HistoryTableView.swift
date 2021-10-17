@@ -1,5 +1,6 @@
 import SwiftUI
 import AutocontainerKit
+import Util
 
 protocol HistoryTableViewBuilder {
   func makeView() -> AnyView

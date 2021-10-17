@@ -1,5 +1,6 @@
 import SwiftUI
 import Accessibility
+import Util
 
 final class HistoryCellView: UITableViewCell {
   override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {

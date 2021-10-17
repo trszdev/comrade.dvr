@@ -1,6 +1,6 @@
 import Foundation
 
-extension TimeInterval {
+public extension TimeInterval {
   static func from(nanoseconds: Double) -> TimeInterval {
     TimeInterval(nanoseconds * 1e-9)
   }

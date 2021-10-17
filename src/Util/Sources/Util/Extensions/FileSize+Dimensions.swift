@@ -1,4 +1,4 @@
-extension FileSize {
+public extension FileSize {
   static func from(bytes: Int) -> FileSize {
     FileSize(bytes: bytes)
   }

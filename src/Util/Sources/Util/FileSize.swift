@@ -1,9 +1,13 @@
 import Foundation
 
-struct FileSize: CustomStringConvertible, Codable, Hashable, Comparable {
-  let bytes: Int
+public struct FileSize: CustomStringConvertible, Codable, Hashable, Comparable {
+  public let bytes: Int
 
-  var description: String {
+  public init(bytes: Int) {
+    self.bytes = bytes
+  }
+
+  public var description: String {
     let bcf = ByteCountFormatter()
     bcf.countStyle = .binary
     bcf.allowedUnits = .useAll
@@ -12,7 +16,7 @@ struct FileSize: CustomStringConvertible, Codable, Hashable, Comparable {
     return bcf.string(fromByteCount: Int64(bytes))
   }
 
-  static func < (lhs: FileSize, rhs: FileSize) -> Bool {
+  public static func < (lhs: FileSize, rhs: FileSize) -> Bool {
     lhs.bytes < rhs.bytes
   }
 }

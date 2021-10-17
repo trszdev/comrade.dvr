@@ -7,12 +7,16 @@ localPackages:
   - ./src/AutocontainerKit
   - ./src/CameraKit
   - ./src/Accessibility
+  - ./src/Util
+  - ./src/TestUtil
 
 targets:
   ComradeDVR:
     dependencies:
       - package: AutocontainerKit
       - package: CameraKit
+      - package: Util
+      - package: TestUtil
       - package: Accessibility
       - package: Firebase
         product: FirebaseAnalytics
@@ -31,4 +35,5 @@ targets:
     dependencies:
       - package: CameraKit
       - package: AutocontainerKit
+      - package: TestUtil
 

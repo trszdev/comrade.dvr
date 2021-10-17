@@ -2,6 +2,7 @@ import CameraKit
 import Combine
 import Foundation
 import CoreData
+import Util
 
 protocol MediaChunkRepository: SessionOutputSaver {
   var totalFileSizePublisher: AnyPublisher<FileSize?, Never> { get }

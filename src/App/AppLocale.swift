@@ -2,6 +2,7 @@
 // swiftlint:disable file_length
 import Foundation
 import CameraKit
+import Util
 
 protocol AppLocale {
   var currentLocale: Locale? { get }
