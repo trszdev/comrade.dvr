@@ -8,10 +8,7 @@ targets:
     settings:
       base:
         ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: $(inherited)
-        CODE_SIGN_IDENTITY: iPhone Developer
-        CODE_SIGN_STYLE: Manual
         DEVELOPMENT_TEAM: BGJK494M2C
-        PROVISIONING_PROFILE_SPECIFIER: "ComradeDVR Developer profile"
         DEFINES_MODULE: YES
         INFOPLIST_FILE: src/App/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.trszdev.ComradeDVR
@@ -26,64 +23,6 @@ targets:
         Debug:
           ASSETCATALOG_COMPILER_APPICON_NAME: AppIconInverted
     scheme:
-      testTargets:
-        - ComradeDVRTests
       environmentVariables:
         DYLD_PRINT_STATISTICS: 1
-  ScreenshotTool:
-    type: bundle.ui-testing
-    platform: iOS
-    deploymentTarget: 14.0
-    sources:
-      - path: ../src/ScreenshotTool
-  ComradeDVRTests:
-    type: bundle.unit-test
-    platform: iOS
-    deploymentTarget: 14.0
-    sources:
-      - path: ../src/AppTests
-  TestCameraKitApp:
-    type: application
-    platform: iOS
-    deploymentTarget: 14.0
-    sources:
-      - path: ../src/TestCameraKitApp
-    settings:
-      base:
-        ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: $(inherited)
-        CODE_SIGN_IDENTITY: iPhone Developer
-        CODE_SIGN_STYLE: Manual
-        DEVELOPMENT_TEAM: BGJK494M2C
-        PROVISIONING_PROFILE_SPECIFIER: "TestCameraKitApp Developer profile"
-        DEFINES_MODULE: YES
-        INFOPLIST_FILE: src/TestCameraKitApp/Info.plist
-        PRODUCT_BUNDLE_IDENTIFIER: com.trszdev.TestCameraKitApp
-        TARGETED_DEVICE_FAMILY: 1
-        XCODEGEN_STATE: YES
-        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-    scheme:
-      environmentVariables:
-        DYLD_PRINT_STATISTICS: 1
-
-schemes:
-  ScreenshotTool:
-    build:
-      targets:
-        ComradeDVR: [run, test]
-        ScreenshotTool: [test]
-    run:
-      config: Debug
-      commandLineArguments:
-        "IS_RUNNING_PREVIEW": true
-      targets:
-        ComradeDVR: all
-    test:
-      targets:
-        - ScreenshotTool
-    profile:
-      config: Production
-    analyze:
-      config: Debug
-    archive:
-      config: Production
 
