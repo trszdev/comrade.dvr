@@ -1,6 +1,5 @@
 import UIKit
 import SwiftUI
-import AutocontainerKit
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   var window: UIWindow?
@@ -11,14 +10,17 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     options connectionOptions: UIScene.ConnectionOptions
   ) {
     guard let windowScene = scene as? UIWindowScene,
-      let appDelegate = UIApplication.shared.delegate as? AppDelegate
+      let appDelegate = UIApplication.shared.delegate as? AppDelegate,
+      let appCoordinator = appDelegate.container.resolve(AppCoordinator.self)
     else {
       return
     }
     let window = UIWindow(windowScene: windowScene)
-    let rootViewController = appDelegate.locator.resolve(RootHostingControllerBuilder.self).makeViewController()
-    window.rootViewController = rootViewController
-    self.window = window
+    window.rootViewController = UIViewController()
     window.makeKeyAndVisible()
+    appCoordinator.window = window
+    Task {
+      await appCoordinator.loadAndStart()
+    }
   }
 }

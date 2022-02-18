@@ -1,0 +1,15 @@
+strings:
+  inputs: 
+    - src/Assets/Sources/Assets/Resources/en.lproj
+  outputs:
+    - templatePath: src/Assets/Sources/Assets/L10n.stencil
+      output: src/Assets/Sources/Assets/L10n.swift
+xcassets:
+  inputs:
+    - src/Assets/Sources/Assets/Resources/Assets.xcassets
+  outputs:
+    - templatePath: src/Assets/Sources/Assets/ColorAsset.stencil
+      output: src/Assets/Sources/Assets/ColorAsset.swift
+    - templatePath: src/Assets/Sources/Assets/ImageAsset.stencil
+      output: src/Assets/Sources/Assets/ImageAsset.swift
+

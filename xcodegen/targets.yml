@@ -5,6 +5,7 @@ targets:
     deploymentTarget: 14.0
     sources:
       - path: ../src/App
+        excludes: ['**/*.secret']
     settings:
       base:
         ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: $(inherited)

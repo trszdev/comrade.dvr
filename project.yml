@@ -4,3 +4,5 @@ include:
  - ./xcodegen/configs.yml
  - ./xcodegen/targets.yml
  - ./xcodegen/dependencies.yml
+ - ./xcodegen/scripts.yml
+

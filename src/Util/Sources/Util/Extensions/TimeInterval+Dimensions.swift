@@ -1,23 +1,23 @@
 import Foundation
 
 public extension TimeInterval {
-  static func from(nanoseconds: Double) -> TimeInterval {
+  static func nanoseconds(_ nanoseconds: Double) -> TimeInterval {
     TimeInterval(nanoseconds * 1e-9)
   }
 
-  static func from(seconds: Double) -> TimeInterval {
+  static func seconds(_ seconds: Double) -> TimeInterval {
     TimeInterval(seconds)
   }
 
-  static func from(minutes: Double) -> TimeInterval {
+  static func minutes(_ minutes: Double) -> TimeInterval {
     self.init(minutes * 60)
   }
 
-  static func from(hours: Double) -> TimeInterval {
+  static func hours(_ hours: Double) -> TimeInterval {
     self.init(hours * 3600)
   }
 
-  static func from(days: Double) -> TimeInterval {
+  static func days(_ days: Double) -> TimeInterval {
     self.init(days * 24 * 3600)
   }
 

@@ -2,29 +2,28 @@
 import PackageDescription
 
 let package = Package(
-  name: "CameraKit",
+  name: "Assets",
+  defaultLocalization: "en",
   platforms: [
     .iOS(.v14),
   ],
   products: [
     .library(
-      name: "CameraKit",
-      targets: ["CameraKit"]
+      name: "Assets",
+      targets: ["Assets"]
     ),
   ],
-  dependencies: [
-    // .package(path: "../AutocontainerKit"),
-  ],
+  dependencies: [],
   targets: [
     .target(
-      name: "CameraKit",
-      // dependencies: ["AutocontainerKit"],
+      name: "Assets",
       dependencies: [],
+      exclude: ["L10n.stencil", "ColorAsset.stencil", "ImageAsset.stencil"],
       resources: [.process("Resources")]
     ),
     .testTarget(
-      name: "CameraKitTests",
-      dependencies: ["CameraKit"]
+      name: "AssetsTests",
+      dependencies: ["Assets"]
     ),
   ],
   swiftLanguageVersions: [.version("5.3")]
