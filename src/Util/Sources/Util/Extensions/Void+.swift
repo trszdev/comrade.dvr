@@ -1,4 +1,0 @@
-public extension Void {
-  init() {
-  }
-}
