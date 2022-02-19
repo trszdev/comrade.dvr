@@ -1,6 +1,6 @@
 import Foundation
 
-public struct FileSize: CustomStringConvertible, Codable, Hashable, Comparable {
+public struct FileSize: CustomStringConvertible, Codable, Hashable, Comparable, Equatable {
   public let bytes: Int
 
   public init(bytes: Int) {

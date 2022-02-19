@@ -1,17 +1,20 @@
 import CommonUI
 import UIKit
 import Util
+import MainScreen
 
 @MainActor
 final class TabRouter {
   nonisolated init(
     lazyMain: Lazy<MainRouting>,
     lazyHistory: Lazy<HistoryRouting>,
-    lazySettings: Lazy<SettingsRouting>
+    lazySettings: Lazy<SettingsRouting>,
+    lazyTabBarViewController: Lazy<TabBarViewController>
   ) {
     self.lazyMain = lazyMain
     self.lazyHistory = lazyHistory
     self.lazySettings = lazySettings
+    self.lazyTabBarViewController = lazyTabBarViewController
   }
 
   var mainRouting: MainRouting? {
@@ -33,33 +36,22 @@ final class TabRouter {
   private let lazyMain: Lazy<MainRouting>
   private let lazyHistory: Lazy<HistoryRouting>
   private let lazySettings: Lazy<SettingsRouting>
+  private let lazyTabBarViewController: Lazy<TabBarViewController>
 
   private func checkInitialization() {
     let vcs = tabBarController.viewControllers ?? []
     guard vcs.isEmpty else { return }
-    tabBarController.viewControllers = [
-      lazyMain.value.viewController,
-      lazyHistory.value.viewController,
-      lazySettings.value.viewController,
-    ]
-    lazyMain.value.viewController.tabBarItem = .init(
-      title: "Start",
-      image: .init(systemName: "play"),
-      selectedImage: .init(systemName: "play.fill")
-    )
-    lazyHistory.value.viewController.tabBarItem = .init(
-      title: "History",
-      image: .init(systemName: "list.bullet.rectangle"),
-      selectedImage: .init(systemName: "list.bullet.rectangle.fill")
-    )
-    lazySettings.value.viewController.tabBarItem = .init(
-      title: "Settings",
-      image: .init(systemName: "gearshape"),
-      selectedImage: .init(systemName: "gearshape.fill")
+    tabBarController.setup()
+    tabBarController.set(
+      mainViewController: lazyMain.value.viewController,
+      historyViewController: lazyHistory.value.viewController,
+      settingsViewController: lazySettings.value.viewController
     )
   }
 
-  private lazy var tabBarController = UITabBarController()
+  private var tabBarController: TabBarViewController {
+    lazyTabBarViewController.value
+  }
 }
 
 extension TabRouter: TabRouting {

@@ -24,6 +24,7 @@ localPackages:
 targets:
   ComradeDVR:
     dependencies:
+      - package: MainScreen
       - package: Util
       - package: Assets
       - package: CommonUI

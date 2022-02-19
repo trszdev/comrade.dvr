@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-public enum Language: String, CaseIterable {
+public enum Language: String, CaseIterable, Equatable {
   case ru
   case en
 

@@ -2,6 +2,7 @@ import Swinject
 import SwinjectAutoregistration
 import CommonUI
 import SwiftUI
+import MainScreen
 
 struct RoutingAssembly: Assembly {
   func assemble(container: Container) {
@@ -48,7 +49,8 @@ struct RoutingAssembly: Assembly {
       TabRouter(
         lazyMain: .init(resolver.resolve(MainRouting.self)!),
         lazyHistory: .init(resolver.resolve(HistoryRouting.self)!),
-        lazySettings: .init(resolver.resolve(SettingsRouting.self)!)
+        lazySettings: .init(resolver.resolve(SettingsRouting.self)!),
+        lazyTabBarViewController: .init(resolver.resolve(TabBarViewController.self)!)
       )
     }
     container

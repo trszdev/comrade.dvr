@@ -1,7 +1,7 @@
 import UIKit
 import SwiftUI
 
-public enum Appearance: String {
+public enum Appearance: String, Equatable {
   case dark
   case light
 
@@ -22,5 +22,16 @@ public extension Optional where Wrapped == Appearance {
 
   func image(_ imageAsset: ImageAsset) -> Image {
     imageAsset.image(for: self)
+  }
+
+  var interfaceStyle: UIUserInterfaceStyle {
+    switch self {
+    case .none:
+      return .unspecified
+    case .dark:
+      return .dark
+    case .light:
+      return .light
+    }
   }
 }

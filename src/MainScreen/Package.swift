@@ -11,7 +11,8 @@ let package = Package(
     .library(name: "MainScreen", targets: ["MainScreen"]),
   ],
   dependencies: [
-    .package(name: "Assets", path: "../Assets")
+    .package(name: "Assets", path: "../Assets"),
+    .package(name: "Util", path: "../Util"),
   ],
   targets: [
     .target(name: "MainScreen", dependencies: ["Assets"]),
