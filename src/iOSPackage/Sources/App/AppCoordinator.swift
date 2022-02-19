@@ -26,7 +26,7 @@ public final class AppCoordinator {
       }
       .store(in: &cancellables)
     await routing.selectLoading(animated: false)
-    await Task.wait(.seconds(1))
+    // await Task.wait(.seconds(1))
     await routing.selectTab(animated: true)
   }
 

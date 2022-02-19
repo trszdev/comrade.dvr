@@ -13,6 +13,7 @@ public enum ColorAsset: String {
   case textColorDark = "TextColorDark"
   case startHeaderBackgroundColorSystem = "StartHeaderBackgroundColorSystem"
   case textColorDefault = "TextColorDefault"
+  case textColorDestructive = "TextColorDestructive"
   case accentColor = "AccentColor"
   case accentColorHover = "AccentColorHover"
   case disabledTextColor = "DisabledTextColor"

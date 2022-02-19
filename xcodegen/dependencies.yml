@@ -2,15 +2,6 @@ packages:
   Firebase:
     url: https://github.com/firebase/firebase-ios-sdk.git
     majorVersion: 8.8.0
-  TCA:
-    url: https://github.com/pointfreeco/swift-composable-architecture
-    majorVersion: 0.33.1
-  Swinject:
-    url: https://github.com/Swinject/Swinject
-    majorVersion: 2.8.1
-  SwinjectAutoregistration:
-    url: https://github.com/Swinject/SwinjectAutoregistration
-    majorVersion: 2.8.1
 
 localPackages:
   - ./src/iOSPackage

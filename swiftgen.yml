@@ -1,15 +1,15 @@
 strings:
   inputs: 
-    - src/Assets/Sources/Assets/Resources/en.lproj
+    - src/iOSPackage/Sources/Assets/Resources/en.lproj
   outputs:
-    - templatePath: src/Assets/Sources/Assets/L10n.stencil
-      output: src/Assets/Sources/Assets/L10n.swift
+    - templatePath: src/iOSPackage/Sources/Assets/L10n.stencil
+      output: src/iOSPackage/Sources/Assets/L10n.swift
 xcassets:
   inputs:
-    - src/Assets/Sources/Assets/Resources/Assets.xcassets
+    - src/iOSPackage/Sources/Assets/Resources/Assets.xcassets
   outputs:
-    - templatePath: src/Assets/Sources/Assets/ColorAsset.stencil
-      output: src/Assets/Sources/Assets/ColorAsset.swift
-    - templatePath: src/Assets/Sources/Assets/ImageAsset.stencil
-      output: src/Assets/Sources/Assets/ImageAsset.swift
+    - templatePath: src/iOSPackage/Sources/Assets/ColorAsset.stencil
+      output: src/iOSPackage/Sources/Assets/ColorAsset.swift
+    - templatePath: src/iOSPackage/Sources/Assets/ImageAsset.stencil
+      output: src/iOSPackage/Sources/Assets/ImageAsset.swift
 

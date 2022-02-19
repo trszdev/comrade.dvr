@@ -14,6 +14,8 @@ public enum L10n: String {
   case autofocusNone = "AUTOFOCUS_NONE"
   /// Phase
   case autofocusPhase = "AUTOFOCUS_PHASE"
+  /// Autostart
+  case autostart = "AUTOSTART"
   /// Back camera
   case backCamera = "BACK_CAMERA"
   /// Bitrate

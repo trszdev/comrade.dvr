@@ -1,17 +1,146 @@
 import SwiftUI
 import ComposableArchitecture
 import Util
+import Assets
+import LocalizedUtils
+import ComposableArchitectureExtensions
 
 public struct SettingsView: View {
-  public var store: Store<SettingsState, SettingsAction>
+  private var store: Store<SettingsState, SettingsAction>
+  @ObservedObject private var viewStore: ViewStore<SettingsState, SettingsAction>
+  @Environment(\.language) var language
+  @Environment(\.appearance) var appearance
+
+  public init(store: Store<SettingsState, SettingsAction>) {
+    self.store = store
+    self.viewStore = ViewStore(store)
+  }
 
   public var body: some View {
-    Color.red
+    Form {
+      cameraSectionView
+
+      interfaceSectionView
+
+      infoSectionView
+    }
   }
+
+  private var infoSectionView: some View {
+    Section(header: Text(language.string(.contactUs))) {
+      Button {
+        viewStore.send(.contactUs)
+      } label: {
+        Text(verbatim: L10n.appEmail)
+      }
+
+      Button {
+        showClearAllAssets = true
+      } label: {
+        HStack {
+          Spacer()
+
+          Text(language.string(.clearAssets))
+            .foregroundColor(appearance.color(.textColorDestructive))
+
+          Spacer()
+        }
+      }
+    }
+    .alert(isPresented: $showClearAllAssets) {
+      Alert(
+        title: Text(language.string(.warning)),
+        message: Text(language.string(.clearAllAssetsAsk)),
+        primaryButton: .destructive(Text(language.string(.clearAllAssetsConfirm))) {
+          viewStore.send(.clearAllRecordings)
+        },
+        secondaryButton: .cancel()
+      )
+    }
+  }
+
+  private var cameraSectionView: some View {
+    Section {
+      Picker(
+        selection: viewStore.binding(\.$totalFileSize),
+        label: Text(language.string(.assetsLimit))
+      ) {
+        ForEach(assetLimits, id: \.self) {
+          Text(language.assetSize($0)).tag($0)
+        }
+      }
+
+      Picker(
+        selection: viewStore.binding(\.$orientation),
+        label: Text(language.string(.orientation))
+      ) {
+        ForEach(orientations, id: \.self) {
+          Text(language.orientationName($0)).tag($0)
+        }
+      }
+
+      Picker(
+        selection: viewStore.binding(\.$maxFileLength),
+        label: Text(language.string(.assetLength))
+      ) {
+        ForEach(maxFileLengths, id: \.self) {
+          Text(language.duration($0)).tag($0)
+        }
+      }
+
+      Toggle(isOn: viewStore.binding(\.$autoStart)) {
+        Text(language.string(.autostart))
+      }
+    }
+  }
+
+  private var interfaceSectionView: some View {
+    Section {
+      Picker(
+        selection: viewStore.binding(\.$language),
+        label: Text(language.string(.language))
+      ) {
+        ForEach(languages, id: \.self) {
+          Text(language.languageName($0)).tag($0)
+        }
+      }
+
+      Picker(
+        selection: viewStore.binding(\.$appearance),
+        label: Text(language.string(.theme))
+      ) {
+        ForEach(appearances, id: \.self) {
+          Text(language.appearanceName($0)).tag($0)
+        }
+      }
+    }
+  }
+
+  @State private var showClearAllAssets = false
 }
+
+private let languages: [Language?] = Language.allCases + [nil]
+private let appearances: [Appearance?] = Appearance.allCases + [nil]
+private let orientations: [SettingsState.Orientation?] = SettingsState.Orientation.allCases + [nil]
+private let maxFileLengths: [TimeInterval] = [
+  .minutes(1),
+  .minutes(2),
+  .minutes(3),
+  .minutes(5),
+  .minutes(10),
+]
+
+private let assetLimits: [FileSize?] = [
+  .gigabytes(1),
+  .gigabytes(5),
+  .gigabytes(10),
+  .gigabytes(20),
+  .gigabytes(40),
+  nil,
+]
 
 struct SettingsViewPreviews: PreviewProvider {
   static var previews: some View {
-    SettingsView(store: .init(initialState: .init(), reducer: settingsReducer, environment: .init()))
+    SettingsView(store: .init(initialState: .init(), reducer: settingsReducer))
   }
 }

@@ -2,7 +2,12 @@ import Combine
 
 public struct CurrentValuePublisher<Value> {
   public let currentValue: () -> Value
-  let publisher: AnyPublisher<Value, Never>
+  public let publisher: AnyPublisher<Value, Never>
+
+  public init(currentValue: @escaping () -> Value, publisher: AnyPublisher<Value, Never>) {
+    self.currentValue = currentValue
+    self.publisher = publisher
+  }
 }
 
 extension CurrentValuePublisher: Publisher {

@@ -54,7 +54,7 @@ public final class TabBarViewController: UITabBarController {
 
   private func updateUI(language: Language?, appearance: Appearance?) {
     mainViewController?.tabBarItem = .init(
-      title: language.string(.play),
+      title: language.string(.record),
       image: .init(systemName: "play"),
       selectedImage: .init(systemName: "play.fill")
     )

@@ -66,8 +66,7 @@ struct Module {
 
   static let settings = Self(
     name: "Settings",
-    moduleDependencies: [.assets],
-    externalDependencies: [.composableArchitecture, .util]
+    moduleDependencies: [.assets, .composableArchitectureExtensions, .localizedUtils]
   )
 
   static let start = Self(
@@ -78,23 +77,34 @@ struct Module {
 
   static let routing = Self(
     name: "Routing",
-    moduleDependencies: [.commonUI, .swinjectExtensions]
+    moduleDependencies: [.commonUI, .swinjectExtensions, .composableArchitectureExtensions, .settings]
   )
 
   static let app = Self(
     name: "App",
-    moduleDependencies: [.routing, .assets, .commonUI, .composableArchitectureExtensions],
-    externalDependencies: [.util]
+    moduleDependencies: [
+      .routing,
+      .commonUI,
+      .composableArchitectureExtensions,
+      .localizedUtils,
+      .settings,
+    ]
   )
 
   static let composableArchitectureExtensions = Self(
     name: "ComposableArchitectureExtensions",
-    externalDependencies: [.composableArchitecture]
+    externalDependencies: [.composableArchitecture, .util]
   )
 
   static let swinjectExtensions = Self(
     name: "SwinjectExtensions",
     externalDependencies: [.swinject, .swinjectAutoregistration]
+  )
+
+  static let localizedUtils = Self(
+    name: "LocalizedUtils",
+    moduleDependencies: [.assets],
+    externalDependencies: [.util]
   )
 
   static let all: [Self] = [
@@ -107,6 +117,7 @@ struct Module {
     .routing,
     .composableArchitectureExtensions,
     .swinjectExtensions,
+    .localizedUtils,
     .commonTestModule(for: assets),
   ]
 
