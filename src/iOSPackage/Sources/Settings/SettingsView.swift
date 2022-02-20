@@ -62,7 +62,7 @@ public struct SettingsView: View {
   private var cameraSectionView: some View {
     Section {
       Picker(
-        selection: viewStore.binding(\.$totalFileSize),
+        selection: viewStore.binding(\.$settings.totalFileSize),
         label: Text(language.string(.assetsLimit))
       ) {
         ForEach(assetLimits, id: \.self) {
@@ -71,7 +71,7 @@ public struct SettingsView: View {
       }
 
       Picker(
-        selection: viewStore.binding(\.$orientation),
+        selection: viewStore.binding(\.$settings.orientation),
         label: Text(language.string(.orientation))
       ) {
         ForEach(orientations, id: \.self) {
@@ -80,7 +80,7 @@ public struct SettingsView: View {
       }
 
       Picker(
-        selection: viewStore.binding(\.$maxFileLength),
+        selection: viewStore.binding(\.$settings.maxFileLength),
         label: Text(language.string(.assetLength))
       ) {
         ForEach(maxFileLengths, id: \.self) {
@@ -88,7 +88,7 @@ public struct SettingsView: View {
         }
       }
 
-      Toggle(isOn: viewStore.binding(\.$autoStart)) {
+      Toggle(isOn: viewStore.binding(\.$settings.autoStart)) {
         Text(language.string(.autostart))
       }
     }
@@ -97,7 +97,7 @@ public struct SettingsView: View {
   private var interfaceSectionView: some View {
     Section {
       Picker(
-        selection: viewStore.binding(\.$language),
+        selection: viewStore.binding(\.$settings.language),
         label: Text(language.string(.language))
       ) {
         ForEach(languages, id: \.self) {
@@ -106,7 +106,7 @@ public struct SettingsView: View {
       }
 
       Picker(
-        selection: viewStore.binding(\.$appearance),
+        selection: viewStore.binding(\.$settings.appearance),
         label: Text(language.string(.theme))
       ) {
         ForEach(appearances, id: \.self) {
@@ -121,7 +121,7 @@ public struct SettingsView: View {
 
 private let languages: [Language?] = Language.allCases + [nil]
 private let appearances: [Appearance?] = Appearance.allCases + [nil]
-private let orientations: [SettingsState.Orientation?] = SettingsState.Orientation.allCases + [nil]
+private let orientations: [Settings.Orientation?] = Settings.Orientation.allCases + [nil]
 private let maxFileLengths: [TimeInterval] = [
   .minutes(1),
   .minutes(2),
@@ -141,6 +141,6 @@ private let assetLimits: [FileSize?] = [
 
 struct SettingsViewPreviews: PreviewProvider {
   static var previews: some View {
-    SettingsView(store: .init(initialState: .init(), reducer: settingsReducer))
+    SettingsView(store: .init(initialState: .init(), reducer: settingsReducer, environment: .init()))
   }
 }

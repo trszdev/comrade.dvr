@@ -9,7 +9,7 @@ import SwinjectExtensions
 public enum RoutingAssembly: SharedAssembly {
   case shared
 
-  public func assemble(container: Container) {
+  public func assembleWithChildren(container: Container) -> [SharedAssembly] {
     container.registerSingleton(Routing.self) { resolver in
       Router(
         tabRoutingFactory: .init(resolver.resolve(TabRouting.self)!),
@@ -23,9 +23,7 @@ public enum RoutingAssembly: SharedAssembly {
     container.register(HistoryRouting.self) { _ in
       StubRouter(viewController: UIHostingController(rootView: Color.pink))
     }
-    container.register(LoadingRouting.self) { _ in
-      StubRouter(viewController: UIHostingController(rootView: Color.white))
-    }
+    assembleLoading(container: container)
     container.register(DeviceCameraRouting.self) { resolver in
       DeviceRouter(
         navigationController: resolver.resolve(UINavigationController.self, name: .mainNavigation)!,
@@ -60,10 +58,19 @@ public enum RoutingAssembly: SharedAssembly {
       .inObjectScope(.container)
     container.autoregister(HostingControllerFactory.self, initializer: HostingControllerFactory.init)
     assembleSettings(container: container)
+    container.autoregister(TabBarViewController.self, initializer: TabBarViewController.init)
+    return [SettingsAssembly.shared]
+  }
+
+  private func assembleLoading(container: Container) {
+    container.register(LoadingRouting.self) { resolver in
+      let factory = resolver.resolve(HostingControllerFactory.self)!
+      let viewController = factory.hostingController(rootView: LoadingView())
+      return StubRouter(viewController: viewController)
+    }
   }
 
   private func assembleSettings(container: Container) {
-    container.autoregister(SettingsView.self, initializer: SettingsView.init)
     container.register(SettingsRouting.self) { resolver in
       let view = resolver.resolve(SettingsView.self)!
       let factory = resolver.resolve(HostingControllerFactory.self)!

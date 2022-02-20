@@ -4,33 +4,29 @@ import Assets
 import UIKit
 
 public struct SettingsState: Equatable {
-  public enum Orientation: CaseIterable {
-    case portrait
-    case landscape
+  public init(settings: Settings = .init()) {
+    self.settings = settings
   }
 
-  public init() {
-  }
-
-  @BindableState public var totalFileSize: FileSize? = .gigabytes(5)
-  @BindableState public var maxFileLength: TimeInterval = .minutes(1)
-  @BindableState public var orientation: Orientation?
-  @BindableState public var language: Language?
-  @BindableState public var appearance: Appearance?
-  @BindableState public var autoStart: Bool = false
+  @BindableState public var settings: Settings = .init()
 }
 
 public enum SettingsAction: BindableAction {
   case binding(BindingAction<SettingsState>)
   case clearAllRecordings
   case contactUs
+  case settingsLoaded(Settings)
 }
 
 public struct SettingsEnvironment {
+  public var repository: SettingsRepository = SettingsRepositoryStub()
 
+  public init(repository: SettingsRepository = SettingsRepositoryStub()) {
+    self.repository = repository
+  }
 }
 
-public let settingsReducer = Reducer<SettingsState, SettingsAction, Void> { _, action, _ in
+public let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment> { state, action, environment in
   switch action {
   case .contactUs:
     let application = UIApplication.shared
@@ -38,6 +34,12 @@ public let settingsReducer = Reducer<SettingsState, SettingsAction, Void> { _, a
       return .none
     }
     application.open(url, options: [:], completionHandler: nil)
+  case .binding:
+    return .task { [state] in
+      await environment.repository.save(settings: state.settings)
+    }
+  case .settingsLoaded(let settings):
+    state.settings = settings
   default:
     break
   }

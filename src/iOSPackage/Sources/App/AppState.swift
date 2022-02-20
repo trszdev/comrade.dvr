@@ -13,6 +13,7 @@ public enum AppAction {
 
 public struct AppEnvironment {
   public var routing: Routing = RoutingStub()
+  public var settingsRepository: SettingsRepository = SettingsRepositoryStub()
 }
 
 public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
@@ -32,5 +33,7 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     return .none
   },
 
-  settingsReducer.pullback(state: \.settingsState, action: /AppAction.settingsAction)
+  settingsReducer.pullback(state: \.settingsState, action: /AppAction.settingsAction) {
+    .init(repository: $0.settingsRepository)
+  }
 )

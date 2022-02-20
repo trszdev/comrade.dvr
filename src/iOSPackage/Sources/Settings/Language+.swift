@@ -23,7 +23,7 @@ public extension Optional where Wrapped == Language {
     }
   }
 
-  func orientationName(_ orientation: SettingsState.Orientation?) -> String {
+  func orientationName(_ orientation: Settings.Orientation?) -> String {
     switch orientation {
     case .none:
       return string(.system)

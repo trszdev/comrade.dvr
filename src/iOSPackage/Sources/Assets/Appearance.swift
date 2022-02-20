@@ -1,7 +1,7 @@
 import UIKit
 import SwiftUI
 
-public enum Appearance: String, Equatable, CaseIterable {
+public enum Appearance: String, Equatable, CaseIterable, Codable {
   case dark
   case light
 

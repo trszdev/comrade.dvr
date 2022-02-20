@@ -6,6 +6,7 @@ import Routing
 import SwinjectExtensions
 import ComposableArchitecture
 import Settings
+import CommonUI
 
 public enum AppAssembly: SharedAssembly {
   case shared
@@ -14,22 +15,29 @@ public enum AppAssembly: SharedAssembly {
     container.registerSingleton(Store<AppState, AppAction>.self) { resolver in
       Store(initialState: AppState(), reducer: appReducer, environment: resolver.resolve(AppEnvironment.self)!)
     }
-    container.autoregister(AppEnvironment.self, initializer: AppEnvironment.init(routing:))
+    container.autoregister(AppEnvironment.self, initializer: AppEnvironment.init(routing:settingsRepository:))
     container.registerStore(state: \.settingsState, action: AppAction.settingsAction)
     container
-      .autoregister(AppCoordinator.self, initializer: AppCoordinator.init)
+      .register(AppCoordinator.self) { resolver in
+        .init(
+          routing: resolver.resolve(Routing.self)!,
+          appearancePublisher: resolver.resolve(CurrentValuePublisher<Appearance?>.self)!,
+          settingsRepositoryFactory: .init(resolver.resolve(SettingsRepository.self)!),
+          settingsViewStoreFactory: .init(resolver.resolve(ViewStore<SettingsState, SettingsAction>.self)!)
+        )
+      }
       .inObjectScope(.container)
     container
       .register(CurrentValuePublisher<Language?>.self) { resolver in
-        resolver.resolve(ViewStore<SettingsState, SettingsAction>.self)!.currentValuePublisher(\.language)
+        resolver.resolve(ViewStore<SettingsState, SettingsAction>.self)!.currentValuePublisher(\.settings.language)
       }
       .inObjectScope(.container)
     container
       .register(CurrentValuePublisher<Appearance?>.self) { resolver in
-        resolver.resolve(ViewStore<SettingsState, SettingsAction>.self)!.currentValuePublisher(\.appearance)
+        resolver.resolve(ViewStore<SettingsState, SettingsAction>.self)!.currentValuePublisher(\.settings.appearance)
       }
       .inObjectScope(.container)
-    container.autoregister(TabBarViewController.self, initializer: TabBarViewController.init)
+    container.registerInstance(UserDefaults.standard)
     return [RoutingAssembly.shared]
   }
 }
