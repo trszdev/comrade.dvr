@@ -11,6 +11,7 @@ public extension Effect {
         }
       }
     }
+    .receive(on: DispatchQueue.main)
     .eraseToEffect()
     .fireAndForget()
   }
@@ -24,6 +25,7 @@ public extension Effect {
         }
       }
     }
+    .receive(on: DispatchQueue.main)
     .eraseToEffect()
   }
 }

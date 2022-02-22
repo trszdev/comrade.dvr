@@ -4,15 +4,13 @@ import Util
 import Assets
 import LocalizedUtils
 import ComposableArchitectureExtensions
+import CommonUI
 
 public struct SettingsView: View {
-  private var store: Store<SettingsState, SettingsAction>
-  @ObservedObject private var viewStore: ViewStore<SettingsState, SettingsAction>
   @Environment(\.language) var language
   @Environment(\.appearance) var appearance
 
   public init(store: Store<SettingsState, SettingsAction>) {
-    self.store = store
     self.viewStore = ViewStore(store)
   }
 
@@ -34,7 +32,7 @@ public struct SettingsView: View {
         Text(verbatim: L10n.appEmail)
       }
 
-      Button {
+      DestructiveButton {
         showClearAllAssets = true
       } label: {
         HStack {
@@ -116,6 +114,7 @@ public struct SettingsView: View {
     }
   }
 
+  @ObservedObject private var viewStore: ViewStore<SettingsState, SettingsAction>
   @State private var showClearAllAssets = false
 }
 

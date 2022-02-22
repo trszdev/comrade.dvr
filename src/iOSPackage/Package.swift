@@ -58,15 +58,20 @@ struct Module {
 
   static let commonUI = Self(name: "CommonUI")
 
+  static let thumbnailKit = Self(
+    name: "ThumbnailKit",
+    moduleDependencies: [.swinjectExtensions],
+    externalDependencies: [.util]
+  )
+
   static let history = Self(
     name: "History",
-    moduleDependencies: [.assets],
-    externalDependencies: [.composableArchitecture, .util]
+    moduleDependencies: [.composableArchitectureExtensions, .localizedUtils, .commonUI, .thumbnailKit]
   )
 
   static let settings = Self(
     name: "Settings",
-    moduleDependencies: [.assets, .composableArchitectureExtensions, .localizedUtils]
+    moduleDependencies: [.composableArchitectureExtensions, .localizedUtils, .swinjectExtensions, .commonUI]
   )
 
   static let start = Self(
@@ -77,18 +82,18 @@ struct Module {
 
   static let routing = Self(
     name: "Routing",
-    moduleDependencies: [.commonUI, .swinjectExtensions, .composableArchitectureExtensions, .settings]
+    moduleDependencies: [
+      .commonUI,
+      .swinjectExtensions,
+      .composableArchitectureExtensions,
+      .settings,
+      .history,
+    ]
   )
 
   static let app = Self(
     name: "App",
-    moduleDependencies: [
-      .routing,
-      .commonUI,
-      .composableArchitectureExtensions,
-      .localizedUtils,
-      .settings,
-    ]
+    moduleDependencies: [.routing]
   )
 
   static let composableArchitectureExtensions = Self(
@@ -119,6 +124,8 @@ struct Module {
     .swinjectExtensions,
     .localizedUtils,
     .commonTestModule(for: assets),
+    .thumbnailKit,
+    .commonTestModule(for: .commonUI),
   ]
 
   private static func commonTestModule(for module: Self) -> Self {
