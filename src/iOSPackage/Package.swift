@@ -60,7 +60,7 @@ struct Module {
 
   static let thumbnailKit = Self(
     name: "ThumbnailKit",
-    moduleDependencies: [.swinjectExtensions],
+    moduleDependencies: [.swinjectExtensions, .commonUI],
     externalDependencies: [.util]
   )
 
@@ -76,8 +76,7 @@ struct Module {
 
   static let start = Self(
     name: "Start",
-    moduleDependencies: [.assets],
-    externalDependencies: [.composableArchitecture, .util]
+    moduleDependencies: [.composableArchitectureExtensions, .localizedUtils, .swinjectExtensions, .commonUI, .device]
   )
 
   static let routing = Self(
@@ -88,6 +87,8 @@ struct Module {
       .composableArchitectureExtensions,
       .settings,
       .history,
+      .start,
+      .device,
     ]
   )
 
@@ -112,6 +113,13 @@ struct Module {
     externalDependencies: [.util]
   )
 
+  static let cameraKit = Self(name: "CameraKit")
+
+  static let device = Self(
+    name: "Device",
+    moduleDependencies: [.swinjectExtensions, .composableArchitectureExtensions]
+  )
+
   static let all: [Self] = [
     .app,
     .assets,
@@ -126,6 +134,9 @@ struct Module {
     .commonTestModule(for: assets),
     .thumbnailKit,
     .commonTestModule(for: .commonUI),
+    .cameraKit,
+    .commonTestModule(for: .cameraKit),
+    .device,
   ]
 
   private static func commonTestModule(for module: Self) -> Self {

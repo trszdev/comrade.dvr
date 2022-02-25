@@ -113,3 +113,6 @@
 
 "UNAVAILABLE" = "Недоступно";
 "AUTOSTART" = "Автостарт";
+
+"STARTING_IN" = "Запуск через %@";
+"PRO" = "PRO";

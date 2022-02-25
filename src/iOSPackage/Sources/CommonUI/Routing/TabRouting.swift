@@ -1,9 +1,9 @@
 @MainActor
 public protocol TabRouting: UIViewControllerProviding, AnyObject {
-  var mainRouting: MainRouting? { get }
+  var startRouting: StartRouting? { get }
   var historyRouting: HistoryRouting? { get }
   var settingsRouting: SettingsRouting? { get }
-  func selectMain()
+  func selectStart()
   func selectHistory()
   func selectSettings()
 }

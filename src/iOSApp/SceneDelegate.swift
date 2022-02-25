@@ -1,6 +1,7 @@
 import UIKit
 import SwiftUI
 import App
+import AVFoundation
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   var window: UIWindow?
@@ -16,6 +17,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     else {
       return
     }
+    test()
     let window = UIWindow(windowScene: windowScene)
     window.rootViewController = UIViewController()
     window.makeKeyAndVisible()
@@ -23,5 +25,22 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     Task {
       await appCoordinator.loadAndStart()
     }
+  }
+
+  func test() {
+    let multicamSets = AVCaptureDevice.DiscoverySession(
+      deviceTypes: [
+        .builtInDualCamera,
+        .builtInDualWideCamera,
+        .builtInTelephotoCamera,
+        .builtInTripleCamera,
+        .builtInTrueDepthCamera,
+        .builtInUltraWideCamera,
+        .builtInWideAngleCamera,
+      ],
+      mediaType: nil,
+      position: .unspecified
+    ).supportedMultiCamDeviceSets
+    print(multicamSets)
   }
 }

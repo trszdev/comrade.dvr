@@ -5,26 +5,27 @@ import UIKit
 import Combine
 import Assets
 import Settings
+import Routing
 
 @MainActor
 public final class AppCoordinator {
   public var window: UIWindow?
 
   public nonisolated init(
-    routing: Routing,
+    router: Router,
     appearancePublisher: CurrentValuePublisher<Appearance?>,
     settingsRepositoryFactory: Factory<SettingsRepository>,
-    settingsViewStoreFactory: Factory<ViewStore<SettingsState, SettingsAction>>
+    viewStoreFactory: Factory<ViewStore<AppState, AppAction>>
   ) {
-    self.routing = routing
+    self.router = router
     self.appearancePublisher = appearancePublisher
     self.settingsRepositoryFactory = settingsRepositoryFactory
-    self.settingsViewStoreFactory = settingsViewStoreFactory
+    self.viewStoreFactory = viewStoreFactory
   }
 
   public func loadAndStart() async {
-    window?.rootViewController = routing.viewController
-    await routing.selectLoading(animated: false)
+    router.window = window
+    await router.selectLoading(animated: false)
     let settingsRepository = settingsRepositoryFactory.make()
     appearancePublisher
       .receive(on: DispatchQueue.main)
@@ -33,15 +34,18 @@ public final class AppCoordinator {
       }
       .store(in: &cancellables)
     let settings = await settingsRepository.load()
-    let viewStore = settingsViewStoreFactory.make()
-    viewStore.send(.settingsLoaded(settings))
+    let viewStore = viewStoreFactory.make()
+    viewStore.send(.settingsAction(.settingsLoaded(settings)))
+    if viewStore.isPremium, settings.autoStart {
+      viewStore.send(.startAction(.autostart))
+    }
     await Task.wait(.seconds(0.1))
-    await routing.selectTab(animated: true)
+    await router.selectTab(animated: true)
   }
 
-  private let routing: Routing
+  private let router: Router
   private var settingsRepositoryFactory: Factory<SettingsRepository>
-  private var settingsViewStoreFactory: Factory<ViewStore<SettingsState, SettingsAction>>
+  private var viewStoreFactory: Factory<ViewStore<AppState, AppAction>>
   private let appearancePublisher: CurrentValuePublisher<Appearance?>
   private var cancellables = Set<AnyCancellable>()
 }

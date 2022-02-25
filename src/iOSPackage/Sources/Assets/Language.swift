@@ -38,6 +38,10 @@ public extension Optional where Wrapped == Language {
     key.localized(for: self)
   }
 
+  func format(_ key: L10n, arguments: String...) -> String {
+    .init(format: key.localized(for: self), arguments: arguments)
+  }
+
   func duration(_ timeInterval: TimeInterval) -> String {
     let formatter = DateComponentsFormatter()
     formatter.calendar = calendar

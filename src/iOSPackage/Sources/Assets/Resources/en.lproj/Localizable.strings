@@ -114,3 +114,6 @@
 "UNAVAILABLE" = "Unavailable";
 
 "AUTOSTART" = "Autostart";
+
+"STARTING_IN" = "Starting in %@";
+"PRO" = "PRO";

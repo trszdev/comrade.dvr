@@ -16,10 +16,10 @@ public enum AppAssembly: SharedAssembly {
     container.autoregister(AppEnvironment.self, initializer: AppEnvironment.init(routing:settingsRepository:))
     container.registerSingleton(AppCoordinator.self) { resolver in
       .init(
-        routing: resolver.resolve(Routing.self)!,
+        router: resolver.resolve(Router.self)!,
         appearancePublisher: resolver.resolve(CurrentValuePublisher<Appearance?>.self)!,
         settingsRepositoryFactory: .init(resolver.resolve(SettingsRepository.self)!),
-        settingsViewStoreFactory: .init(resolver.resolve(ViewStore<SettingsState, SettingsAction>.self)!)
+        viewStoreFactory: .init(resolver.resolve(ViewStore<AppState, AppAction>.self)!)
       )
     }
     container.registerInstance(UserDefaults.standard)
@@ -32,8 +32,14 @@ private extension Container {
     registerSingleton(Store<AppState, AppAction>.self) { resolver in
       Store(initialState: AppState(), reducer: appReducer, environment: resolver.resolve(AppEnvironment.self)!)
     }
+    register(ViewStore<AppState, AppAction>.self) { resolver in
+      ViewStore(resolver.resolve(Store<AppState, AppAction>.self)!)
+    }
     registerStore(state: \.settingsState, action: AppAction.settingsAction)
     registerStore(state: \.historyState, action: AppAction.historyAction)
+    registerStore(state: \.selectedCameraState, action: AppAction.deviceCameraAction)
+    registerStore(state: \.microphoneState, action: AppAction.deviceMicrophoneAction)
+    registerStore(state: \.startState, action: AppAction.startAction)
   }
 
   func registerStore<LocalState: Equatable, LocalAction>(

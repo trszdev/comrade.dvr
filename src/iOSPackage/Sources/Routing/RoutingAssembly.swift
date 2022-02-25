@@ -6,6 +6,8 @@ import ComposableArchitecture
 import Settings
 import SwinjectExtensions
 import History
+import Start
+import Device
 
 public enum RoutingAssembly: SharedAssembly {
   case shared
@@ -19,12 +21,12 @@ public enum RoutingAssembly: SharedAssembly {
     container.assembleTabs()
     container.assembleLoading()
 
-    container.assembleMain()
+    container.assembleStart()
     container.assembleHistory()
     container.assembleSettings()
 
     container.assembleDevices()
-    return [SettingsAssembly.shared, HistoryAssembly.shared]
+    return [SettingsAssembly.shared, HistoryAssembly.shared, StartAssembly.shared, DeviceAssembly.shared]
   }
 }
 
@@ -68,6 +70,7 @@ private extension Container {
         sessionRoutingFactory: .init(resolver.resolve(SessionRouting.self)!)
       )
     }
+    .implements(Router.self)
   }
 
   func assembleHosting() {
@@ -76,36 +79,37 @@ private extension Container {
   }
 
   func assembleDevices() {
-    register(DeviceCameraRouting.self) { resolver in
+    registerWithView(DeviceCameraRouting.self, with: DeviceCameraView.self) { viewController, resolver in
       DeviceRouter(
-        navigationController: resolver.resolve(UINavigationController.self, name: .mainNavigation)!,
-        viewController: UIHostingController(rootView: Color.blue)
+        navigationController: resolver.resolve(UINavigationController.self, name: .startNavigation)!,
+        viewController: viewController
       )
     }
-    register(DeviceMicrophoneRouting.self) { resolver in
+    registerWithView(DeviceMicrophoneRouting.self, with: DeviceMicrophoneView.self) { viewController, resolver in
       DeviceRouter(
-        navigationController: resolver.resolve(UINavigationController.self, name: .mainNavigation)!,
-        viewController: UIHostingController(rootView: Color.orange)
+        navigationController: resolver.resolve(UINavigationController.self, name: .startNavigation)!,
+        viewController: viewController
       )
     }
   }
 
-  func assembleMain() {
-    registerSingleton(MainRouting.self) { resolver in
-      MainRouter(
-        rootViewController: UIHostingController(rootView: Color.gray),
-        navigationController: resolver.resolve(UINavigationController.self, name: .mainNavigation)!,
+  func assembleStart() {
+    registerWithView(StartRouting.self, with: StartView.self) { viewController, resolver in
+      StartRouter(
+        rootViewController: viewController,
+        navigationController: resolver.resolve(UINavigationController.self, name: .startNavigation)!,
         deviceCameraRoutingFactory: .init(resolver.resolve(DeviceCameraRouting.self)!),
         deviceMicrophoneRoutingFactory: .init(resolver.resolve(DeviceMicrophoneRouting.self)!)
       )
     }
-    registerSingleton(UINavigationController.self, name: .mainNavigation) { _ in .init() }
+    .inObjectScope(.container)
+    registerSingleton(UINavigationController.self, name: .startNavigation) { _ in .init() }
   }
 
   func assembleTabs() {
     registerSingleton(TabRouting.self) { resolver in
       TabRouter(
-        lazyMain: .init(resolver.resolve(MainRouting.self)!),
+        lazyStart: .init(resolver.resolve(StartRouting.self)!),
         lazyHistory: .init(resolver.resolve(HistoryRouting.self)!),
         lazySettings: .init(resolver.resolve(SettingsRouting.self)!),
         lazyTabBarViewController: .init(resolver.resolve(TabBarViewController.self)!)
@@ -116,11 +120,18 @@ private extension Container {
 
   func assembleLoading() {
     register(LoadingView.self) { _ in LoadingView() }
-    registerWithView(LoadingRouting.self, with: LoadingView.self, factory: StubRouter.init)
+    registerWithView(LoadingRouting.self, with: LoadingView.self) { viewController, _ in
+      StubRouter(viewController: viewController)
+    }
   }
 
   func assembleSettings() {
-    registerWithView(SettingsRouting.self, with: SettingsView.self, factory: StubRouter.init)
+    registerSingleton(UINavigationController.self, name: .settingsNavigation) { _ in .init() }
+    registerWithView(SettingsRouting.self, with: SettingsView.self) { viewController, resolver in
+      let navigationController = resolver.resolve(UINavigationController.self, name: .settingsNavigation)!
+      navigationController.viewControllers = [viewController]
+      return StubRouter(viewController: navigationController)
+    }
   }
 
   @discardableResult
@@ -128,17 +139,18 @@ private extension Container {
     _ serviceType: Service.Type,
     with viewType: WithView.Type,
     name: String? = nil,
-    factory: @escaping (UIHostingController<HostingView<WithView>>) -> Service
+    factory: @escaping (UIHostingController<HostingView<WithView>>, Resolver) -> Service
   ) -> ServiceEntry<Service> {
     register(serviceType, name: name) { resolver in
       let view = resolver.resolve(viewType)!
       let viewControllerFactory = resolver.resolve(HostingControllerFactory.self)!
       let viewController = viewControllerFactory.hostingController(rootView: view)
-      return factory(viewController)
+      return factory(viewController, resolver)
     }
   }
 }
 
 private extension String {
-  static var mainNavigation: Self { "MainNavigation" }
+  static var startNavigation: Self { "StartNavigation" }
+  static var settingsNavigation: Self { "SettingsNavigation" }
 }

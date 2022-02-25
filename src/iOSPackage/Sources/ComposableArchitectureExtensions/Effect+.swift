@@ -28,4 +28,8 @@ public extension Effect {
     .receive(on: DispatchQueue.main)
     .eraseToEffect()
   }
+
+  init(value: Output, delay: DispatchQueue.SchedulerTimeType.Stride, scheduler: AnySchedulerOf<DispatchQueue>) {
+    self.init(Just(value).setFailureType(to: Failure.self).delay(for: delay, scheduler: scheduler))
+  }
 }

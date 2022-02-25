@@ -3,7 +3,7 @@ import CommonUI
 import Util
 
 @MainActor
-public final class MainRouter: MainRouting {
+public final class StartRouter: StartRouting {
   public private(set) var deviceCameraRouting: DeviceCameraRouting?
   public private(set) var deviceMicrophoneRouting: DeviceMicrophoneRouting?
 
@@ -17,6 +17,9 @@ public final class MainRouter: MainRouting {
     self.navigationController = navigationController
     self.deviceCameraRoutingFactory = deviceCameraRoutingFactory
     self.deviceMicrophoneRoutingFactory = deviceMicrophoneRoutingFactory
+    Task { @MainActor in
+      navigationController.viewControllers = [rootViewController]
+    }
   }
 
   public func openDeviceCamera(animated: Bool) async {

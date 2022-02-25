@@ -14,7 +14,7 @@ public final class Router: Routing {
     self.sessionRoutingFactory = sessionRoutingFactory
   }
 
-  public var viewController: UIViewController { navigationController }
+  public var window: UIWindow?
 
   public private(set) var tabRouting: TabRouting?
   public private(set) var loadingRouting: LoadingRouting?
@@ -24,19 +24,13 @@ public final class Router: Routing {
   private let sessionRoutingFactory: Factory<SessionRouting>
 
   public func selectTab(animated: Bool) async {
-    if tabRouting != nil {
-      if sessionRouting != nil {
-        await navigationController.popLast(animated: animated)
-        sessionRouting = nil
-      }
-    } else {
-      let tabRouting = tabRoutingFactory.make()
-      self.tabRouting = tabRouting
-      sessionRouting = nil
-      loadingRouting = nil
-      tabRouting.selectMain()
-      await navigationController.set(viewControllers: [tabRouting.viewController], animated: animated)
-    }
+    guard tabRouting == nil else { return }
+    let tabRouting = tabRoutingFactory.make()
+    self.tabRouting = tabRouting
+    sessionRouting = nil
+    loadingRouting = nil
+    tabRouting.selectStart()
+    await window?.set(rootViewController: tabRouting.viewController, animated: animated)
   }
 
   public func selectLoading(animated: Bool) async {
@@ -45,28 +39,15 @@ public final class Router: Routing {
     self.loadingRouting = loadingRouting
     sessionRouting = nil
     tabRouting = nil
-    await navigationController.set(viewControllers: [loadingRouting.viewController], animated: animated)
+    await window?.set(rootViewController: loadingRouting.viewController, animated: animated)
   }
 
   public func selectSession(animated: Bool) async {
-    if tabRouting != nil {
-      if sessionRouting == nil {
-        let sessionRouting = sessionRoutingFactory.make()
-        self.sessionRouting = sessionRouting
-        await navigationController.push(viewController: sessionRouting.viewController, animated: animated)
-      }
-    } else {
-      let tabRouting = tabRoutingFactory.make()
-      let sessionRouting = sessionRoutingFactory.make()
-      self.tabRouting = tabRouting
-      self.sessionRouting = sessionRouting
-      loadingRouting = nil
-      await navigationController.set(
-        viewControllers: [tabRouting.viewController, sessionRouting.viewController],
-        animated: animated
-      )
-    }
+    guard sessionRouting == nil else { return }
+    let sessionRouting = sessionRoutingFactory.make()
+    self.sessionRouting = sessionRouting
+    loadingRouting = nil
+    tabRouting = nil
+    await window?.set(rootViewController: sessionRouting.viewController, animated: animated)
   }
-
-  private let navigationController = UINavigationController()
 }

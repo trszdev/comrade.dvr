@@ -1,5 +1,5 @@
 @MainActor
-public protocol MainRouting: UIViewControllerProviding, AnyObject {
+public protocol StartRouting: UIViewControllerProviding, AnyObject {
   var deviceCameraRouting: DeviceCameraRouting? { get }
   var deviceMicrophoneRouting: DeviceMicrophoneRouting? { get }
   func openDeviceCamera(animated: Bool) async

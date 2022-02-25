@@ -118,6 +118,8 @@ public enum L10n: String {
   case polarPatternUnspecified = "POLAR_PATTERN_UNSPECIFIED"
   /// Press button twice
   case pressButtonTwice = "PRESS_BUTTON_TWICE"
+  /// PRO
+  case pro = "PRO"
   /// Quality
   case quality = "QUALITY"
   /// High
@@ -154,6 +156,8 @@ public enum L10n: String {
   case size = "SIZE"
   /// Start recording
   case startRecording = "START_RECORDING"
+  /// Starting in %@
+  case startingIn = "STARTING_IN"
   /// System
   case system = "SYSTEM"
   /// System pressure exceeded, try use less demanding configuration and close other apps

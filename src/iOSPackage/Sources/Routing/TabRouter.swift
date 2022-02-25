@@ -5,19 +5,19 @@ import Util
 @MainActor
 public final class TabRouter {
   public nonisolated init(
-    lazyMain: Lazy<MainRouting>,
+    lazyStart: Lazy<StartRouting>,
     lazyHistory: Lazy<HistoryRouting>,
     lazySettings: Lazy<SettingsRouting>,
     lazyTabBarViewController: Lazy<TabBarViewController>
   ) {
-    self.lazyMain = lazyMain
+    self.lazyStart = lazyStart
     self.lazyHistory = lazyHistory
     self.lazySettings = lazySettings
     self.lazyTabBarViewController = lazyTabBarViewController
   }
 
-  public var mainRouting: MainRouting? {
-    selected(.mainTab) ? lazyMain.value : nil
+  public var startRouting: StartRouting? {
+    selected(.startTab) ? lazyStart.value : nil
   }
 
   public var historyRouting: HistoryRouting? {
@@ -32,7 +32,7 @@ public final class TabRouter {
     !(tabBarController.viewControllers ?? []).isEmpty && tabBarController.selectedIndex == tabIndex
   }
 
-  private let lazyMain: Lazy<MainRouting>
+  private let lazyStart: Lazy<StartRouting>
   private let lazyHistory: Lazy<HistoryRouting>
   private let lazySettings: Lazy<SettingsRouting>
   private let lazyTabBarViewController: Lazy<TabBarViewController>
@@ -42,7 +42,7 @@ public final class TabRouter {
     guard vcs.isEmpty else { return }
     tabBarController.setup()
     tabBarController.set(
-      mainViewController: lazyMain.value.viewController,
+      mainViewController: lazyStart.value.viewController,
       historyViewController: lazyHistory.value.viewController,
       settingsViewController: lazySettings.value.viewController
     )
@@ -54,9 +54,9 @@ public final class TabRouter {
 }
 
 extension TabRouter: TabRouting {
-  public func selectMain() {
+  public func selectStart() {
     checkInitialization()
-    tabBarController.selectedIndex = .mainTab
+    tabBarController.selectedIndex = .startTab
   }
 
   public func selectHistory() {
@@ -75,7 +75,7 @@ extension TabRouter: TabRouting {
 }
 
 private extension Int {
-  static var mainTab: Int { 0 }
+  static var startTab: Int { 0 }
   static var historyTab: Int { 1 }
   static var settingsTab: Int { 2 }
 }
