@@ -14,14 +14,12 @@ public struct StartView: View {
   }
 
   public var body: some View {
-    GeometryReader { _ in
+    GeometryReader { geometry in
       VStack(spacing: 0) {
         ScrollView(.vertical, showsIndicators: false) {
+          let numberOfColumns = Int(geometry.size.width / 160)
           LazyVGrid(
-            columns: [
-              .init(.adaptive(minimum: 200, maximum: 200)),
-              .init(.adaptive(minimum: 200, maximum: 200)),
-            ],
+            columns: Array(repeating: 0, count: numberOfColumns).map { _ in .init(.flexible()) },
             spacing: 10
           ) {
             deviceCameraView(name: .backCamera, shouldUpgrade: false, state: viewStore.backCameraState) {
@@ -48,6 +46,7 @@ public struct StartView: View {
 
         startButtonView
       }
+      .navigationBarHidden(true)
     }
   }
 
@@ -121,6 +120,7 @@ public struct StartView: View {
           }
           .padding(15)
           .font(.callout)
+          .minimumScaleFactor(0.5)
           .foregroundColor(
             appearance.color(.textColorDisabled)
               .opacity(opacity)
@@ -163,6 +163,7 @@ public struct StartView: View {
           }
           .padding(15)
           .font(.callout)
+          .minimumScaleFactor(0.5)
           .foregroundColor(appearance.color(.textColorDisabled))
         )
     }

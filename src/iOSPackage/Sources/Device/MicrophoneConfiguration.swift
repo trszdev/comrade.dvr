@@ -1,13 +1,11 @@
 public struct MicrophoneConfiguration: Equatable {
-  public init(deviceLocation: DeviceLocation, quality: Quality, polarPattern: PolarPattern) {
-    self.deviceLocation = deviceLocation
+  public init(quality: Quality, polarPattern: PolarPattern) {
     self.quality = quality
     self.polarPattern = polarPattern
   }
 
-  public static let `default` = Self(deviceLocation: .default, quality: .high, polarPattern: .stereo)
+  public static let `default` = Self(quality: .high, polarPattern: .stereo)
 
-  public let deviceLocation: DeviceLocation
-  public let quality: Quality
-  public let polarPattern: PolarPattern
+  public var quality: Quality
+  public var polarPattern: PolarPattern
 }

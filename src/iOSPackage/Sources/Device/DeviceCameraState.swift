@@ -12,9 +12,16 @@ public struct DeviceCameraState: Equatable {
 
 public enum DeviceCameraAction: BindableAction {
   case binding(BindingAction<DeviceCameraState>)
+  case setBitrate(Bitrate)
 }
 
-public let deviceCameraReducer = Reducer<DeviceCameraState, DeviceCameraAction, Void> { _, _, _ in
-  .none
+public let deviceCameraReducer = Reducer<DeviceCameraState, DeviceCameraAction, Void> { state, action, _ in
+  switch action {
+  case .setBitrate(let bitrate):
+    state.configuration.bitrate = bitrate
+  default:
+    break
+  }
+  return .none
 }
 .binding()

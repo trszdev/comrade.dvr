@@ -1,4 +1,8 @@
-public struct BitrateSuggestion {
+import Foundation
+
+public struct BitrateSuggestion: Identifiable {
+  public var id = UUID()
+
   public init(resolution: Resolution, fps: Int, bitrate: Bitrate, description: String) {
     self.resolution = resolution
     self.fps = fps
@@ -44,7 +48,13 @@ public struct BitrateSuggestion {
     Resolution.p480.bitrateSuggestion(fps: 60, bitrate: 4_000_000, description: "480p 60FPS SDR"),
   ]
 
-  public static let all: [Self] = p2160 + p1440 + p1080 + p720 + p480
+  public static let all: [Resolution: [Self]] = [
+    .p480: BitrateSuggestion.p480,
+    .p720: BitrateSuggestion.p720,
+    .p1080: BitrateSuggestion.p1080,
+    .p1440: BitrateSuggestion.p1440,
+    .p2160: BitrateSuggestion.p2160,
+  ]
 }
 
 private extension Resolution {

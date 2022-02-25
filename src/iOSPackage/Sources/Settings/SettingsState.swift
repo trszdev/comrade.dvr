@@ -4,10 +4,12 @@ import Assets
 import UIKit
 
 public struct SettingsState: Equatable {
-  public init(settings: Settings = .init()) {
+  public init(isPremium: Bool = false, settings: Settings = .init()) {
+    self.isPremium = isPremium
     self.settings = settings
   }
 
+  public var isPremium: Bool = false
   @BindableState public var settings: Settings = .init()
 }
 
@@ -15,6 +17,7 @@ public enum SettingsAction: BindableAction {
   case binding(BindingAction<SettingsState>)
   case clearAllRecordings
   case contactUs
+  case upgradeToPro
   case settingsLoaded(Settings)
 }
 
@@ -40,6 +43,8 @@ public let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvi
     }
   case .settingsLoaded(let settings):
     state.settings = settings
+  case .upgradeToPro:
+    break
   default:
     break
   }

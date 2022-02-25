@@ -7,7 +7,15 @@ import Start
 import Device
 
 public struct AppState: Equatable {
-  public var settingsState: SettingsState = .init()
+  public var settings: Settings = .init()
+  public var settingsState: SettingsState {
+    get {
+      .init(isPremium: isPremium, settings: settings)
+    }
+    set {
+      settings = newValue.settings
+    }
+  }
   public var historyState: HistoryState = .init()
   public var selectedFrontCamera: Bool = false
   public var selectedCameraState: DeviceCameraState {

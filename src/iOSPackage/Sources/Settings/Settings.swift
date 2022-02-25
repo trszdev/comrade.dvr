@@ -29,5 +29,5 @@ public struct Settings: Codable, Equatable {
   public var orientation: Orientation?
   public var language: Language?
   public var appearance: Appearance?
-  public var autoStart: Bool = false
+  public var autoStart: Bool
 }

@@ -17,13 +17,13 @@ public struct CameraConfiguration: Equatable {
     self.quality = quality
   }
 
-  public let fps: Int
-  public let resolution: Resolution
-  public let bitrate: Bitrate
-  public let useH265: Bool
-  public let zoom: Double
-  public let fov: Int
-  public let quality: Quality
+  public var fps: Int
+  public var resolution: Resolution
+  public var bitrate: Bitrate
+  public var useH265: Bool
+  public var zoom: Double
+  public var fov: Int
+  public var quality: Quality
 
   public static let defaultFrontCamera = Self(
     fps: 30,

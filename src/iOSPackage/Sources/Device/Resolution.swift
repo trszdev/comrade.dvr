@@ -4,6 +4,7 @@ public struct Resolution: Equatable, Codable, Hashable {
     self.height = height
   }
 
+  public static let known: [Self] = [.p2160, .p1440, .p1080, .p720, .p480]
   public static let p2160 = Self(width: 3840, height: 2160)
   public static let p1440 = Self(width: 2560, height: 1440)
   public static let p1080 = Self(width: 1920, height: 1080)

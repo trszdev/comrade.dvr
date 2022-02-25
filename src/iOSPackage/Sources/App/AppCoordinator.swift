@@ -36,7 +36,7 @@ public final class AppCoordinator {
     let settings = await settingsRepository.load()
     let viewStore = viewStoreFactory.make()
     viewStore.send(.settingsAction(.settingsLoaded(settings)))
-    if viewStore.isPremium, settings.autoStart {
+    if viewStore.isPremium, settings.autoStart != false {
       viewStore.send(.startAction(.autostart))
     }
     await Task.wait(.seconds(0.1))

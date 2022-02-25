@@ -20,7 +20,30 @@ public struct SettingsView: View {
 
       interfaceSectionView
 
+      proSectionView
+
       infoSectionView
+    }
+  }
+
+  private var proSectionView: some View {
+    Section(header: Text(language.string(.pro)).foregroundColor(appearance.color(.proColor))) {
+      if !viewStore.isPremium {
+        Button {
+          viewStore.send(.upgradeToPro)
+        } label: {
+          Text(verbatim: "Upgrade to pro, 7 day free trial")
+            .foregroundColor(appearance.color(.textColorDefault))
+        }
+      }
+
+      Toggle(isOn: viewStore.binding(\.$settings.autoStart)) {
+        Text(language.string(.autostart))
+          .foregroundColor(
+            viewStore.isPremium ? appearance.color(.textColorDefault) : appearance.color(.textColorDisabled)
+          )
+      }
+      .disabled(!viewStore.isPremium)
     }
   }
 
@@ -84,10 +107,6 @@ public struct SettingsView: View {
         ForEach(maxFileLengths, id: \.self) {
           Text(language.duration($0)).tag($0)
         }
-      }
-
-      Toggle(isOn: viewStore.binding(\.$settings.autoStart)) {
-        Text(language.string(.autostart))
       }
     }
   }

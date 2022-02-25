@@ -1,4 +1,4 @@
-public enum PolarPattern {
+public enum PolarPattern: CaseIterable {
   case stereo
   case subcardioid
   case `default`
