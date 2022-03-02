@@ -3,10 +3,12 @@ import SwiftUI
 import Assets
 import ComposableArchitecture
 import Device
+import LocalizedUtils
 
 public struct StartView: View {
   @Environment(\.language) var language
   @Environment(\.appearance) var appearance
+  @Environment(\.verticalSizeClass) var sizeClass
   @ObservedObject var viewStore: ViewStore<StartState, StartAction>
 
   public init(store: Store<StartState, StartAction>) {
@@ -14,6 +16,15 @@ public struct StartView: View {
   }
 
   public var body: some View {
+    ZStack {
+      appearance.color(.secondaryBackgroundColor)
+        .edgesIgnoringSafeArea(.all)
+
+      view
+    }
+  }
+
+  private var view: some View {
     GeometryReader { geometry in
       VStack(spacing: 0) {
         ScrollView(.vertical, showsIndicators: false) {
@@ -51,16 +62,46 @@ public struct StartView: View {
   }
 
   private var startButtonView: some View {
-    Button {
-      viewStore.send(.start)
-    } label: {
-      RoundedRectangle(cornerRadius: 10)
-        .frame(maxWidth: .infinity)
-        .frame(height: 50)
-        .foregroundColor(.accentColor)
-        .overlay(buttonOverlayView)
+    let verticalSpacing: CGFloat = sizeClass == .compact ? 5 : 10
+    return VStack(alignment: .leading, spacing: verticalSpacing) {
+      HStack(spacing: 15) {
+        appearance.image(.startIcon)
+          .frame(width: 40)
+
+        VStack(alignment: .leading, spacing: 0) {
+          HStack {
+            Text(language.fullAppName())
+
+            if viewStore.isPremium {
+              Text(language.string(.pro))
+                .foregroundColor(appearance.color(.proColor))
+            }
+          }
+
+          Text(language.occupiedSpace(viewStore.occupiedSpace))
+
+          Text(language.lastCapture(viewStore.lastCapture))
+        }
+        .font(.footnote)
+        .foregroundColor(appearance.color(.textColorDisabled))
+      }
+
+      Button {
+        viewStore.send(.start)
+      } label: {
+        RoundedRectangle(cornerRadius: 10)
+          .frame(maxWidth: .infinity)
+          .frame(height: 50)
+          .foregroundColor(.accentColor)
+          .overlay(buttonOverlayView)
+      }
     }
-    .padding()
+    .padding(.horizontal, 10)
+    .padding(.vertical, verticalSpacing)
+    .background(
+      appearance.color(.mainBackgroundColor)
+        .edgesIgnoringSafeArea(.all)
+    )
   }
 
   @ViewBuilder private var buttonOverlayView: some View {

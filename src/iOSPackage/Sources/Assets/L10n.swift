@@ -32,6 +32,8 @@ public enum L10n: String {
   case clearAssets = "CLEAR_ASSETS"
   /// Contact us
   case contactUs = "CONTACT_US"
+  /// Continue
+  case `continue` = "CONTINUE"
   /// Dark
   case darkTheme = "DARK_THEME"
   /// Delete
@@ -102,6 +104,16 @@ public enum L10n: String {
   case orientationLandscape = "ORIENTATION_LANDSCAPE"
   /// Portrait
   case orientationPortrait = "ORIENTATION_PORTRAIT"
+  /// • No ads
+  case paywallFeature1 = "PAYWALL_FEATURE_1"
+  /// • DVR Auto launch
+  case paywallFeature2 = "PAYWALL_FEATURE_2"
+  /// • Dual camera mode
+  case paywallFeature3 = "PAYWALL_FEATURE_3"
+  /// • Front camera configuration
+  case paywallFeature4 = "PAYWALL_FEATURE_4"
+  /// • 7-day free trial
+  case paywallFeature5 = "PAYWALL_FEATURE_5"
   /// Play
   case play = "PLAY"
   /// Polar pattern

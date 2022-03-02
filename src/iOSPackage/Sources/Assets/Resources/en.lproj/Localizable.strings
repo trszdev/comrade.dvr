@@ -117,3 +117,11 @@
 
 "STARTING_IN" = "Starting in %@";
 "PRO" = "PRO";
+
+"PAYWALL_FEATURE_1" = "• No ads";
+"PAYWALL_FEATURE_2" = "• DVR Auto launch";
+"PAYWALL_FEATURE_3" = "• Dual camera mode";
+"PAYWALL_FEATURE_4" = "• Front camera configuration";
+"PAYWALL_FEATURE_5" = "• 7-day free trial";
+
+"CONTINUE" = "Continue";

@@ -38,6 +38,11 @@ struct ExternalDependency {
     target: .product(name: "Util", package: "UniversalPackage"),
     package: .package(name: "UniversalPackage", path: "../UniversalPackage")
   )
+
+  static let spStorkController = Self(
+    target: .product(name: "SPStorkController", package: "SPStorkController"),
+    package: .package(url: "https://github.com/ivanvorobei/SPStorkController", "1.8.5"..."2.0.0")
+  )
 }
 
 // MARK: - Modules
@@ -89,7 +94,14 @@ struct Module {
       .history,
       .start,
       .device,
-    ]
+      .paywall,
+    ],
+    externalDependencies: [.spStorkController]
+  )
+
+  static let paywall = Self(
+    name: "Paywall",
+    moduleDependencies: [.swinjectExtensions, .composableArchitectureExtensions]
   )
 
   static let app = Self(
@@ -137,6 +149,7 @@ struct Module {
     .cameraKit,
     .commonTestModule(for: .cameraKit),
     .device,
+    .paywall,
   ]
 
   private static func commonTestModule(for module: Self) -> Self {

@@ -15,6 +15,10 @@ public extension FileSize {
     FileSize(bytes: gigabytes * 1024 * 1024 * 1024)
   }
 
+  static var zero: FileSize {
+    .init(bytes: 0)
+  }
+
   var kilobytes: Double {
     Double(bytes) / 1024
   }

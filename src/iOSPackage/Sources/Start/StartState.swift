@@ -2,6 +2,7 @@ import ComposableArchitecture
 import Device
 import CommonUI
 import Combine
+import Util
 
 public struct StartState: Equatable {
   public struct LocalState: Equatable {
@@ -14,13 +15,17 @@ public struct StartState: Equatable {
   public var frontCameraState: DeviceCameraState = .init(enabled: false, configuration: .defaultFrontCamera)
   public var backCameraState: DeviceCameraState = .init(enabled: true, configuration: .defaultBackCamera)
   public var microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default)
+  public var occupiedSpace: FileSize = .zero
+  public var lastCapture: Date?
 
   public init(
     localState: LocalState = .init(),
     isPremium: Bool = false,
     frontCameraState: DeviceCameraState = .init(enabled: false, configuration: .defaultFrontCamera),
     backCameraState: DeviceCameraState = .init(enabled: true, configuration: .defaultBackCamera),
-    microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default)
+    microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default),
+    occupiedSpace: FileSize = .zero,
+    lastCapture: Date? = nil
   ) {
     self.localState = localState
     self.isPremium = isPremium

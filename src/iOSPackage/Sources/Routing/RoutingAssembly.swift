@@ -8,6 +8,7 @@ import SwinjectExtensions
 import History
 import Start
 import Device
+import Paywall
 
 public enum RoutingAssembly: SharedAssembly {
   case shared
@@ -26,14 +27,21 @@ public enum RoutingAssembly: SharedAssembly {
     container.assembleSettings()
 
     container.assembleDevices()
-    return [SettingsAssembly.shared, HistoryAssembly.shared, StartAssembly.shared, DeviceAssembly.shared]
+    container.assemblePaywall()
+    return [
+      SettingsAssembly.shared,
+      HistoryAssembly.shared,
+      StartAssembly.shared,
+      DeviceAssembly.shared,
+      PaywallAssembly.shared,
+    ]
   }
 }
 
 private extension Container {
   func assembleSession() {
-    register(SessionRouting.self) { _ in
-      StubRouter(viewController: UIHostingController(rootView: Color.green))
+    registerWithView(SessionRouting.self, with: PaywallView.self) { viewController, _ in
+      StubRouter(viewController: viewController)
     }
   }
 
@@ -67,7 +75,8 @@ private extension Container {
       Router(
         tabRoutingFactory: .init(resolver.resolve(TabRouting.self)!),
         loadingRoutingFactory: .init(resolver.resolve(LoadingRouting.self)!),
-        sessionRoutingFactory: .init(resolver.resolve(SessionRouting.self)!)
+        sessionRoutingFactory: .init(resolver.resolve(SessionRouting.self)!),
+        paywallRoutingFactory: .init(resolver.resolve(PaywallRouting.self)!)
       )
     }
     .implements(Router.self)
@@ -116,6 +125,14 @@ private extension Container {
       )
     }
     autoregister(TabBarViewController.self, initializer: TabBarViewController.init)
+  }
+
+  func assemblePaywall() {
+    registerWithView(PaywallRouting.self, with: PaywallView.self) { viewController, _ in
+      let customizableViewController = CustomizableHostingController(rootView: viewController.rootView)
+      customizableViewController.forcedStatusBarStyle = .lightContent
+      return StubRouter(viewController: customizableViewController)
+    }
   }
 
   func assembleLoading() {

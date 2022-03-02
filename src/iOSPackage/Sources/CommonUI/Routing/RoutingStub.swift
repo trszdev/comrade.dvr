@@ -4,6 +4,7 @@ public final class RoutingStub: Routing {
   public var tabRouting: TabRouting?
   public var loadingRouting: LoadingRouting?
   public var sessionRouting: SessionRouting?
+  public var paywallRouting: PaywallRouting?
 
   public func selectTab(animated: Bool) async {
   }
@@ -12,5 +13,8 @@ public final class RoutingStub: Routing {
   }
 
   public func selectSession(animated: Bool) async {
+  }
+
+  public func showPaywall(animated: Bool) async {
   }
 }

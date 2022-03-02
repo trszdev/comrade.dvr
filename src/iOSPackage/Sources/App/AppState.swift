@@ -5,6 +5,7 @@ import CommonUI
 import History
 import Start
 import Device
+import Paywall
 
 public struct AppState: Equatable {
   public var settings: Settings = .init()
@@ -35,6 +36,8 @@ public struct AppState: Equatable {
   public var microphoneState: DeviceMicrophoneState = .init(enabled: true)
   public var isPremium: Bool = false
 
+  public var paywallState: PaywallState = .init()
+
   public var startLocalState: StartState.LocalState = .init()
   public var startState: StartState {
     get {
@@ -58,6 +61,7 @@ public enum AppAction {
   case deviceCameraAction(DeviceCameraAction)
   case deviceMicrophoneAction(DeviceMicrophoneAction)
   case startAction(StartAction)
+  case paywallAction(PaywallAction)
 }
 
 public struct AppEnvironment {
@@ -87,7 +91,7 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   },
 
   settingsReducer.pullback(state: \.settingsState, action: /AppAction.settingsAction) {
-    .init(repository: $0.settingsRepository)
+    .init(repository: $0.settingsRepository, routing: $0.routing)
   },
 
   historyReducer.pullback(state: \.historyState, action: /AppAction.historyAction) {
@@ -100,5 +104,7 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
 
   deviceCameraReducer.pullback(state: \.selectedCameraState, action: /AppAction.deviceCameraAction),
 
-  deviceMicrophoneReducer.pullback(state: \.microphoneState, action: /AppAction.deviceMicrophoneAction)
+  deviceMicrophoneReducer.pullback(state: \.microphoneState, action: /AppAction.deviceMicrophoneAction),
+
+  paywallReducer.pullback(state: \.paywallState, action: /AppAction.paywallAction)
 )

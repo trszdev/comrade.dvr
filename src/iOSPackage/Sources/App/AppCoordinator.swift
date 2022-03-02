@@ -41,6 +41,7 @@ public final class AppCoordinator {
     }
     await Task.wait(.seconds(0.1))
     await router.selectTab(animated: true)
+    await router.showPaywall(animated: true)
   }
 
   private let router: Router

@@ -116,3 +116,11 @@
 
 "STARTING_IN" = "Запуск через %@";
 "PRO" = "PRO";
+
+"PAYWALL_FEATURE_1" = "• Без рекламы";
+"PAYWALL_FEATURE_2" = "• Автозапуск регистратора";
+"PAYWALL_FEATURE_3" = "• Режим двух камер";
+"PAYWALL_FEATURE_4" = "• Настройка фронтальной камеры";
+"PAYWALL_FEATURE_5" = "• 7-ми дневный пробный период";
+
+"CONTINUE" = "Продолжить";

@@ -40,6 +40,7 @@ private extension Container {
     registerStore(state: \.selectedCameraState, action: AppAction.deviceCameraAction)
     registerStore(state: \.microphoneState, action: AppAction.deviceMicrophoneAction)
     registerStore(state: \.startState, action: AppAction.startAction)
+    registerStore(state: \.paywallState, action: AppAction.paywallAction)
   }
 
   func registerStore<LocalState: Equatable, LocalAction>(

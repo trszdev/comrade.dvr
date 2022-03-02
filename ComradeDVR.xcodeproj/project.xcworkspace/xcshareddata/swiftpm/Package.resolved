@@ -110,6 +110,15 @@
         }
       },
       {
+        "package": "SPStorkController",
+        "repositoryURL": "https://github.com/ivanvorobei/SPStorkController",
+        "state": {
+          "branch": null,
+          "revision": "87440c439e84bea61b28e82788ae704ab7171eb1",
+          "version": "1.8.5"
+        }
+      },
+      {
         "package": "swift-case-paths",
         "repositoryURL": "https://github.com/pointfreeco/swift-case-paths",
         "state": {

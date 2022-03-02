@@ -26,14 +26,39 @@ public struct SettingsView: View {
     }
   }
 
+  private var proLabelView: some View {
+    Text(language.string(.pro))
+      .foregroundColor(appearance.color(.proColor))
+      .overlay(
+        HStack {
+          if viewStore.isPremium {
+            Image(systemName: "checkmark")
+              .resizable()
+              .foregroundColor(appearance.color(.proCheckmarkColor))
+              .scaledToFit()
+              .frame(width: 10)
+          }
+          Spacer()
+        }
+        .offset(x: -15)
+      )
+  }
+
   private var proSectionView: some View {
-    Section(header: Text(language.string(.pro)).foregroundColor(appearance.color(.proColor))) {
+    Section(header: proLabelView) {
       if !viewStore.isPremium {
         Button {
           viewStore.send(.upgradeToPro)
         } label: {
-          Text(verbatim: "Upgrade to pro, 7 day free trial")
-            .foregroundColor(appearance.color(.textColorDefault))
+          HStack {
+            Text(verbatim: "Upgrade to pro, 7 day free trial")
+              .foregroundColor(appearance.color(.textColorDefault))
+
+            Spacer()
+
+            Image(systemName: "chevron.right.2")
+              .foregroundColor(appearance.color(.proColor))
+          }
         }
       }
 
@@ -52,7 +77,7 @@ public struct SettingsView: View {
       Button {
         viewStore.send(.contactUs)
       } label: {
-        Text(verbatim: L10n.appEmail)
+        Text(verbatim: language.appEmail)
       }
 
       DestructiveButton {

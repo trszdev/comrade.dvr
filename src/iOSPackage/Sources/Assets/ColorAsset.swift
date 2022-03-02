@@ -3,7 +3,9 @@
 
 public enum ColorAsset: String {
   case mainBackgroundColor = "MainBackgroundColor"
+  case proCheckmarkColor = "ProCheckmarkColor"
   case proColor = "ProColor"
+  case secondaryBackgroundColor = "SecondaryBackgroundColor"
   case textColorDefault = "TextColorDefault"
   case textColorDestructive = "TextColorDestructive"
   case textColorDisabled = "TextColorDisabled"

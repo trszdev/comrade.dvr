@@ -1,17 +1,20 @@
 import UIKit
 import CommonUI
 import Util
+import SPStorkController
 
 @MainActor
 public final class Router: Routing {
   public nonisolated init(
     tabRoutingFactory: Factory<TabRouting>,
     loadingRoutingFactory: Factory<LoadingRouting>,
-    sessionRoutingFactory: Factory<SessionRouting>
+    sessionRoutingFactory: Factory<SessionRouting>,
+    paywallRoutingFactory: Factory<PaywallRouting>
   ) {
     self.tabRoutingFactory = tabRoutingFactory
     self.loadingRoutingFactory = loadingRoutingFactory
     self.sessionRoutingFactory = sessionRoutingFactory
+    self.paywallRoutingFactory = paywallRoutingFactory
   }
 
   public var window: UIWindow?
@@ -19,9 +22,11 @@ public final class Router: Routing {
   public private(set) var tabRouting: TabRouting?
   public private(set) var loadingRouting: LoadingRouting?
   public private(set) var sessionRouting: SessionRouting?
+  public private(set) var paywallRouting: PaywallRouting?
   private let tabRoutingFactory: Factory<TabRouting>
   private let loadingRoutingFactory: Factory<LoadingRouting>
   private let sessionRoutingFactory: Factory<SessionRouting>
+  private let paywallRoutingFactory: Factory<PaywallRouting>
 
   public func selectTab(animated: Bool) async {
     guard tabRouting == nil else { return }
@@ -49,5 +54,21 @@ public final class Router: Routing {
     loadingRouting = nil
     tabRouting = nil
     await window?.set(rootViewController: sessionRouting.viewController, animated: animated)
+  }
+
+  public func showPaywall(animated: Bool) async {
+    guard sessionRouting == nil else { return }
+    let paywallRouting = paywallRoutingFactory.make()
+    self.paywallRouting = paywallRouting
+    let controller = paywallRouting.viewController
+    controller.deinitCallback().callback = { [weak self] in
+      self?.paywallRouting = nil
+    }
+    let transitionDelegate = SPStorkTransitioningDelegate()
+    transitionDelegate.customHeight = 330
+    controller.transitioningDelegate = transitionDelegate
+    controller.modalPresentationStyle = .custom
+    controller.modalPresentationCapturesStatusBarAppearance = true
+    await window?.rootViewController?.present(viewController: controller, animated: animated)
   }
 }

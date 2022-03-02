@@ -2,6 +2,7 @@ import ComposableArchitecture
 import Util
 import Assets
 import UIKit
+import CommonUI
 
 public struct SettingsState: Equatable {
   public init(isPremium: Bool = false, settings: Settings = .init()) {
@@ -23,9 +24,11 @@ public enum SettingsAction: BindableAction {
 
 public struct SettingsEnvironment {
   public var repository: SettingsRepository = SettingsRepositoryStub()
+  public var routing: Routing = RoutingStub()
 
-  public init(repository: SettingsRepository = SettingsRepositoryStub()) {
+  public init(repository: SettingsRepository = SettingsRepositoryStub(), routing: Routing = RoutingStub()) {
     self.repository = repository
+    self.routing = routing
   }
 }
 
@@ -33,7 +36,7 @@ public let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvi
   switch action {
   case .contactUs:
     let application = UIApplication.shared
-    guard let url = URL(string: "mailto:\(L10n.appEmail)"), application.canOpenURL(url) else {
+    guard let url = URL(string: "mailto:\(Optional(Language.en).appEmail)"), application.canOpenURL(url) else {
       return .none
     }
     application.open(url, options: [:], completionHandler: nil)
@@ -44,7 +47,9 @@ public let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvi
   case .settingsLoaded(let settings):
     state.settings = settings
   case .upgradeToPro:
-    break
+    return .task {
+      await environment.routing.showPaywall(animated: true)
+    }
   default:
     break
   }

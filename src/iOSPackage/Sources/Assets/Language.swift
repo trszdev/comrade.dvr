@@ -49,4 +49,27 @@ public extension Optional where Wrapped == Language {
     formatter.unitsStyle = .full
     return formatter.string(from: timeInterval)!
   }
+
+  var appEmail: String {
+    "comrade.dvr@gmail.com"
+  }
+
+  func appName(bundle: Bundle = .main) -> String {
+    bundleKey(key: "CFBundleDisplayName") ?? ""
+  }
+
+  func appVersion(bundle: Bundle = .main) -> String {
+    bundleKey(key: "CFBundleShortVersionString") ?? ""
+  }
+
+  func fullAppName(bundle: Bundle = .main) -> String {
+    guard let version = bundleKey(key: "CFBundleShortVersionString") else { return "" }
+    return "\(appName()) v\(version)"
+  }
+
+  private func bundleKey(key: String, bundle: Bundle = .main) -> String? {
+    var infoPlist = bundle.infoDictionary ?? [:]
+    infoPlist.merge(bundle.localizedInfoDictionary ?? [:]) { $1 }
+    return infoPlist[key] as? String
+  }
 }
