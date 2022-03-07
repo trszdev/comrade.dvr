@@ -5,6 +5,7 @@ import Assets
 import LocalizedUtils
 import ComposableArchitectureExtensions
 import CommonUI
+import Permissions
 
 public struct SettingsView: View {
   @Environment(\.language) var language
@@ -20,9 +21,19 @@ public struct SettingsView: View {
 
       interfaceSectionView
 
+      if let notificationsEnabled = viewStore.localState.notificationsEnabled {
+        pushSectionView(notificationsEnabled: notificationsEnabled)
+      }
+
       proSectionView
 
       infoSectionView
+    }
+    .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+      viewStore.send(.updatePermissionStatus)
+    }
+    .onAppear {
+      viewStore.send(.updatePermissionStatus)
     }
   }
 
@@ -133,6 +144,28 @@ public struct SettingsView: View {
           Text(language.duration($0)).tag($0)
         }
       }
+    }
+  }
+
+  private func pushSectionView(notificationsEnabled: Bool) -> some View {
+    Section(header: Text(language.pushSectionHeader(notificationsEnabled))) {
+      let binding = viewStore.binding(\.$settings.recordingNotifications)
+
+      if !notificationsEnabled {
+        Button {
+          viewStore.send(.openNotificationSettings)
+        } label: {
+          Text(language.string(.permissionsDenied))
+        }
+      }
+
+      Toggle(isOn: binding) {
+        Text(language.string(.record))
+          .foregroundColor(
+            notificationsEnabled ? appearance.color(.textColorDefault) : appearance.color(.textColorDisabled)
+          )
+      }
+      .disabled(!notificationsEnabled)
     }
   }
 

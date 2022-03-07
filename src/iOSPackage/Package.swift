@@ -43,6 +43,24 @@ struct ExternalDependency {
     target: .product(name: "SPStorkController", package: "SPStorkController"),
     package: .package(url: "https://github.com/ivanvorobei/SPStorkController", "1.8.5"..."2.0.0")
   )
+
+  static let spPermissionsCamera = Self(
+    id: 0,
+    target: .product(name: "SPPermissionsCamera", package: "SPPermissions"),
+    package: .package(url: "https://github.com/ivanvorobei/SPPermissions", "7.1.5"..."8.0.0")
+  )
+
+  static let spPermissionsNotification = Self(
+    id: 0,
+    target: .product(name: "SPPermissionsNotification", package: "SPPermissions"),
+    package: .package(url: "https://github.com/ivanvorobei/SPPermissions", "7.1.5"..."8.0.0")
+  )
+
+  static let spPermissionsMicrophone = Self(
+    id: 0,
+    target: .product(name: "SPPermissionsMicrophone", package: "SPPermissions"),
+    package: .package(url: "https://github.com/ivanvorobei/SPPermissions", "7.1.5"..."8.0.0")
+  )
 }
 
 // MARK: - Modules
@@ -76,12 +94,12 @@ struct Module {
 
   static let settings = Self(
     name: "Settings",
-    moduleDependencies: [.composableArchitectureExtensions, .localizedUtils, .swinjectExtensions, .commonUI]
+    moduleDependencies: [.composableArchitectureExtensions, .commonUI, .permissions]
   )
 
   static let start = Self(
     name: "Start",
-    moduleDependencies: [.composableArchitectureExtensions, .localizedUtils, .swinjectExtensions, .commonUI, .device]
+    moduleDependencies: [.composableArchitectureExtensions, .commonUI, .device, .permissions]
   )
 
   static let routing = Self(
@@ -95,9 +113,19 @@ struct Module {
       .start,
       .device,
       .paywall,
+      .permissions,
     ],
     externalDependencies: [.spStorkController]
   )
+
+  static let permissions = Self(
+    name: "Permissions",
+    moduleDependencies: [.localizedUtils, .swinjectExtensions],
+    externalDependencies: [
+      .spPermissionsCamera,
+      .spPermissionsMicrophone,
+      .spPermissionsNotification,
+  ])
 
   static let paywall = Self(
     name: "Paywall",
@@ -150,6 +178,7 @@ struct Module {
     .commonTestModule(for: .cameraKit),
     .device,
     .paywall,
+    .permissions,
   ]
 
   private static func commonTestModule(for module: Self) -> Self {

@@ -35,7 +35,7 @@ struct SettingsUserDefaultsRepository: SettingsRepository {
         let decoded = try JSONDecoder().decode(Settings.self, from: data)
         return decoded
       } catch {
-        Assert.unexpected(error.localizedDescription)
+        log.warn(error: error)
       }
     }
     return .init()

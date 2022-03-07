@@ -10,7 +10,7 @@ public final class HistoryRouter: HistoryRouting {
     guard shareRouting == nil else { return }
     let shareRouting = shareRoutingFactory.make()
     self.shareRouting = shareRouting
-    shareRouting.viewController.deinitCallback().callback = { [weak self] in
+    TrackingViewController.installOnParent(shareRouting.viewController) {} viewDidDisappear: { [weak self] _ in
       self?.shareRouting = nil
     }
     await viewController.present(viewController: shareRouting.viewController, animated: animated)

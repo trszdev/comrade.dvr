@@ -20,6 +20,8 @@ public enum L10n: String {
   case backCamera = "BACK_CAMERA"
   /// Bitrate
   case bitrate = "BITRATE"
+  /// Camera
+  case camera = "CAMERA"
   /// Camera permission is required to start DVR
   case cameraPermissionAlertText = "CAMERA_PERMISSION_ALERT_TEXT"
   /// Cancel
@@ -94,6 +96,8 @@ public enum L10n: String {
   case microphoneUnmuted = "MICROPHONE_UNMUTED"
   /// No
   case no = "NO"
+  /// Push notifications
+  case notifications = "NOTIFICATIONS"
   /// ОК
   case ok = "OK"
   /// Open system settings
@@ -114,6 +118,28 @@ public enum L10n: String {
   case paywallFeature4 = "PAYWALL_FEATURE_4"
   /// • 7-day free trial
   case paywallFeature5 = "PAYWALL_FEATURE_5"
+  /// ALLOW
+  case permissionsBtnAllow = "PERMISSIONS_BTN_ALLOW"
+  /// OK
+  case permissionsBtnAllowed = "PERMISSIONS_BTN_ALLOWED"
+  /// DENIED
+  case permissionsBtnDenied = "PERMISSIONS_BTN_DENIED"
+  /// Required for cameras setup and video recording
+  case permissionsCamera = "PERMISSIONS_CAMERA"
+  /// Permissions are necessary for application to work properly. Notifications aren't required.
+  case permissionsCaption = "PERMISSIONS_CAPTION"
+  /// Permission denied
+  case permissionsDenied = "PERMISSIONS_DENIED"
+  /// Please, go to Settings and allow permission.
+  case permissionsDeniedDescription = "PERMISSIONS_DENIED_DESCRIPTION"
+  /// Required for microphone setup and audio recording
+  case permissionsMicrophone = "PERMISSIONS_MICROPHONE"
+  /// Start/stop notifications
+  case permissionsNotifications = "PERMISSIONS_NOTIFICATIONS"
+  /// Need Permission
+  case permissionsSubtitle = "PERMISSIONS_SUBTITLE"
+  /// PERMISSIONS REQUEST
+  case permissionsTitle = "PERMISSIONS_TITLE"
   /// Play
   case play = "PLAY"
   /// Polar pattern

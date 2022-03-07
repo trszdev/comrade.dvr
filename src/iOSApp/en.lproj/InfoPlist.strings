@@ -1,2 +1,2 @@
-NSMicrophoneUsageDescription = "Microphone is used by DVR";
-NSCameraUsageDescription = "Camera is used by DVR";
+NSMicrophoneUsageDescription = "Required for microphone setup and audio recording";
+NSCameraUsageDescription = "Required for cameras setup and video recording";

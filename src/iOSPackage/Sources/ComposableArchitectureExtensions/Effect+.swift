@@ -16,9 +16,9 @@ public extension Effect {
     .fireAndForget()
   }
 
-  static func async(block: @Sendable @escaping () async -> Output) -> Effect<Output, Never> {
+  static func async(block: @Sendable @escaping () async -> Effect<Output, Never>) -> Effect<Output, Never> {
     Deferred {
-      Future<Output, Never> { promise in
+      Future<Effect<Output, Never>, Never> { promise in
         Task {
           let output = await block()
           promise(.success(output))
@@ -26,6 +26,7 @@ public extension Effect {
       }
     }
     .receive(on: DispatchQueue.main)
+    .flatMap { $0 }
     .eraseToEffect()
   }
 

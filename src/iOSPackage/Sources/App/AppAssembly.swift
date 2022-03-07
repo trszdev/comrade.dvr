@@ -13,7 +13,15 @@ public enum AppAssembly: SharedAssembly {
 
   public func assembleWithChildren(container: Container) -> [SharedAssembly] {
     container.registerStores()
-    container.autoregister(AppEnvironment.self, initializer: AppEnvironment.init(routing:settingsRepository:))
+    container.autoregister(
+      AppEnvironment.self,
+      initializer: AppEnvironment.init(
+        routing:
+        settingsRepository:
+        permissionDialogPresenting:
+        permissionChecker:
+      )
+    )
     container.registerSingleton(AppCoordinator.self) { resolver in
       .init(
         router: resolver.resolve(Router.self)!,

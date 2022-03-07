@@ -61,14 +61,16 @@ public final class Router: Routing {
     let paywallRouting = paywallRoutingFactory.make()
     self.paywallRouting = paywallRouting
     let controller = paywallRouting.viewController
-    controller.deinitCallback().callback = { [weak self] in
+    let trackVC = TrackingViewController(controller) {} viewDidDisappear: { [weak self] _ in
       self?.paywallRouting = nil
     }
     let transitionDelegate = SPStorkTransitioningDelegate()
     transitionDelegate.customHeight = 330
-    controller.transitioningDelegate = transitionDelegate
-    controller.modalPresentationStyle = .custom
-    controller.modalPresentationCapturesStatusBarAppearance = true
-    await window?.rootViewController?.present(viewController: controller, animated: animated)
+    transitionDelegate.showIndicator = false
+    transitionDelegate.showCloseButton = true
+    trackVC.transitioningDelegate = transitionDelegate
+    trackVC.modalPresentationStyle = .custom
+    trackVC.modalPresentationCapturesStatusBarAppearance = true
+    await window?.rootViewController?.present(viewController: trackVC, animated: animated)
   }
 }

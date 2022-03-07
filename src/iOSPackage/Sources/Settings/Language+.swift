@@ -12,6 +12,10 @@ public extension Optional where Wrapped == Language {
     }
   }
 
+  func pushSectionHeader(_ notificationsEnabled: Bool) -> String {
+    notificationsEnabled ? string(.notifications) : "\(string(.notifications)) (\(string(.unavailable)))"
+  }
+
   func appearanceName(_ appearance: Appearance?) -> String {
     switch appearance {
     case .none:

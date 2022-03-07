@@ -124,3 +124,21 @@
 "PAYWALL_FEATURE_5" = "• 7-ми дневный пробный период";
 
 "CONTINUE" = "Продолжить";
+
+"NOTIFICATIONS" = "Уведомления";
+
+"PERMISSIONS_TITLE" = "ЗАПРОС";
+"PERMISSIONS_SUBTITLE" = "Нужны разрешения";
+"PERMISSIONS_CAPTION" = "Разрешения необходимы для правильной работы приложения. Уведомления не обязательны.";
+"PERMISSIONS_CAMERA" = "Нужна для настройки камер и записи видео";
+"PERMISSIONS_MICROPHONE" = "Нужен для настройки микрофона и записи аудио";
+"PERMISSIONS_NOTIFICATIONS" = "Уведомления начала/конца записи";
+
+"PERMISSIONS_BTN_ALLOW" = "ДАЛЕЕ";
+"PERMISSIONS_BTN_ALLOWED" = "OK";
+"PERMISSIONS_BTN_DENIED" = "ЗАПРЕТ";
+
+"PERMISSIONS_DENIED" = "Требуются разрешения";
+"PERMISSIONS_DENIED_DESCRIPTION" = "Пожалуйста, пройдите в настройки приложения и дайте разрешения";
+
+"CAMERA" = "Камера";

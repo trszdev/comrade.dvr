@@ -1,6 +1,7 @@
 import ComposableArchitecture
 import ThumbnailKit
 import CommonUI
+import Util
 
 public struct HistoryState: Equatable {
   public struct Section: Equatable {
@@ -51,7 +52,7 @@ public let historyReducer = Reducer<HistoryState, HistoryAction, HistoryEnvironm
   case .reload:
     return .async {
       let sections = await environment.repository.loadHistory()
-      return .loaded(sections)
+      return .init(value: .loaded(sections))
     }
   case .loaded(let sections):
     guard sections != state.sections else { return .none }
@@ -65,7 +66,7 @@ public let historyReducer = Reducer<HistoryState, HistoryAction, HistoryEnvironm
     return .async {
       try? await Task.sleep(.seconds(0.7)) // solves context menu glitch
       await environment.repository.remove(item)
-      return .reload
+      return .init(value: .reload)
     }
   case .share(let item):
     state.shareItem = item

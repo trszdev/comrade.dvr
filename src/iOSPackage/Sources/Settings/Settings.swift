@@ -9,7 +9,8 @@ public struct Settings: Codable, Equatable {
     orientation: Settings.Orientation? = nil,
     language: Language? = nil,
     appearance: Appearance? = nil,
-    autoStart: Bool = false
+    autoStart: Bool = false,
+    recordingNotifications: Bool = true
   ) {
     self.totalFileSize = totalFileSize
     self.maxFileLength = maxFileLength
@@ -17,6 +18,7 @@ public struct Settings: Codable, Equatable {
     self.language = language
     self.appearance = appearance
     self.autoStart = autoStart
+    self.recordingNotifications = recordingNotifications
   }
 
   public enum Orientation: CaseIterable, Codable {
@@ -30,4 +32,5 @@ public struct Settings: Codable, Equatable {
   public var language: Language?
   public var appearance: Appearance?
   public var autoStart: Bool
+  public var recordingNotifications: Bool
 }

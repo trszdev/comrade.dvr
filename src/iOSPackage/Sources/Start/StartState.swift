@@ -3,6 +3,7 @@ import Device
 import CommonUI
 import Combine
 import Util
+import Permissions
 
 public struct StartState: Equatable {
   public struct LocalState: Equatable {
@@ -17,6 +18,7 @@ public struct StartState: Equatable {
   public var microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default)
   public var occupiedSpace: FileSize = .zero
   public var lastCapture: Date?
+  public let hasStartPermissions: Bool
 
   public init(
     localState: LocalState = .init(),
@@ -25,13 +27,15 @@ public struct StartState: Equatable {
     backCameraState: DeviceCameraState = .init(enabled: true, configuration: .defaultBackCamera),
     microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default),
     occupiedSpace: FileSize = .zero,
-    lastCapture: Date? = nil
+    lastCapture: Date? = nil,
+    hasStartPermissions: Bool = true
   ) {
     self.localState = localState
     self.isPremium = isPremium
     self.frontCameraState = frontCameraState
     self.backCameraState = backCameraState
     self.microphoneState = microphoneState
+    self.hasStartPermissions = hasStartPermissions
   }
 }
 
@@ -45,16 +49,26 @@ public enum StartAction {
   case autostart
   case autostartTick
   case cancelAutostart
+  case forceStart
 }
 
 public struct StartEnvironment {
-  public init(routing: Routing = RoutingStub(), mainQueue: AnySchedulerOf<DispatchQueue> = .main) {
+  public init(
+    routing: Routing = RoutingStub(),
+    mainQueue: AnySchedulerOf<DispatchQueue> = .main,
+    permissionDialogPresenting: PermissionDialogPresenting = PermissionDialogPresentingStub(),
+    permissionChecker: PermissionChecker = .live
+  ) {
     self.routing = routing
     self.mainQueue = mainQueue
+    self.permissionDialogPresenting = permissionDialogPresenting
+    self.permissionChecker = permissionChecker
   }
 
   public var routing: Routing = RoutingStub()
   public var mainQueue: AnySchedulerOf<DispatchQueue> = .main
+  public var permissionDialogPresenting: PermissionDialogPresenting = PermissionDialogPresentingStub()
+  public var permissionChecker: PermissionChecker = .live
 }
 
 public let startReducer = Reducer<StartState, StartAction, StartEnvironment> { state, action, environment in
@@ -69,12 +83,16 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment> { s
       return .init(value: .start)
     }
   case .autostart:
-    state.localState.autostartSecondsRemaining = 4
-    return .init(value: .autostartTick)
+    if state.hasStartPermissions {
+      state.localState.autostartSecondsRemaining = 4
+      return .init(value: .autostartTick)
+    }
   case .tapFrontCamera, .tapBackCamera:
     state.localState.autostartSecondsRemaining = nil
     return .merge(
       .task {
+        let hasAccess = await environment.permissionDialogPresenting.tryPresentDialog(for: .camera)
+        guard hasAccess else { return }
         await environment.routing.tabRouting?.startRouting?.openDeviceCamera(animated: true)
       },
       .cancel(id: AutostartTimerID())
@@ -83,6 +101,8 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment> { s
     state.localState.autostartSecondsRemaining = nil
     return .merge(
       .task {
+        let hasAccess = await environment.permissionDialogPresenting.tryPresentDialog(for: .microphone)
+        guard hasAccess else { return }
         await environment.routing.tabRouting?.startRouting?.openDeviceMicrophone(animated: true)
       },
       .cancel(id: AutostartTimerID())
@@ -92,9 +112,20 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment> { s
       state.localState.autostartSecondsRemaining = nil
       return .cancel(id: AutostartTimerID())
     } else {
-      return .task {
-        await environment.routing.selectSession(animated: true)
+      return .async {
+        let hasCameraAccess = environment.permissionChecker.authorized(.camera) == true
+        let hasMicrophoneAccess = environment.permissionChecker.authorized(.microphone) == true
+        let hasDeterminedNotification = environment.permissionChecker.authorized(.notification) != nil
+        if hasCameraAccess, hasMicrophoneAccess, hasDeterminedNotification {
+          return .init(value: .forceStart)
+        }
+        await environment.routing.tabRouting?.startRouting?.showPermissions(animated: true)
+        return .none
       }
+    }
+  case .forceStart:
+    return .task {
+      await environment.routing.selectSession(animated: true)
     }
   default:
     break

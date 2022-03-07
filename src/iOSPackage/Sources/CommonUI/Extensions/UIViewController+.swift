@@ -8,4 +8,12 @@ public extension UIViewController {
       }
     }
   }
+
+  var topmostPresented: UIViewController {
+    var presented = self
+    while let newPresented = presented.presentedViewController {
+      presented = newPresented
+    }
+    return presented
+  }
 }

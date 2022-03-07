@@ -6,15 +6,18 @@ import History
 import Start
 import Device
 import Paywall
+import Permissions
 
 public struct AppState: Equatable {
   public var settings: Settings = .init()
+  public var settingsLocalState = SettingsState.LocalState()
   public var settingsState: SettingsState {
     get {
-      .init(isPremium: isPremium, settings: settings)
+      .init(localState: settingsLocalState, isPremium: isPremium, settings: settings)
     }
     set {
       settings = newValue.settings
+      settingsLocalState = newValue.localState
     }
   }
   public var historyState: HistoryState = .init()
@@ -67,6 +70,8 @@ public enum AppAction {
 public struct AppEnvironment {
   public var routing: Routing = RoutingStub()
   public var settingsRepository: SettingsRepository = SettingsRepositoryStub()
+  public var permissionDialogPresenting: PermissionDialogPresenting = PermissionDialogPresentingStub()
+  public var permissionChecker: PermissionChecker = .live
 }
 
 public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
@@ -91,7 +96,12 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   },
 
   settingsReducer.pullback(state: \.settingsState, action: /AppAction.settingsAction) {
-    .init(repository: $0.settingsRepository, routing: $0.routing)
+    .init(
+      repository: $0.settingsRepository,
+      routing: $0.routing,
+      permissionDialogPresenting: $0.permissionDialogPresenting,
+      permissionChecker: $0.permissionChecker
+    )
   },
 
   historyReducer.pullback(state: \.historyState, action: /AppAction.historyAction) {
@@ -99,7 +109,7 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   },
 
   startReducer.pullback(state: \.startState, action: /AppAction.startAction) {
-    .init(routing: $0.routing)
+    .init(routing: $0.routing, permissionDialogPresenting: $0.permissionDialogPresenting)
   },
 
   deviceCameraReducer.pullback(state: \.selectedCameraState, action: /AppAction.deviceCameraAction),

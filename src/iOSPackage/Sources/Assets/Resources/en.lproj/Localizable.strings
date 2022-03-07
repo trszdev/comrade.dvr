@@ -125,3 +125,21 @@
 "PAYWALL_FEATURE_5" = "• 7-day free trial";
 
 "CONTINUE" = "Continue";
+
+"NOTIFICATIONS" = "Notifications";
+
+"PERMISSIONS_TITLE" = "PERMISSIONS REQUEST";
+"PERMISSIONS_SUBTITLE" = "Need Permission";
+"PERMISSIONS_CAPTION" = "Permissions are necessary for application to work properly. Notifications aren't required.";
+"PERMISSIONS_CAMERA" = "Required for cameras setup and video recording";
+"PERMISSIONS_MICROPHONE" = "Required for microphone setup and audio recording";
+"PERMISSIONS_NOTIFICATIONS" = "Start/stop notifications";
+
+"PERMISSIONS_BTN_ALLOW" = "ALLOW";
+"PERMISSIONS_BTN_ALLOWED" = "OK";
+"PERMISSIONS_BTN_DENIED" = "DENIED";
+
+"PERMISSIONS_DENIED" = "Permission denied";
+"PERMISSIONS_DENIED_DESCRIPTION" = "Please, go to Settings and allow permission.";
+
+"CAMERA" = "Camera";

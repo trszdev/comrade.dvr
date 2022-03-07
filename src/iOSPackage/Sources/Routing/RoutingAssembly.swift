@@ -9,6 +9,9 @@ import History
 import Start
 import Device
 import Paywall
+import Util
+import Assets
+import Permissions
 
 public enum RoutingAssembly: SharedAssembly {
   case shared
@@ -34,6 +37,7 @@ public enum RoutingAssembly: SharedAssembly {
       StartAssembly.shared,
       DeviceAssembly.shared,
       PaywallAssembly.shared,
+      PermissionsAssembly.shared,
     ]
   }
 }
@@ -108,10 +112,14 @@ private extension Container {
         rootViewController: viewController,
         navigationController: resolver.resolve(UINavigationController.self, name: .startNavigation)!,
         deviceCameraRoutingFactory: .init(resolver.resolve(DeviceCameraRouting.self)!),
-        deviceMicrophoneRoutingFactory: .init(resolver.resolve(DeviceMicrophoneRouting.self)!)
+        deviceMicrophoneRoutingFactory: .init(resolver.resolve(DeviceMicrophoneRouting.self)!),
+        permissionRoutingFactory: .init(resolver.resolve(PermissionRouting.self)!)
       )
     }
     .inObjectScope(.container)
+    autoregister(PermissionRouter.self, initializer: PermissionRouter.init)
+      .implements(PermissionRouting.self)
+    .inObjectScope(.transient)
     registerSingleton(UINavigationController.self, name: .startNavigation) { _ in .init() }
   }
 
@@ -147,7 +155,7 @@ private extension Container {
     registerWithView(SettingsRouting.self, with: SettingsView.self) { viewController, resolver in
       let navigationController = resolver.resolve(UINavigationController.self, name: .settingsNavigation)!
       navigationController.viewControllers = [viewController]
-      return StubRouter(viewController: navigationController)
+      return SettingsRouter(viewController: navigationController)
     }
   }
 
