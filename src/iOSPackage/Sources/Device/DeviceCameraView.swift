@@ -4,6 +4,7 @@ import CommonUI
 
 public struct DeviceCameraView: View {
   @Environment(\.language) var language
+  @Environment(\.appearance) var appearance
   @ObservedObject var viewStore: ViewStore<DeviceCameraState, DeviceCameraAction>
 
   public init(store: Store<DeviceCameraState, DeviceCameraAction>) {
@@ -27,6 +28,7 @@ public struct DeviceCameraView: View {
             Text(language.resolution($0)).tag($0)
           }
         }
+        .fieldValidation(hasError: viewStore.errorFields.contains(\.resolution))
 
         Picker(
           selection: viewStore.binding(\.$configuration.fps),
@@ -36,6 +38,7 @@ public struct DeviceCameraView: View {
             Text(language.fps($0)).tag($0)
           }
         }
+        .fieldValidation(hasError: viewStore.errorFields.contains(\.fps))
 
         Picker(
           selection: viewStore.binding(\.$configuration.quality),
@@ -45,15 +48,33 @@ public struct DeviceCameraView: View {
             Text(language.quality($0)).tag($0)
           }
         }
+        .fieldValidation(hasError: viewStore.errorFields.contains(\.quality))
       }
+      .disabled(!viewStore.enabled)
 
       bitrateView
+        .fieldValidation(hasError: viewStore.errorFields.contains(\.bitrate))
+        .disabled(!viewStore.enabled)
 
       useH265View
+        .fieldValidation(hasError: viewStore.errorFields.contains(\.useH265))
+        .disabled(!viewStore.enabled)
 
       fovView
+        .fieldValidation(hasError: viewStore.errorFields.contains(\.fov))
+        .disabled(!viewStore.enabled)
 
       zoomView
+        .fieldValidation(hasError: viewStore.errorFields.contains(\.zoom))
+        .disabled(!viewStore.enabled)
+    }
+    .toolbar {
+      DeviceToolbarView(
+        hasErrors: viewStore.hasErrors,
+        isLoading: viewStore.isLocked,
+        title: viewStore.navigationTitle,
+        showAlert: viewStore.binding(\.$showAlert)
+      )
     }
   }
 

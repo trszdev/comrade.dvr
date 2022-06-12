@@ -143,3 +143,4 @@
 "PERMISSIONS_DENIED_DESCRIPTION" = "Please, go to Settings and allow permission.";
 
 "CAMERA" = "Camera";
+"CANT_APPLY_CONFIGURATION" = "Can't apply configuration";

@@ -1,7 +1,7 @@
 // swiftlint:disable all
 // Generated using SwiftGen — https://github.com/SwiftGen/SwiftGen
 
-public enum L10n: String {
+public enum L10n: String, Equatable {
   /// Max. file length
   case assetLength = "ASSET_LENGTH"
   /// Total file size
@@ -26,6 +26,8 @@ public enum L10n: String {
   case cameraPermissionAlertText = "CAMERA_PERMISSION_ALERT_TEXT"
   /// Cancel
   case cancel = "CANCEL"
+  /// Can't apply configuration
+  case cantApplyConfiguration = "CANT_APPLY_CONFIGURATION"
   /// Do you really want to delete all recordings?
   case clearAllAssetsAsk = "CLEAR_ALL_ASSETS_ASK"
   /// Yes, delete all recordings
@@ -96,7 +98,7 @@ public enum L10n: String {
   case microphoneUnmuted = "MICROPHONE_UNMUTED"
   /// No
   case no = "NO"
-  /// Push notifications
+  /// Notifications
   case notifications = "NOTIFICATIONS"
   /// ОК
   case ok = "OK"

@@ -18,7 +18,7 @@ public struct StartState: Equatable {
   public var microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default)
   public var occupiedSpace: FileSize = .zero
   public var lastCapture: Date?
-  public let hasStartPermissions: Bool
+  public var isLocked: Bool = false
 
   public init(
     localState: LocalState = .init(),
@@ -28,14 +28,16 @@ public struct StartState: Equatable {
     microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default),
     occupiedSpace: FileSize = .zero,
     lastCapture: Date? = nil,
-    hasStartPermissions: Bool = true
+    isLocked: Bool = false
   ) {
     self.localState = localState
     self.isPremium = isPremium
     self.frontCameraState = frontCameraState
     self.backCameraState = backCameraState
     self.microphoneState = microphoneState
-    self.hasStartPermissions = hasStartPermissions
+    self.occupiedSpace = occupiedSpace
+    self.lastCapture = lastCapture
+    self.isLocked = isLocked
   }
 }
 
@@ -83,7 +85,7 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment> { s
       return .init(value: .start)
     }
   case .autostart:
-    if state.hasStartPermissions {
+    if environment.permissionChecker.hasStartPermissions {
       state.localState.autostartSecondsRemaining = 4
       return .init(value: .autostartTick)
     }
@@ -113,10 +115,7 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment> { s
       return .cancel(id: AutostartTimerID())
     } else {
       return .async {
-        let hasCameraAccess = environment.permissionChecker.authorized(.camera) == true
-        let hasMicrophoneAccess = environment.permissionChecker.authorized(.microphone) == true
-        let hasDeterminedNotification = environment.permissionChecker.authorized(.notification) != nil
-        if hasCameraAccess, hasMicrophoneAccess, hasDeterminedNotification {
+        if environment.permissionChecker.hasStartPermissions {
           return .init(value: .forceStart)
         }
         await environment.routing.tabRouting?.startRouting?.showPermissions(animated: true)
@@ -134,3 +133,12 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment> { s
 }
 
 private struct AutostartTimerID: Hashable {}
+
+private extension PermissionChecker {
+  var hasStartPermissions: Bool {
+    let hasCameraAccess = authorized(.camera) == true
+    let hasMicrophoneAccess = authorized(.microphone) == true
+    let hasDeterminedNotification = authorized(.notification) != nil
+    return hasCameraAccess && hasMicrophoneAccess && hasDeterminedNotification
+  }
+}

@@ -35,9 +35,13 @@ public struct AppState: Equatable {
     }
   }
   public var frontCameraState: DeviceCameraState = .init(enabled: false, configuration: .defaultFrontCamera)
-  public var backCameraState: DeviceCameraState = .init(enabled: true, configuration: .defaultBackCamera)
+  public var backCameraState: DeviceCameraState = .init(
+    enabled: true,
+    configuration: .defaultBackCamera,
+    navigationTitle: .backCamera
+  )
   public var microphoneState: DeviceMicrophoneState = .init(enabled: true)
-  public var isPremium: Bool = false
+  public var isPremium: Bool = true
 
   public var paywallState: PaywallState = .init()
 

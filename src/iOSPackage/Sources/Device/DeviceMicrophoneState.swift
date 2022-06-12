@@ -6,8 +6,15 @@ public struct DeviceMicrophoneState: Equatable {
     self.configuration = configuration
   }
 
+  @BindableState public var showAlert: Bool = false
   @BindableState public var enabled: Bool = false
   @BindableState public var configuration: MicrophoneConfiguration = .default
+  public var errorFields: Set<PartialKeyPath<MicrophoneConfiguration>> = .init()
+  public var isLocked: Bool = false
+
+  public var hasErrors: Bool {
+    !errorFields.isEmpty
+  }
 }
 
 public enum DeviceMicrophoneAction: BindableAction {

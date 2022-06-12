@@ -122,7 +122,11 @@ public struct StartView: View {
   ) -> some View {
     let enabled = !shouldUpgrade && state.enabled
     let opacity = shouldUpgrade ? 0.5 : 1
-    let color = (enabled ? Color.accentColor : Color.gray).opacity(opacity)
+    var color = (enabled ? Color.accentColor : Color.gray).opacity(opacity)
+    let hasError = state.hasErrors && !shouldUpgrade
+    if hasError {
+      color = appearance.color(.textColorDestructive)
+    }
     return Button(action: action) {
       RoundBorder(hasSpaces: !enabled)
         .stroke(lineWidth: 10)
@@ -155,7 +159,7 @@ public struct StartView: View {
 
               Spacer()
 
-              Image(systemName: "camera")
+              Image(systemName: hasError ? "exclamationmark.circle" : "camera")
                 .foregroundColor(color)
             }
           }
@@ -168,6 +172,7 @@ public struct StartView: View {
           )
         )
     }
+    .disabled(shouldUpgrade)
   }
 
   private func deviceMicrophoneView(action: @escaping () -> Void) -> some View {

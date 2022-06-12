@@ -5,7 +5,7 @@ public enum Appearance: String, Equatable, CaseIterable, Codable {
   case dark
   case light
 
-  internal var traitCollection: UITraitCollection {
+  var traitCollection: UITraitCollection {
     switch self {
     case .dark:
       return .init(userInterfaceStyle: .dark)

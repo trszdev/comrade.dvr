@@ -137,6 +137,11 @@ struct Module {
     moduleDependencies: [.routing]
   )
 
+  static let session = Self(
+    name: "Session",
+    moduleDependencies: [.permissions, .composableArchitectureExtensions, .commonUI]
+  )
+
   static let composableArchitectureExtensions = Self(
     name: "ComposableArchitectureExtensions",
     externalDependencies: [.composableArchitecture, .util]
@@ -153,11 +158,11 @@ struct Module {
     externalDependencies: [.util]
   )
 
-  static let cameraKit = Self(name: "CameraKit")
+  static let cameraKit = Self(name: "CameraKit", moduleDependencies: [.device])
 
   static let device = Self(
     name: "Device",
-    moduleDependencies: [.swinjectExtensions, .composableArchitectureExtensions]
+    moduleDependencies: [.swinjectExtensions, .composableArchitectureExtensions, .commonUI, .assets]
   )
 
   static let all: [Self] = [
@@ -179,6 +184,7 @@ struct Module {
     .device,
     .paywall,
     .permissions,
+    .session,
   ]
 
   private static func commonTestModule(for module: Self) -> Self {

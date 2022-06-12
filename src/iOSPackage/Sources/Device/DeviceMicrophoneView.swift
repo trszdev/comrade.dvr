@@ -4,6 +4,7 @@ import ComposableArchitectureExtensions
 
 public struct DeviceMicrophoneView: View {
   @Environment(\.language) var language
+  @Environment(\.appearance) var appearance
   @ObservedObject var viewStore: ViewStore<DeviceMicrophoneState, DeviceMicrophoneAction>
 
   public init(store: Store<DeviceMicrophoneState, DeviceMicrophoneAction>) {
@@ -27,6 +28,7 @@ public struct DeviceMicrophoneView: View {
             Text(language.quality($0)).tag($0)
           }
         }
+        .fieldValidation(hasError: viewStore.errorFields.contains(\.quality))
 
         Picker(
           selection: viewStore.binding(\.$configuration.polarPattern),
@@ -36,9 +38,21 @@ public struct DeviceMicrophoneView: View {
             Text(language.polarPattern($0)).tag($0)
           }
         }
+        .fieldValidation(hasError: viewStore.errorFields.contains(\.polarPattern))
       }
+      .disabled(!viewStore.enabled)
+    }
+    .toolbar {
+      DeviceToolbarView(
+        hasErrors: viewStore.hasErrors,
+        isLoading: viewStore.isLocked,
+        title: .microphone,
+        showAlert: viewStore.binding(\.$showAlert)
+      )
     }
   }
+
+  private var showAlert = false
 }
 
 struct DeviceMicrophonePreviews: PreviewProvider {

@@ -39,7 +39,7 @@
   {% endfor %}
 {% endmacro %}
 {% set enumName %}L10n{% endset %}
-{{accessModifier}} enum {{enumName}}: String {
+{{accessModifier}} enum {{enumName}}: String, Equatable {
   {% if tables.count > 1 or param.forceFileNameEnum %}
   {% for table in tables %}
   {{accessModifier}} enum {{table.name|swiftIdentifier:"pretty"|escapeReservedKeywords}} {

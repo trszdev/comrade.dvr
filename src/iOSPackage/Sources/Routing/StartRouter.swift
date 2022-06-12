@@ -32,10 +32,10 @@ public final class StartRouter: StartRouting {
     self.deviceCameraRouting = deviceCameraRouting
     deviceMicrophoneRouting = nil
     let viewController = deviceCameraRouting.viewController
-    let trackVC = TrackingViewController(viewController) {} viewDidDisappear: { [weak self] _ in
+    TrackingViewController.installOnParent(viewController) {} viewDidDisappear: { [weak self] _ in
       self?.deviceCameraRouting = nil
     }
-    await navigationController.set(viewControllers: [rootViewController, trackVC], animated: animated)
+    await navigationController.set(viewControllers: [rootViewController, viewController], animated: animated)
   }
 
   public func openDeviceMicrophone(animated: Bool) async {
@@ -44,10 +44,10 @@ public final class StartRouter: StartRouting {
     self.deviceMicrophoneRouting = deviceMicrophoneRouting
     deviceCameraRouting = nil
     let viewController = deviceMicrophoneRouting.viewController
-    let trackVC = TrackingViewController(viewController) {} viewDidDisappear: { [weak self] _ in
+    TrackingViewController.installOnParent(viewController) {} viewDidDisappear: { [weak self] _ in
       self?.deviceMicrophoneRouting = nil
     }
-    await navigationController.set(viewControllers: [rootViewController, trackVC], animated: animated)
+    await navigationController.set(viewControllers: [rootViewController, viewController], animated: animated)
   }
 
   public func showPermissions(animated: Bool) async {
