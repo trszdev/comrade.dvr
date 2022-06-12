@@ -4,7 +4,7 @@ public protocol HistoryRepository {
 }
 
 public actor HistoryRepositoryStub: HistoryRepository {
-  public nonisolated init() {}
+  public init() {}
   public static let shared = HistoryRepositoryStub()
 
   public func loadHistory() async -> [HistoryState.Section] {
