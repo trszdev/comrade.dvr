@@ -4,9 +4,10 @@ import ComposableArchitectureExtensions
 import CommonUI
 import History
 import Start
-import Device
+import DeviceState
 import Paywall
 import Permissions
+import CameraKit
 
 public struct AppState: Equatable {
   public var settings: Settings = .init()
@@ -34,12 +35,8 @@ public struct AppState: Equatable {
       }
     }
   }
-  public var frontCameraState: DeviceCameraState = .init(enabled: false, configuration: .defaultFrontCamera)
-  public var backCameraState: DeviceCameraState = .init(
-    enabled: true,
-    configuration: .defaultBackCamera,
-    navigationTitle: .backCamera
-  )
+  public var frontCameraState: DeviceCameraState = .init(enabled: false, isFrontCamera: true)
+  public var backCameraState: DeviceCameraState = .init(enabled: true)
   public var microphoneState: DeviceMicrophoneState = .init(enabled: true)
   public var isPremium: Bool = true
 
@@ -76,6 +73,7 @@ public struct AppEnvironment {
   public var settingsRepository: SettingsRepository = SettingsRepositoryStub()
   public var permissionDialogPresenting: PermissionDialogPresenting = PermissionDialogPresentingStub()
   public var permissionChecker: PermissionChecker = .live
+  public var sessionConfigurator: SessionConfigurator = SessionConfiguratorStub()
 }
 
 public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
@@ -116,9 +114,13 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     .init(routing: $0.routing, permissionDialogPresenting: $0.permissionDialogPresenting)
   },
 
-  deviceCameraReducer.pullback(state: \.selectedCameraState, action: /AppAction.deviceCameraAction),
+  deviceCameraReducer.pullback(state: \.selectedCameraState, action: /AppAction.deviceCameraAction) {
+    .init(sessionConfigurator: $0.sessionConfigurator)
+  },
 
-  deviceMicrophoneReducer.pullback(state: \.microphoneState, action: /AppAction.deviceMicrophoneAction),
+  deviceMicrophoneReducer.pullback(state: \.microphoneState, action: /AppAction.deviceMicrophoneAction) {
+    .init(sessionConfigurator: $0.sessionConfigurator)
+  },
 
   paywallReducer.pullback(state: \.paywallState, action: /AppAction.paywallAction)
 )

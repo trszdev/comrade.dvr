@@ -11,7 +11,9 @@ struct DeviceToolbarView: ToolbarContent {
 
   var body: some ToolbarContent {
     ToolbarItem(placement: .navigationBarTrailing) {
-      if hasErrors {
+      if isLoading {
+        ProgressView()
+      } else if hasErrors {
         Button {
           showAlert = true
         } label: {
@@ -24,8 +26,6 @@ struct DeviceToolbarView: ToolbarContent {
             message: Text(language.string(.cantApplyConfiguration))
           )
         }
-      } else if isLoading {
-        ProgressView()
       }
     }
 

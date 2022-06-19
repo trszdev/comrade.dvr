@@ -1,6 +1,7 @@
 import Assets
 import Foundation
 import CoreGraphics
+import Device
 
 public extension Optional where Wrapped == Language {
   func resolution(_ value: Resolution) -> String {

@@ -7,6 +7,7 @@ import SwinjectExtensions
 import ComposableArchitecture
 import Settings
 import CommonUI
+import CameraKit
 
 public enum AppAssembly: SharedAssembly {
   case shared
@@ -20,6 +21,7 @@ public enum AppAssembly: SharedAssembly {
         settingsRepository:
         permissionDialogPresenting:
         permissionChecker:
+        sessionConfigurator:
       )
     )
     container.registerSingleton(AppCoordinator.self) { resolver in
@@ -31,7 +33,7 @@ public enum AppAssembly: SharedAssembly {
       )
     }
     container.registerInstance(UserDefaults.standard)
-    return [RoutingAssembly.shared]
+    return [CameraKitAssembly.shared, RoutingAssembly.shared]
   }
 }
 

@@ -23,12 +23,12 @@ struct PermissionDialogPresenter: PermissionDialogPresenting {
     if status == true {
       return true
     }
-    let dialogCoordinator = DialogCoordinator(permission.spPermission)
+    let dialogCoordinator = await DialogCoordinator(permission.spPermission)
     return await dialogCoordinator.present()
   }
 }
 
-private final class DialogCoordinator: SPPermissionsDelegate {
+@MainActor private final class DialogCoordinator: SPPermissionsDelegate {
   init(_ permission: SPPermissions.Permission) {
     controller = SPPermissions.native([permission])
     controller.delegate = self

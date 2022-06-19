@@ -4,6 +4,7 @@ import CommonUI
 import Combine
 import Util
 import Permissions
+import DeviceState
 
 public struct StartState: Equatable {
   public struct LocalState: Equatable {
@@ -18,7 +19,9 @@ public struct StartState: Equatable {
   public var microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default)
   public var occupiedSpace: FileSize = .zero
   public var lastCapture: Date?
-  public var isLocked: Bool = false
+  public var isLocked: Bool {
+    backCameraState.isLocked || frontCameraState.isLocked || microphoneState.isLocked
+  }
 
   public init(
     localState: LocalState = .init(),
@@ -27,8 +30,7 @@ public struct StartState: Equatable {
     backCameraState: DeviceCameraState = .init(enabled: true, configuration: .defaultBackCamera),
     microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default),
     occupiedSpace: FileSize = .zero,
-    lastCapture: Date? = nil,
-    isLocked: Bool = false
+    lastCapture: Date? = nil
   ) {
     self.localState = localState
     self.isPremium = isPremium
@@ -37,7 +39,6 @@ public struct StartState: Equatable {
     self.microphoneState = microphoneState
     self.occupiedSpace = occupiedSpace
     self.lastCapture = lastCapture
-    self.isLocked = isLocked
   }
 }
 

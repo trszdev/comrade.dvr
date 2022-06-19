@@ -1,6 +1,7 @@
 import SwiftUI
 import ComposableArchitecture
 import ComposableArchitectureExtensions
+import Device
 
 public struct DeviceMicrophoneView: View {
   @Environment(\.language) var language
@@ -18,6 +19,7 @@ public struct DeviceMicrophoneView: View {
           Text(language.string(.deviceEnabled))
         }
       }
+      .disabled(viewStore.isLocked)
 
       Section {
         Picker(
@@ -40,7 +42,7 @@ public struct DeviceMicrophoneView: View {
         }
         .fieldValidation(hasError: viewStore.errorFields.contains(\.polarPattern))
       }
-      .disabled(!viewStore.enabled)
+      .disabled(!viewStore.enabled || viewStore.isLocked)
     }
     .toolbar {
       DeviceToolbarView(
@@ -57,6 +59,6 @@ public struct DeviceMicrophoneView: View {
 
 struct DeviceMicrophonePreviews: PreviewProvider {
   static var previews: some View {
-    DeviceMicrophoneView(store: .init(initialState: .init(), reducer: deviceMicrophoneReducer))
+    DeviceMicrophoneView(store: .init(initialState: .init(), reducer: deviceMicrophoneReducer, environment: .init()))
   }
 }

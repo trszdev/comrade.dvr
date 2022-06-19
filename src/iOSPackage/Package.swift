@@ -99,7 +99,7 @@ struct Module {
 
   static let start = Self(
     name: "Start",
-    moduleDependencies: [.composableArchitectureExtensions, .commonUI, .device, .permissions]
+    moduleDependencies: [.composableArchitectureExtensions, .commonUI, .deviceState, .permissions]
   )
 
   static let routing = Self(
@@ -111,7 +111,7 @@ struct Module {
       .settings,
       .history,
       .start,
-      .device,
+      .deviceState,
       .paywall,
       .permissions,
     ],
@@ -134,7 +134,7 @@ struct Module {
 
   static let app = Self(
     name: "App",
-    moduleDependencies: [.routing]
+    moduleDependencies: [.routing, .cameraKit]
   )
 
   static let session = Self(
@@ -158,11 +158,17 @@ struct Module {
     externalDependencies: [.util]
   )
 
-  static let cameraKit = Self(name: "CameraKit", moduleDependencies: [.device])
+  static let cameraKit = Self(
+    name: "CameraKit",
+    moduleDependencies: [.device, .swinjectExtensions],
+    externalDependencies: [.util]
+  )
 
-  static let device = Self(
-    name: "Device",
-    moduleDependencies: [.swinjectExtensions, .composableArchitectureExtensions, .commonUI, .assets]
+  static let device = Self(name: "Device")
+
+  static let deviceState = Self(
+    name: "DeviceState",
+    moduleDependencies: [.cameraKit, .swinjectExtensions, .composableArchitectureExtensions, .commonUI, .assets]
   )
 
   static let all: [Self] = [
@@ -182,6 +188,7 @@ struct Module {
     .cameraKit,
     .commonTestModule(for: .cameraKit),
     .device,
+    .deviceState,
     .paywall,
     .permissions,
     .session,

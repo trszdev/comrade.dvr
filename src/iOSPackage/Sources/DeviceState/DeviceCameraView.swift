@@ -1,6 +1,7 @@
 import SwiftUI
 import ComposableArchitecture
 import CommonUI
+import Device
 
 public struct DeviceCameraView: View {
   @Environment(\.language) var language
@@ -18,6 +19,7 @@ public struct DeviceCameraView: View {
           Text(language.string(.deviceEnabled))
         }
       }
+      .disabled(viewStore.isLocked)
 
       Section {
         Picker(
@@ -50,29 +52,29 @@ public struct DeviceCameraView: View {
         }
         .fieldValidation(hasError: viewStore.errorFields.contains(\.quality))
       }
-      .disabled(!viewStore.enabled)
+      .disabled(!viewStore.enabled || viewStore.isLocked)
 
       bitrateView
         .fieldValidation(hasError: viewStore.errorFields.contains(\.bitrate))
-        .disabled(!viewStore.enabled)
+        .disabled(!viewStore.enabled || viewStore.isLocked)
 
       useH265View
         .fieldValidation(hasError: viewStore.errorFields.contains(\.useH265))
-        .disabled(!viewStore.enabled)
+        .disabled(!viewStore.enabled || viewStore.isLocked)
 
       fovView
         .fieldValidation(hasError: viewStore.errorFields.contains(\.fov))
-        .disabled(!viewStore.enabled)
+        .disabled(!viewStore.enabled || viewStore.isLocked)
 
       zoomView
         .fieldValidation(hasError: viewStore.errorFields.contains(\.zoom))
-        .disabled(!viewStore.enabled)
+        .disabled(!viewStore.enabled || viewStore.isLocked)
     }
     .toolbar {
       DeviceToolbarView(
         hasErrors: viewStore.hasErrors,
         isLoading: viewStore.isLocked,
-        title: viewStore.navigationTitle,
+        title: viewStore.deviceName,
         showAlert: viewStore.binding(\.$showAlert)
       )
     }
@@ -141,6 +143,6 @@ public struct DeviceCameraView: View {
 
 struct DeviceCameraPreviews: PreviewProvider {
   static var previews: some View {
-    DeviceCameraView(store: .init(initialState: .init(), reducer: deviceCameraReducer))
+    DeviceCameraView(store: .init(initialState: .init(), reducer: deviceCameraReducer, environment: .init()))
   }
 }

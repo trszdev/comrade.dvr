@@ -2,7 +2,7 @@ import Swinject
 import SwinjectExtensions
 import SwinjectAutoregistration
 
-public enum DeviceAssembly: SharedAssembly {
+public enum DeviceStateAssembly: SharedAssembly {
   case shared
 
   public func assemble(container: Container) {

@@ -7,7 +7,7 @@ import Settings
 import SwinjectExtensions
 import History
 import Start
-import Device
+import DeviceState
 import Paywall
 import Util
 import Assets
@@ -35,7 +35,7 @@ public enum RoutingAssembly: SharedAssembly {
       SettingsAssembly.shared,
       HistoryAssembly.shared,
       StartAssembly.shared,
-      DeviceAssembly.shared,
+      DeviceStateAssembly.shared,
       PaywallAssembly.shared,
       PermissionsAssembly.shared,
     ]
