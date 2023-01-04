@@ -1,0 +1,2 @@
+NSMicrophoneUsageDescription = "Нужен для настройки микрофона и записи аудио";
+NSCameraUsageDescription = "Нужно для настройки камер и записи видео";

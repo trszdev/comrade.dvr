@@ -110,6 +110,24 @@
         }
       },
       {
+        "package": "SPPermissions",
+        "repositoryURL": "https://github.com/ivanvorobei/SPPermissions",
+        "state": {
+          "branch": null,
+          "revision": "ec3fc55e4fbc212cc746a84304f4aece0cb45467",
+          "version": "7.1.5"
+        }
+      },
+      {
+        "package": "SPStorkController",
+        "repositoryURL": "https://github.com/ivanvorobei/SPStorkController",
+        "state": {
+          "branch": null,
+          "revision": "9eea2c3259420c278fcd2dbbab242ef5fcf54dc9",
+          "version": "1.8.5"
+        }
+      },
+      {
         "package": "swift-case-paths",
         "repositoryURL": "https://github.com/pointfreeco/swift-case-paths",
         "state": {

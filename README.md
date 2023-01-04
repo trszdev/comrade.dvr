@@ -6,6 +6,7 @@
 brew bundle
 brew bundle exec pre-commit install
 mint bootstrap
+mint run swiftgen
 mint run xcodegen
 ```
 

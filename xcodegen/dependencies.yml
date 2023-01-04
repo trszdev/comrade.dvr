@@ -2,38 +2,16 @@ packages:
   Firebase:
     url: https://github.com/firebase/firebase-ios-sdk.git
     majorVersion: 8.8.0
-  TCA:
-    url: https://github.com/pointfreeco/swift-composable-architecture
-    majorVersion: 0.33.1
-  Swinject:
-    url: https://github.com/Swinject/Swinject
-    majorVersion: 2.8.1
-  SwinjectAutoregistration:
-    url: https://github.com/Swinject/SwinjectAutoregistration
-    majorVersion: 2.8.1
 
 localPackages:
-  - ./src/CameraKit
-  - ./src/Util
-  - ./src/CommonUI
-  - ./src/MainScreen
-  - ./src/SettingsScreen
-  - ./src/HistoryScreen
-  - ./src/Assets
+  - ./src/iOSPackage
+  - ./src/UniversalPackage
 
 targets:
   ComradeDVR:
     dependencies:
-      - package: MainScreen
-      - package: Util
-      - package: Assets
-      - package: CommonUI
-      - package: SwinjectAutoregistration
-        product: SwinjectAutoregistration
-      - package: Swinject
-        product: Swinject
-      - package: TCA
-        product: ComposableArchitecture
+      - package: iOSPackage
+        product: App
       - package: Firebase
         product: FirebaseAnalytics
       - package: Firebase

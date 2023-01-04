@@ -4,18 +4,19 @@ targets:
     platform: iOS
     deploymentTarget: 14.0
     sources:
-      - path: ../src/App
+      - path: ../src/iOSApp
         excludes: ['**/*.secret']
     settings:
       base:
         ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: $(inherited)
         DEVELOPMENT_TEAM: BGJK494M2C
         DEFINES_MODULE: YES
-        INFOPLIST_FILE: src/App/Info.plist
+        INFOPLIST_FILE: src/iOSApp/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.trszdev.ComradeDVR
         TARGETED_DEVICE_FAMILY: 1
         XCODEGEN_STATE: YES
         OTHER_LDFLAGS: -ObjC
+        OTHER_SWIFT_FLAGS: -Xfrontend -enable-experimental-concurrency
       configs:
         Production:
           ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

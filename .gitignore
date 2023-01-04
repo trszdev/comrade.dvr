@@ -106,5 +106,4 @@ report.xml
 
 !Package.resolved
 
-/src/App/GoogleService-Info.plist
-
+/src/iOSApp/GoogleService-Info.plist
