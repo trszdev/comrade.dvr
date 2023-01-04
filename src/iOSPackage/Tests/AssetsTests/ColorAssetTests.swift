@@ -12,7 +12,7 @@ final class ColorAssetTests: XCTestCase {
   func testColor() {
     XCTAssertEqual(UIColor(ColorAsset.textColorDefault.color(for: .light)).rgb, [0, 0, 0])
     XCTAssertEqual(UIColor(ColorAsset.textColorDefault.color(for: .dark)).rgb, [1, 1, 1])
-    XCTAssert([[0, 0, 0], [1, 1, 1]].contains(UIColor(ColorAsset.textColorDefault.color(for: .dark)).rgb))
+    XCTAssert([[0, 0, 0], [1, 1, 1]].contains(UIColor(ColorAsset.textColorDefault.color()).rgb))
   }
 }
 
