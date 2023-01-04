@@ -105,5 +105,5 @@ report.xml
 !*.secret
 
 !Package.resolved
-
+/.mint/
 /src/iOSApp/GoogleService-Info.plist

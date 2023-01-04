@@ -1,0 +1,6 @@
+#!/bin/bash
+
+SCRIPT_PATH=$(dirname -- "${BASH_SOURCE[0]}")
+
+PARENT_DIRECTORY="${SCRIPT_PATH%/*}"
+MINT_PATH="$PARENT_DIRECTORY/.mint" "$PARENT_DIRECTORY/.mint/packages/github.com_yonaskolb_Mint/build/0.17.5/mint" $*

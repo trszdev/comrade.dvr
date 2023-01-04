@@ -1,7 +1,9 @@
 repos:
-  - repo: https://github.com/realm/SwiftLint
-    rev: 0.46.2
-    hooks:
-      - id: swiftlint
-        args: ["--strict"]
+- repo: local
+  hooks:
+    - id: SwiftLint
+      name: SwiftLint
+      entry: bash -c './scripts/mint run swiftlint --quiet --strict'
+      language: system
+      pass_filenames: false
 

@@ -2,8 +2,8 @@ targets:
   ComradeDVR:
     postCompileScripts:
       - script: |
-          mint run swiftlint --fix
-          mint run swiftlint --no-cache --strict
+          "$SRCROOT/scripts/mint" run swiftlint --fix
+          "$SRCROOT/scripts/mint" run swiftlint --strict
         name: SwiftLint
     postBuildScripts:
       - script: |
