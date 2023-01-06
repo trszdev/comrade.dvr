@@ -24,7 +24,4 @@ targets:
           ASSETCATALOG_COMPILER_APPICON_NAME: AppIconInverted
         Debug:
           ASSETCATALOG_COMPILER_APPICON_NAME: AppIconInverted
-    scheme:
-      environmentVariables:
-        DYLD_PRINT_STATISTICS: 1
 

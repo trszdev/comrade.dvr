@@ -1,0 +1,8 @@
+#!/bin/bash
+
+SCRIPT_PATH=$(dirname -- "${BASH_SOURCE[0]}")
+PROJECT="$SCRIPT_PATH/../ComradeDVR.xcodeproj"
+MINT="$SCRIPT_PATH/mint"
+
+xcodebuild -project "$PROJECT" -scheme ComradeDVR -destination "platform=iOS Simulator,name=iPhone 14" test | "$MINT" run xcbeautify
+
