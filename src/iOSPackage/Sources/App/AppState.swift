@@ -114,13 +114,9 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     .init(routing: $0.routing, permissionDialogPresenting: $0.permissionDialogPresenting)
   },
 
-  deviceCameraReducer.pullback(state: \.selectedCameraState, action: /AppAction.deviceCameraAction) {
-    .init(sessionConfigurator: $0.sessionConfigurator)
-  },
+  deviceCameraReducer.pullback(state: \.selectedCameraState, action: /AppAction.deviceCameraAction),
 
-  deviceMicrophoneReducer.pullback(state: \.microphoneState, action: /AppAction.deviceMicrophoneAction) {
-    .init(sessionConfigurator: $0.sessionConfigurator)
-  },
+  deviceMicrophoneReducer.pullback(state: \.microphoneState, action: /AppAction.deviceMicrophoneAction),
 
   paywallReducer.pullback(state: \.paywallState, action: /AppAction.paywallAction)
 )

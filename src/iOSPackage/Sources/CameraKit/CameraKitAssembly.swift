@@ -8,7 +8,11 @@ public enum CameraKitAssembly: SharedAssembly {
 
   public func assemble(container: Container) {
     container
-      .autoregister(SessionConfigurator.self, initializer: SessionConfiguratorStub.init)
+      .autoregister(SessionConfigurator.self, initializer: SessionConfiguratorImpl.init)
+      .inObjectScope(.container)
+
+    container
+      .registerInstance(SessionStore())
       .inObjectScope(.container)
   }
 }

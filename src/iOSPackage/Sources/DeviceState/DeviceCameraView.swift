@@ -143,6 +143,6 @@ public struct DeviceCameraView: View {
 
 struct DeviceCameraPreviews: PreviewProvider {
   static var previews: some View {
-    DeviceCameraView(store: .init(initialState: .init(), reducer: deviceCameraReducer, environment: .init()))
+    DeviceCameraView(store: .init(initialState: .init(), reducer: deviceCameraReducer))
   }
 }

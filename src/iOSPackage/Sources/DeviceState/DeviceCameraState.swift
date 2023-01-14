@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import ComposableArchitectureExtensions
 import Assets
 import Device
 import CameraKit
@@ -38,19 +39,7 @@ public enum DeviceCameraAction: BindableAction {
   case setBitrate(Bitrate)
 }
 
-public struct DeviceCameraStateEnvironment {
-  public init(sessionConfigurator: SessionConfigurator = SessionConfiguratorStub()) {
-    self.sessionConfigurator = sessionConfigurator
-  }
-
-  public var sessionConfigurator: SessionConfigurator = SessionConfiguratorStub()
-}
-
-public let deviceCameraReducer = Reducer<
-  DeviceCameraState,
-  DeviceCameraAction,
-  DeviceCameraStateEnvironment
-> { state, action, environment in
+public let deviceCameraReducer = Reducer<DeviceCameraState, DeviceCameraAction, Void> { state, action, _ in
   switch action {
   case .binding(let action):
     guard action.keyPath != \.$showAlert else { return .none }
@@ -62,23 +51,10 @@ public let deviceCameraReducer = Reducer<
     state.isLocked = true
     return .async { [state] in
       let configuration = state.enabled ? state.configuration : nil
-      do {
-        if state.isFrontCamera {
-          try await environment.sessionConfigurator.updateFrontCamera(configuration)
-        } else {
-          try await environment.sessionConfigurator.updateBackCamera(configuration)
-        }
-      } catch {
-        return .merge(.init(value: .receiveConfiguratorError(error)), .init(value: .unlock))
-      }
       return .init(value: .unlock)
     }
   case .unlock:
     state.isLocked = false
-  case
-    .receiveConfiguratorError(SessionConfiguratorError.frontCamera(let errorField)),
-    .receiveConfiguratorError(SessionConfiguratorError.frontCamera(let errorField)):
-    state.errorFields = [errorField]
   default:
     break
   }

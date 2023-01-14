@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import ComposableArchitectureExtensions
 import Device
 import CameraKit
 
@@ -26,19 +27,7 @@ public enum DeviceMicrophoneAction: BindableAction {
   case unlock
 }
 
-public struct DeviceMicrophoneStateEnvironment {
-  public init(sessionConfigurator: SessionConfigurator = SessionConfiguratorStub()) {
-    self.sessionConfigurator = sessionConfigurator
-  }
-
-  public var sessionConfigurator: SessionConfigurator = SessionConfiguratorStub()
-}
-
-public let deviceMicrophoneReducer = Reducer<
-  DeviceMicrophoneState,
-  DeviceMicrophoneAction,
-  DeviceMicrophoneStateEnvironment
-> { state, action, environment in
+public let deviceMicrophoneReducer = Reducer<DeviceMicrophoneState, DeviceMicrophoneAction, Void> { state, action, _ in
   switch action {
   case .binding(let action):
     guard action.keyPath != \.$showAlert else { return .none }
@@ -47,17 +36,10 @@ public let deviceMicrophoneReducer = Reducer<
     state.isLocked = true
     return .async { [state] in
       let configuration = state.enabled ? state.configuration : nil
-      do {
-        try await environment.sessionConfigurator.updateMicrophone(configuration)
-      } catch {
-        return .merge(.init(value: .receiveConfiguratorError(error)), .init(value: .unlock))
-      }
       return .init(value: .unlock)
     }
   case .unlock:
     state.isLocked = false
-  case .receiveConfiguratorError(SessionConfiguratorError.microphone(let errorField)):
-    state.errorFields = [errorField]
   default:
     break
   }

@@ -59,6 +59,6 @@ public struct DeviceMicrophoneView: View {
 
 struct DeviceMicrophonePreviews: PreviewProvider {
   static var previews: some View {
-    DeviceMicrophoneView(store: .init(initialState: .init(), reducer: deviceMicrophoneReducer, environment: .init()))
+    DeviceMicrophoneView(store: .init(initialState: .init(), reducer: deviceMicrophoneReducer))
   }
 }

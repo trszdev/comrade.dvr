@@ -1,7 +1,11 @@
 import Device
 
-public enum SessionConfiguratorError: Error {
-  case frontCamera(PartialKeyPath<CameraConfiguration>)
-  case backCamera(PartialKeyPath<CameraConfiguration>)
-  case microphone(PartialKeyPath<MicrophoneConfiguration>)
+public enum SessionConfiguratorCameraError: Error {
+  case fields(fields: [PartialKeyPath<CameraConfiguration>])
+  case connectionError
+}
+
+public enum SessionConfiguratorMicrophoneError: Error {
+  case fields(fields: [PartialKeyPath<MicrophoneConfiguration>])
+  case runtimeError
 }
