@@ -7,6 +7,7 @@ import SwinjectExtensions
 import ComposableArchitecture
 import Settings
 import CommonUI
+import Device
 import CameraKit
 
 public enum AppAssembly: SharedAssembly {
@@ -22,18 +23,20 @@ public enum AppAssembly: SharedAssembly {
         permissionDialogPresenting:
         permissionChecker:
         sessionConfigurator:
+        deviceConfigurationRepository:
       )
     )
     container.registerSingleton(AppCoordinator.self) { resolver in
       .init(
         router: resolver.resolve(Router.self)!,
+        deviceConfigurationRepositoryFactory: .init(resolver.resolve(DeviceConfigurationRepository.self)!),
         appearancePublisher: resolver.resolve(CurrentValuePublisher<Appearance?>.self)!,
         settingsRepositoryFactory: .init(resolver.resolve(SettingsRepository.self)!),
         viewStoreFactory: .init(resolver.resolve(ViewStore<AppState, AppAction>.self)!)
       )
     }
     container.registerInstance(UserDefaults.standard)
-    return [CameraKitAssembly.shared, RoutingAssembly.shared]
+    return [CameraKitAssembly.shared, RoutingAssembly.shared, DeviceAssembly.shared]
   }
 }
 
@@ -47,8 +50,8 @@ private extension Container {
     }
     registerStore(state: \.settingsState, action: AppAction.settingsAction)
     registerStore(state: \.historyState, action: AppAction.historyAction)
-    registerStore(state: \.selectedCameraState, action: AppAction.deviceCameraAction)
-    registerStore(state: \.microphoneState, action: AppAction.deviceMicrophoneAction)
+    registerStore(state: \.startState.selectedCameraState, action: { AppAction.startAction(.deviceCameraAction($0)) })
+    registerStore(state: \.startState.microphoneState, action: { AppAction.startAction(.deviceMicrophoneAction($0)) })
     registerStore(state: \.startState, action: AppAction.startAction)
     registerStore(state: \.paywallState, action: AppAction.paywallAction)
   }

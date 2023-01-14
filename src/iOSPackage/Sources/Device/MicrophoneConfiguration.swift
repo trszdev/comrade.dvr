@@ -1,4 +1,4 @@
-public struct MicrophoneConfiguration: Equatable {
+public struct MicrophoneConfiguration: Hashable, Codable {
   public init(quality: Quality, polarPattern: PolarPattern) {
     self.quality = quality
     self.polarPattern = polarPattern

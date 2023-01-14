@@ -1,4 +1,4 @@
-public struct CameraConfiguration: Equatable {
+public struct CameraConfiguration: Hashable, Codable {
   public init(
     fps: Int,
     resolution: Resolution,

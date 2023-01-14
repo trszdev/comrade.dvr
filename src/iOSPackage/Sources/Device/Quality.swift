@@ -1,4 +1,4 @@
-public enum Quality: CaseIterable {
+public enum Quality: CaseIterable, Codable, Hashable {
   case min
   case low
   case medium

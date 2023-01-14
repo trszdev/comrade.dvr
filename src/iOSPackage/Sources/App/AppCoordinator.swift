@@ -6,6 +6,7 @@ import Combine
 import Assets
 import Settings
 import Routing
+import Device
 
 @MainActor
 public final class AppCoordinator {
@@ -13,11 +14,13 @@ public final class AppCoordinator {
 
   public nonisolated init(
     router: Router,
+    deviceConfigurationRepositoryFactory: Factory<DeviceConfigurationRepository>,
     appearancePublisher: CurrentValuePublisher<Appearance?>,
     settingsRepositoryFactory: Factory<SettingsRepository>,
     viewStoreFactory: Factory<ViewStore<AppState, AppAction>>
   ) {
     self.router = router
+    self.deviceConfigurationRepositoryFactory = deviceConfigurationRepositoryFactory
     self.appearancePublisher = appearancePublisher
     self.settingsRepositoryFactory = settingsRepositoryFactory
     self.viewStoreFactory = viewStoreFactory
@@ -27,6 +30,7 @@ public final class AppCoordinator {
     router.window = window
     await router.selectLoading(animated: false)
     let settingsRepository = settingsRepositoryFactory.make()
+    let deviceConfigurationRepository = deviceConfigurationRepositoryFactory.make()
     appearancePublisher
       .receive(on: DispatchQueue.main)
       .sink { [weak window] appearance in
@@ -34,8 +38,10 @@ public final class AppCoordinator {
       }
       .store(in: &cancellables)
     let settings = await settingsRepository.load()
+    let deviceConfiguration = await deviceConfigurationRepository.load()
     let viewStore = viewStoreFactory.make()
     viewStore.send(.settingsAction(.settingsLoaded(settings)))
+    viewStore.send(.startAction(.deviceConfigurationLoaded(deviceConfiguration)))
     if viewStore.isPremium, settings.autoStart != false {
       viewStore.send(.startAction(.autostart))
     }
@@ -44,6 +50,7 @@ public final class AppCoordinator {
   }
 
   private let router: Router
+  private let deviceConfigurationRepositoryFactory: Factory<DeviceConfigurationRepository>
   private var settingsRepositoryFactory: Factory<SettingsRepository>
   private var viewStoreFactory: Factory<ViewStore<AppState, AppAction>>
   private let appearancePublisher: CurrentValuePublisher<Appearance?>

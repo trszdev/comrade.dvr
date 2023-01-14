@@ -1,4 +1,4 @@
-public struct Resolution: Equatable, Codable, Hashable {
+public struct Resolution: Codable, Hashable {
   public init(width: Int, height: Int) {
     self.width = width
     self.height = height

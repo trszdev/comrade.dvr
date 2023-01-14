@@ -8,6 +8,7 @@ import DeviceState
 import Paywall
 import Permissions
 import CameraKit
+import Device
 
 public struct AppState: Equatable {
   public var settings: Settings = .init()
@@ -22,19 +23,6 @@ public struct AppState: Equatable {
     }
   }
   public var historyState: HistoryState = .init()
-  public var selectedFrontCamera: Bool = false
-  public var selectedCameraState: DeviceCameraState {
-    get {
-      selectedFrontCamera ? frontCameraState : backCameraState
-    }
-    set {
-      if selectedFrontCamera {
-        frontCameraState = newValue
-      } else {
-        backCameraState = newValue
-      }
-    }
-  }
   public var frontCameraState: DeviceCameraState = .init(enabled: false, isFrontCamera: true)
   public var backCameraState: DeviceCameraState = .init(enabled: true)
   public var microphoneState: DeviceMicrophoneState = .init(enabled: true)
@@ -55,6 +43,9 @@ public struct AppState: Equatable {
     }
     set {
       startLocalState = newValue.localState
+      frontCameraState = newValue.frontCameraState
+      backCameraState = newValue.backCameraState
+      microphoneState = newValue.microphoneState
     }
   }
 }
@@ -62,8 +53,6 @@ public struct AppState: Equatable {
 public enum AppAction {
   case settingsAction(SettingsAction)
   case historyAction(HistoryAction)
-  case deviceCameraAction(DeviceCameraAction)
-  case deviceMicrophoneAction(DeviceMicrophoneAction)
   case startAction(StartAction)
   case paywallAction(PaywallAction)
 }
@@ -74,10 +63,11 @@ public struct AppEnvironment {
   public var permissionDialogPresenting: PermissionDialogPresenting = PermissionDialogPresentingStub()
   public var permissionChecker: PermissionChecker = .live
   public var sessionConfigurator: SessionConfigurator = SessionConfiguratorStub()
+  public var deviceConfigurationRepository: DeviceConfigurationRepository = DeviceConfigurationRepositoryStub()
 }
 
 public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-  .init { state, action, environment in
+  .init { _, action, environment in
     switch action {
     case .settingsAction(.contactUs):
       return .task {
@@ -87,10 +77,6 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
       return .task {
         await environment.routing.tabRouting?.selectHistory()
       }
-    case .startAction(.tapFrontCamera):
-      state.selectedFrontCamera = true
-    case .startAction(.tapBackCamera):
-      state.selectedFrontCamera = false
     default:
       break
     }
@@ -111,12 +97,12 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   },
 
   startReducer.pullback(state: \.startState, action: /AppAction.startAction) {
-    .init(routing: $0.routing, permissionDialogPresenting: $0.permissionDialogPresenting)
+    .init(
+      routing: $0.routing,
+      permissionDialogPresenting: $0.permissionDialogPresenting,
+      deviceConfigurationRepository: $0.deviceConfigurationRepository
+    )
   },
-
-  deviceCameraReducer.pullback(state: \.selectedCameraState, action: /AppAction.deviceCameraAction),
-
-  deviceMicrophoneReducer.pullback(state: \.microphoneState, action: /AppAction.deviceMicrophoneAction),
 
   paywallReducer.pullback(state: \.paywallState, action: /AppAction.paywallAction)
 )
