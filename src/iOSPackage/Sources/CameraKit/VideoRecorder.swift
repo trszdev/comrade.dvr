@@ -47,7 +47,7 @@ final class VideoRecorderImpl: NSObject, VideoRecorder {
   }
 
   private func makeWriter() -> AVAssetWriter? {
-    let url = urlMaker()
+    let url = urlMaker().appendingPathExtension("mov")
     do {
       let writer = try AVAssetWriter(url: url, fileType: .mov)
       writer.add(configuration.assetWriterInput)

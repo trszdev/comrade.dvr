@@ -73,7 +73,7 @@ final class AudioRecorderImpl: NSObject, AudioRecorder {
 
   private func makeRecorder() -> AVAudioRecorder? {
     guard let configuration else { return nil }
-    let url = urlMaker() // m4a
+    let url = urlMaker().appendingPathExtension("m4a")
     do {
       let recorder = try AVAudioRecorder(
         url: url,

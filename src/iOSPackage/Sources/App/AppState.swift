@@ -69,10 +69,6 @@ public struct AppEnvironment {
 public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   .init { _, action, environment in
     switch action {
-    case .settingsAction(.contactUs):
-      return .task {
-        await environment.routing.tabRouting?.selectStart()
-      }
     case .settingsAction(.clearAllRecordings):
       return .task {
         await environment.routing.tabRouting?.selectHistory()
