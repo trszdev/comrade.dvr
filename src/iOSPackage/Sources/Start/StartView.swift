@@ -22,6 +22,12 @@ public struct StartView: View {
 
       view
     }
+    .onAppear {
+      viewStore.send(.onAppear)
+    }
+    .onDisappear {
+      viewStore.send(.onDisappear)
+    }
   }
 
   private var view: some View {
@@ -72,9 +78,9 @@ public struct StartView: View {
             }
           }
 
-          Text(language.occupiedSpace(viewStore.occupiedSpace))
+          Text(language.occupiedSpace(viewStore.localState.occupiedSpace))
 
-          Text(language.lastCapture(viewStore.lastCapture))
+          Text(language.lastCapture(viewStore.localState.lastCapture))
         }
         .font(.footnote)
         .foregroundColor(appearance.color(.textColorDisabled))

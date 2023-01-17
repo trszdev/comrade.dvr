@@ -143,3 +143,6 @@
 
 "CAMERA" = "Камера";
 "CANT_APPLY_CONFIGURATION" = "Невозможно применить текущие настройки";
+
+"NO_HISTORY_TITLE" = "История пуста";
+"NO_HISTORY_SUBTITLE" = "Записи регистратора будут здесь";

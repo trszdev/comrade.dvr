@@ -144,3 +144,6 @@
 
 "CAMERA" = "Camera";
 "CANT_APPLY_CONFIGURATION" = "Can't apply configuration";
+
+"NO_HISTORY_TITLE" = "No history";
+"NO_HISTORY_SUBTITLE" = "Your dvr recordings will be here";

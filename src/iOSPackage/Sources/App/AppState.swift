@@ -9,6 +9,7 @@ import Paywall
 import Permissions
 import CameraKit
 import Device
+import Util
 
 public struct AppState: Equatable {
   public var settings: Settings = .init()
@@ -64,6 +65,8 @@ public struct AppEnvironment {
   public var permissionChecker: PermissionChecker = .live
   public var sessionConfigurator: SessionConfigurator = SessionConfiguratorStub()
   public var deviceConfigurationRepository: DeviceConfigurationRepository = DeviceConfigurationRepositoryStub()
+  public var historyRepository: HistoryRepository = HistoryRepositoryStub.shared
+  public var datedFileManager: DatedFileManager = DatedFileManagerStub()
 }
 
 public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
@@ -89,14 +92,15 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   },
 
   historyReducer.pullback(state: \.historyState, action: /AppAction.historyAction) {
-    .init(routing: $0.routing)
+    .init(routing: $0.routing, repository: $0.historyRepository)
   },
 
   startReducer.pullback(state: \.startState, action: /AppAction.startAction) {
     .init(
       routing: $0.routing,
       permissionDialogPresenting: $0.permissionDialogPresenting,
-      deviceConfigurationRepository: $0.deviceConfigurationRepository
+      deviceConfigurationRepository: $0.deviceConfigurationRepository,
+      datedFileManager: $0.datedFileManager
     )
   },
 

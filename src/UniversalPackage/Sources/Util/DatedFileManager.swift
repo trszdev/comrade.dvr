@@ -24,6 +24,7 @@ public struct DatedFileManagerEntry: Hashable {
 }
 
 public struct DatedFileManagerStub: DatedFileManager {
+  public init() {}
   public func remove(url: URL) {}
   public func entries() -> [DatedFileManagerEntry] { [] }
   public var totalFileSize: FileSize { .zero }
@@ -36,16 +37,22 @@ public struct DatedFileManagerStub: DatedFileManager {
   public func entries(name: String) -> [DatedFileManagerEntry] { [] }
 }
 
-struct DatedFileManagerImpl: DatedFileManager {
-  let fileManager: FileManager
-  let rootDirectory: URL
+public struct DatedFileManagerImpl: DatedFileManager {
+  public init(fileManager: FileManager, rootDirectory: URL) {
+    self.fileManager = fileManager
+    self.rootDirectory = rootDirectory
+    log.info("rootDirectory: \(rootDirectory)")
+  }
 
-  var totalFileSize: FileSize {
+  private let fileManager: FileManager
+  private let rootDirectory: URL
+
+  public var totalFileSize: FileSize {
     let totalBytes = entries().map(\.size).reduce(0) { $0 + $1.bytes }
     return .init(bytes: totalBytes)
   }
 
-  func removeFiles(toFit capacity: FileSize?) {
+  public func removeFiles(toFit capacity: FileSize?) {
     makeDirectory()
     guard let capacity else { return }
     var entries = contents(url: rootDirectory)
@@ -55,7 +62,7 @@ struct DatedFileManagerImpl: DatedFileManager {
     }
   }
 
-  func remove(url: URL) {
+  public func remove(url: URL) {
     makeDirectory()
     do {
       try fileManager.removeItem(at: url)
@@ -65,20 +72,20 @@ struct DatedFileManagerImpl: DatedFileManager {
     }
   }
 
-  func url(name: String, date: Date) -> URL {
+  public func url(name: String, date: Date) -> URL {
     let namedDirectory = rootDirectory.appendingPathComponent(name, isDirectory: true)
     makeDirectory(url: namedDirectory)
     let dateString = DateFormatter.dayInYearWithHourMinuteSecond.string(from: date)
     return namedDirectory.appendingPathComponent(dateString, isDirectory: false)
   }
 
-  func entries() -> [DatedFileManagerEntry] {
+  public func entries() -> [DatedFileManagerEntry] {
     let namedDirectory = rootDirectory
     makeDirectory(url: namedDirectory)
     return contents(url: namedDirectory)
   }
 
-  func entries(name: String) -> [DatedFileManagerEntry] {
+  public func entries(name: String) -> [DatedFileManagerEntry] {
     let namedDirectory = rootDirectory.appendingPathComponent(name, isDirectory: true)
     makeDirectory(url: namedDirectory)
     return contents(url: namedDirectory)

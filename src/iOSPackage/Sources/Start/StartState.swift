@@ -12,6 +12,8 @@ public struct StartState: Equatable {
     public init() {}
     public var selectedFrontCamera: Bool = false
     public var autostartSecondsRemaining: Int?
+    public var occupiedSpace: FileSize = .zero
+    public var lastCapture: Date?
   }
 
   public var localState: LocalState = .init()
@@ -32,8 +34,6 @@ public struct StartState: Equatable {
   public var frontCameraState: DeviceCameraState = .init(enabled: false, configuration: .defaultFrontCamera)
   public var backCameraState: DeviceCameraState = .init(enabled: true, configuration: .defaultBackCamera)
   public var microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default)
-  public var occupiedSpace: FileSize = .zero
-  public var lastCapture: Date?
   public var isLocked: Bool {
     backCameraState.isLocked || frontCameraState.isLocked || microphoneState.isLocked
   }
@@ -43,17 +43,13 @@ public struct StartState: Equatable {
     isPremium: Bool = false,
     frontCameraState: DeviceCameraState = .init(enabled: false, configuration: .defaultFrontCamera),
     backCameraState: DeviceCameraState = .init(enabled: true, configuration: .defaultBackCamera),
-    microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default),
-    occupiedSpace: FileSize = .zero,
-    lastCapture: Date? = nil
+    microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default)
   ) {
     self.localState = localState
     self.isPremium = isPremium
     self.frontCameraState = frontCameraState
     self.backCameraState = backCameraState
     self.microphoneState = microphoneState
-    self.occupiedSpace = occupiedSpace
-    self.lastCapture = lastCapture
   }
 }
 
@@ -79,13 +75,15 @@ public struct StartEnvironment {
     mainQueue: AnySchedulerOf<DispatchQueue> = .main,
     permissionDialogPresenting: PermissionDialogPresenting = PermissionDialogPresentingStub(),
     permissionChecker: PermissionChecker = .live,
-    deviceConfigurationRepository: DeviceConfigurationRepository = DeviceConfigurationRepositoryStub()
+    deviceConfigurationRepository: DeviceConfigurationRepository = DeviceConfigurationRepositoryStub(),
+    datedFileManager: DatedFileManager = DatedFileManagerStub()
   ) {
     self.routing = routing
     self.mainQueue = mainQueue
     self.permissionDialogPresenting = permissionDialogPresenting
     self.permissionChecker = permissionChecker
     self.deviceConfigurationRepository = deviceConfigurationRepository
+    self.datedFileManager = datedFileManager
   }
 
   public var routing: Routing = RoutingStub()
@@ -93,6 +91,7 @@ public struct StartEnvironment {
   public var permissionDialogPresenting: PermissionDialogPresenting = PermissionDialogPresentingStub()
   public var permissionChecker: PermissionChecker = .live
   public var deviceConfigurationRepository: DeviceConfigurationRepository = DeviceConfigurationRepositoryStub()
+  public var datedFileManager: DatedFileManager = DatedFileManagerStub()
 }
 
 public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.combine([
@@ -121,6 +120,10 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
   },
   .init { state, action, environment in
     switch action {
+    case .onAppear:
+      let entries = environment.datedFileManager.entries()
+      state.localState.occupiedSpace = environment.datedFileManager.totalFileSize
+      state.localState.lastCapture = environment.datedFileManager.entries().lazy.map(\.date).min()
     case .autostartTick:
       if let seconds = state.localState.autostartSecondsRemaining, seconds > 1 {
         state.localState.autostartSecondsRemaining = seconds - 1

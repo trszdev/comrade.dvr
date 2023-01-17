@@ -10,7 +10,7 @@ public extension Optional where Wrapped == Language {
 
   func lastCapture(_ value: Date?) -> String {
     if let value = value {
-      return "\(string(.lastCapture)): \(format(date: value, timeStyle: .full, dateStyle: .full))"
+      return "\(string(.lastCapture)): \(format(date: value, timeStyle: .medium, dateStyle: .medium))"
     }
     return "\(string(.lastCapture)): N/A"
   }

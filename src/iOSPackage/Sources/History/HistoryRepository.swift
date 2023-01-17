@@ -51,17 +51,12 @@ final class HistoryRepositoryImpl: HistoryRepository {
       itemsByDay[day, default: []].append(item)
     }
     let sections = itemsByDay.sorted { $0.key < $1.key }.map { HistoryState.Section(day: $0.key, items: $0.value) }
-    self.sections = sections
     return sections
   }
 
   public func remove(_ item: HistoryItem) async {
-    sections = sections
-      .map { section in .init(day: section.day, items: section.items.filter { $0 != item }) }
-      .filter { !$0.items.isEmpty }
+    datedFileManager.remove(url: item.url)
   }
-
-  private var sections: [HistoryState.Section] = [.mock, .mock, .mock]
 }
 
 private func entryToItem(_ entry: DatedFileManagerEntry) async -> HistoryItem? {

@@ -17,6 +17,9 @@ public enum HistoryAssembly: SharedAssembly {
         observableImageCache: resolver.resolve(ObservableImageCache.self, name: .thumbnailCache)!
       )
     }
+    container
+      .autoregister(HistoryRepository.self, initializer: HistoryRepositoryImpl.init)
+      .inObjectScope(.container)
     return [ThumbnailAssembly.shared]
   }
 }

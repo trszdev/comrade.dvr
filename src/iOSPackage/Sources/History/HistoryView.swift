@@ -6,8 +6,9 @@ import AVKit
 import ThumbnailKit
 
 public struct HistoryView: View {
-  @Environment(\.verticalSizeClass) var sizeClass
+  @Environment(\.verticalSizeClass) var verticalSizeClass
   @Environment(\.language) var language
+  @Environment(\.appearance) var appearance
 
   public init(store: Store<HistoryState, HistoryAction>, observableImageCache: ObservableImageCache = .init()) {
     self.viewStore = ViewStore(store)
@@ -35,7 +36,16 @@ public struct HistoryView: View {
   }
 
   @ViewBuilder private var view: some View {
-    if sizeClass == .compact {
+    if viewStore.sections.isEmpty {
+      VStack {
+        Text(language.string(.noHistoryTitle))
+          .foregroundColor(appearance.color(.textColorDefault))
+          .bold()
+
+        Text(language.string(.noHistorySubtitle))
+          .foregroundColor(appearance.color(.textColorDisabled))
+      }
+    } else if verticalSizeClass == .compact {
       HStack(spacing: 0) {
         previewView
 

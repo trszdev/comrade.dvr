@@ -24,6 +24,8 @@ public enum AppAssembly: SharedAssembly {
         permissionChecker:
         sessionConfigurator:
         deviceConfigurationRepository:
+        historyRepository:
+        datedFileManager:
       )
     )
     container.registerSingleton(AppCoordinator.self) { resolver in
@@ -35,7 +37,13 @@ public enum AppAssembly: SharedAssembly {
         viewStoreFactory: .init(resolver.resolve(ViewStore<AppState, AppAction>.self)!)
       )
     }
+    container.registerInstance(FileManager.default)
     container.registerInstance(UserDefaults.standard)
+    container.register(DatedFileManager.self) { resolver in
+      let fileManager = resolver.resolve(FileManager.self)!
+      return DatedFileManagerImpl(fileManager: fileManager, rootDirectory: fileManager.recordingsDirectory)
+    }
+    .inObjectScope(.transient)
     return [CameraKitAssembly.shared, RoutingAssembly.shared, DeviceAssembly.shared]
   }
 }

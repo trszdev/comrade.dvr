@@ -98,6 +98,10 @@ public enum L10n: String, Equatable {
   case microphoneUnmuted = "MICROPHONE_UNMUTED"
   /// No
   case no = "NO"
+  /// Your dvr recordings will be here
+  case noHistorySubtitle = "NO_HISTORY_SUBTITLE"
+  /// No history
+  case noHistoryTitle = "NO_HISTORY_TITLE"
   /// Notifications
   case notifications = "NOTIFICATIONS"
   /// ОК
