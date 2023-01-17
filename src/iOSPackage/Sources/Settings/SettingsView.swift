@@ -111,7 +111,7 @@ public struct SettingsView: View {
         primaryButton: .destructive(Text(language.string(.clearAllAssetsConfirm))) {
           viewStore.send(.clearAllRecordings)
         },
-        secondaryButton: .cancel()
+        secondaryButton: .cancel(Text(language.string(.cancel)))
       )
     }
   }

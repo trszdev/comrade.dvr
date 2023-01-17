@@ -74,6 +74,7 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     switch action {
     case .settingsAction(.clearAllRecordings):
       return .task {
+        environment.datedFileManager.removeFiles(toFit: .zero)
         await environment.routing.tabRouting?.selectHistory()
       }
     default:
