@@ -192,10 +192,16 @@ struct Module {
     .paywall,
     .permissions,
     .session,
+    .commonTestModule(for: .history, withResources: true),
   ]
 
-  private static func commonTestModule(for module: Self) -> Self {
-    Self(name: "\(module.name)Tests", moduleDependencies: [module], isTestTarget: true)
+  private static func commonTestModule(for module: Self, withResources: Bool = false) -> Self {
+    Self(
+      name: "\(module.name)Tests",
+      moduleDependencies: [module],
+      resources: withResources ? [.process("Resources")] : nil,
+      isTestTarget: true
+    )
   }
 }
 

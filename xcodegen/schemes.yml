@@ -11,5 +11,6 @@ schemes:
         - package: iOSPackage/AssetsTests
         - package: iOSPackage/CameraKitTests
         - package: iOSPackage/CommonUITests
+        - package: iOSPackage/HistoryTests
         - package: UniversalPackage/UtilTests
 

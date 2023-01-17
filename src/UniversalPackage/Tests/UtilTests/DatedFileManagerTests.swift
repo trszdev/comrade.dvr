@@ -25,7 +25,7 @@ final class DatedFileManagerTests: XCTestCase {
   }
 
   func testEnumerateEmpty() {
-    let files = sut.files(name: "qwe123")
+    let files = sut.entries(name: "qwe123")
 
     XCTAssert(files.isEmpty)
   }
@@ -36,12 +36,14 @@ final class DatedFileManagerTests: XCTestCase {
     let url = sut.url(name: "qwe123", date: Date(timeIntervalSince1970: 0))
     try data.write(to: url)
 
-    let files = sut.files(name: "qwe123")
-    let (actualURL, actualDate) = files[0]
+    let entries = sut.entries(name: "qwe123")
+    let entry = entries[0]
 
-    XCTAssertEqual(files.count, 1)
-    XCTAssertEqual(actualURL, url)
-    XCTAssert(date <= actualDate)
+    XCTAssertEqual(entries.count, 1)
+    XCTAssertEqual(entry.url, url)
+    XCTAssertEqual(entry.size, .kilobytes(1))
+    XCTAssertEqual(entry.name, "qwe123")
+    XCTAssert(date <= entry.date)
     try fileManager.removeItem(at: url)
   }
 
