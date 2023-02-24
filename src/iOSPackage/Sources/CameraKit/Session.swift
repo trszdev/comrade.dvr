@@ -17,7 +17,7 @@ public final class Session {
   public let frontCameraPreviewView = PreviewView()
   public let backCameraPreviewView = PreviewView()
 
-  var currentSession: AVCaptureSession! {
+  var avSession: AVCaptureSession! {
     singleCameraSession ?? multiCameraSession
   }
 

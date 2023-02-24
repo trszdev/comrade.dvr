@@ -3,7 +3,7 @@ import Combine
 import Util
 
 public protocol SessionMonitor {
-  var errorPublisher: AnyPublisher<SessionMonitorError?, Never> { get }
+  var errorPublisher: CurrentValuePublisher<SessionMonitorError?> { get }
   func checkAfterStart(session: Session)
 }
 
@@ -24,7 +24,7 @@ final class SessionMonitorImpl: SessionMonitor {
     )
   }
 
-  var errorPublisher: AnyPublisher<SessionMonitorError?, Never> { errorSubject.eraseToAnyPublisher() }
+  var errorPublisher: CurrentValuePublisher<SessionMonitorError?> { errorSubject.currentValuePublisher }
 
   func checkAfterStart(session: Session) {
     guard let multicamSession = session.multiCameraSession else { return }

@@ -5,6 +5,10 @@ public extension TimeInterval {
     TimeInterval(nanoseconds * 1e-9)
   }
 
+  static func milliseconds(_ milliseconds: Double) -> TimeInterval {
+    TimeInterval(milliseconds * 1000)
+  }
+
   static func seconds(_ seconds: Double) -> TimeInterval {
     TimeInterval(seconds)
   }
@@ -23,6 +27,10 @@ public extension TimeInterval {
 
   var nanoseconds: Double {
     self * 1e+9
+  }
+
+  var milliseconds: Double {
+    self * 1000
   }
 
   var seconds: Double {

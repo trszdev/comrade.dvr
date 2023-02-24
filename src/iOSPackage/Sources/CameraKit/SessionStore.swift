@@ -1,14 +1,19 @@
-import AVFoundation
+public protocol SessionStore: AnyObject {
+  var session: Session? { get set }
+}
 
-public final class SessionStore {
-  @Published public private(set) var session: Session?
+public final class SessionStoreStub {
+  public init() {}
 
-  func recreateSession(backCamera: Any?, frontCamera: Any?) {
-    session?.currentSession?.stopRunning()
-    if backCamera != nil, frontCamera != nil {
-      session = .init(multiCameraSession: .init())
-    } else {
-      session = .init(singleCameraSession: .init())
-    }
+  public var session: Session? {
+    get { nil }
+    set {}
   }
+}
+
+final class SessionStoreImpl: SessionStore, PreviewProvider {
+  var session: Session?
+
+  var backCameraPreviewView: PreviewView? { session?.backCameraPreviewView }
+  var frontCameraPreviewView: PreviewView? { session?.frontCameraPreviewView }
 }

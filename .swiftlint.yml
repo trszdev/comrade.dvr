@@ -3,6 +3,7 @@ included:
 
 disabled_rules:
   - todo
+  - unused_setter_value
 
 opt_in_rules:
   - indentation_width

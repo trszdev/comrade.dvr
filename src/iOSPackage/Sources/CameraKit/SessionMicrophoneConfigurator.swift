@@ -6,16 +6,6 @@ struct SessionMicrophoneConfigurator {
   let audioSession: AVAudioSession = .sharedInstance()
   let discovery = Discovery()
 
-  func configureAndGetError(configuration: MicrophoneConfiguration?) -> SessionConfiguratorMicrophoneError? {
-    do {
-      try configure(configuration: configuration)
-    } catch let error as SessionConfiguratorMicrophoneError {
-      return error
-    } catch {
-    }
-    return nil
-  }
-
   func configure(configuration: MicrophoneConfiguration?) throws {
     guard let configuration else {
       do {
@@ -23,7 +13,7 @@ struct SessionMicrophoneConfigurator {
       } catch {
         log.crit(error: error)
         log.crit("Error disabling microphone")
-        throw SessionConfiguratorMicrophoneError.runtimeError
+        throw SessionConfiguratorError.microphone(.runtimeError)
       }
       return
     }
@@ -49,7 +39,7 @@ struct SessionMicrophoneConfigurator {
     } catch {
       log.crit(error: error)
       log.crit("Error configuring microphone")
-      throw SessionConfiguratorMicrophoneError.runtimeError
+      throw SessionConfiguratorError.microphone(.runtimeError)
     }
     try updateInputDataSource(configuration: configuration)
   }
@@ -64,7 +54,7 @@ struct SessionMicrophoneConfigurator {
     } catch {
       log.crit(error: error)
       log.crit("Failed to set audio input")
-      throw SessionConfiguratorMicrophoneError.runtimeError
+      throw SessionConfiguratorError.microphone(.runtimeError)
     }
     guard let avPolarPattern = configuration?.polarPattern.avPolarPattern else { return }
     let dataSource = audioInput.dataSources?.first { dataSource in
@@ -79,7 +69,7 @@ struct SessionMicrophoneConfigurator {
     } catch {
       log.crit(error: error)
       log.crit("Failed to set audio datasource")
-      throw SessionConfiguratorMicrophoneError.runtimeError
+      throw SessionConfiguratorError.microphone(.runtimeError)
     }
   }
 }

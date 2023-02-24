@@ -1,4 +1,5 @@
 import Assets
+import Util
 
 public extension Optional where Wrapped == Language {
   func languageName(_ languageSetting: Language?) -> String {
@@ -24,17 +25,6 @@ public extension Optional where Wrapped == Language {
       return string(.darkTheme)
     case .light:
       return string(.lightTheme)
-    }
-  }
-
-  func orientationName(_ orientation: Settings.Orientation?) -> String {
-    switch orientation {
-    case .none:
-      return string(.system)
-    case .landscape:
-      return string(.orientationLandscape)
-    case .portrait:
-      return string(.orientationPortrait)
     }
   }
 }

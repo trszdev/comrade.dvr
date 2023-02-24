@@ -3,6 +3,7 @@ import Combine
 public struct CurrentValuePublisher<Value> {
   public let currentValue: () -> Value
   public let publisher: AnyPublisher<Value, Never>
+  public var value: Value { currentValue() }
 
   public init(currentValue: @escaping () -> Value, publisher: AnyPublisher<Value, Never>) {
     self.currentValue = currentValue

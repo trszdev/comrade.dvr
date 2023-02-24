@@ -4,39 +4,21 @@ import Util
 import Combine
 
 public protocol SessionConfigurator {
-  func update(
-    frontCamera: CameraConfiguration?,
-    backCamera: CameraConfiguration?,
-    microphone: MicrophoneConfiguration?
-  ) async
-
-  var frontCameraErrorPublisher: AnyPublisher<SessionConfiguratorCameraError?, Never> { get }
-  var backCameraErrorPublisher: AnyPublisher<SessionConfiguratorCameraError?, Never> { get }
-  var microphoneErrorPublisher: AnyPublisher<SessionConfiguratorMicrophoneError?, Never> { get }
+  /**
+   Configures the provided `session` with the given `deviceConfiguration`.
+   - Parameters:
+     - deviceConfiguration: The object that contains the device configuration settings to be applied to the session.
+   - Throws: A `SessionConfiguratorError` if the configuration fails for any reason.
+   - Returns: A `Task` object representing the asynchronous operation.
+   */
+  func configure(deviceConfiguration: DeviceConfiguration) throws
 }
 
-public struct SessionConfiguratorStub: SessionConfigurator {
-  public func update(
-    frontCamera: CameraConfiguration?,
-    backCamera: CameraConfiguration?,
-    microphone: MicrophoneConfiguration?
-  ) async {
-    try? await Task.sleep(.seconds(5))
-  }
+public enum SessionConfiguratorStub: SessionConfigurator {
+  case shared
 
-  public var frontCameraErrorPublisher: AnyPublisher<SessionConfiguratorCameraError?, Never> {
-    CurrentValueSubject(nil).eraseToAnyPublisher()
+  public func configure(deviceConfiguration: DeviceConfiguration) throws {
   }
-
-  public var backCameraErrorPublisher: AnyPublisher<SessionConfiguratorCameraError?, Never> {
-    CurrentValueSubject(nil).eraseToAnyPublisher()
-  }
-
-  public var microphoneErrorPublisher: AnyPublisher<SessionConfiguratorMicrophoneError?, Never> {
-    CurrentValueSubject(nil).eraseToAnyPublisher()
-  }
-
-  public init() {}
 }
 
 final class SessionConfiguratorImpl: SessionConfigurator {
@@ -47,66 +29,50 @@ final class SessionConfiguratorImpl: SessionConfigurator {
     self.store = store
   }
 
-  func update(
-    frontCamera: CameraConfiguration?,
-    backCamera: CameraConfiguration?,
-    microphone: MicrophoneConfiguration?
-  ) async {
-    store?.recreateSession(backCamera: backCamera, frontCamera: frontCamera)
-    installCameras(frontCamera: frontCamera, backCamera: backCamera)
-    microphoneErrorSubject.value = SessionMicrophoneConfigurator().configureAndGetError(configuration: microphone)
+  func configure(deviceConfiguration: DeviceConfiguration) throws {
+    try installCameras(deviceConfiguration: deviceConfiguration)
+    try SessionMicrophoneConfigurator().configure(configuration: deviceConfiguration.microphone)
   }
 
-  private let frontCameraErrorSubject = CurrentValueSubject<SessionConfiguratorCameraError?, Never>(nil)
-  private let backCameraErrorSubject = CurrentValueSubject<SessionConfiguratorCameraError?, Never>(nil)
-  private let microphoneErrorSubject = CurrentValueSubject<SessionConfiguratorMicrophoneError?, Never>(nil)
-
-  var frontCameraErrorPublisher: AnyPublisher<SessionConfiguratorCameraError?, Never> {
-    frontCameraErrorSubject.eraseToAnyPublisher()
-  }
-  var backCameraErrorPublisher: AnyPublisher<SessionConfiguratorCameraError?, Never> {
-    backCameraErrorSubject.eraseToAnyPublisher()
-  }
-  var microphoneErrorPublisher: AnyPublisher<SessionConfiguratorMicrophoneError?, Never> {
-    microphoneErrorSubject.eraseToAnyPublisher()
-  }
-
-  private func installCameras(frontCamera: CameraConfiguration?, backCamera: CameraConfiguration?) {
-    if let frontCamera, let backCamera {
-      let multiSet = findMulti(backCamera: backCamera, frontCamera: frontCamera)
-      guard multiSet.isEmpty else { return }
-      store?.session?.currentSession.beginConfiguration()
-      tryInstall(deviceWithFormat: multiSet[0], configuration: backCamera, isFront: false)
-      tryInstall(deviceWithFormat: multiSet[1], configuration: frontCamera, isFront: true)
-      store?.session?.currentSession.commitConfiguration()
-    } else if let frontCamera {
-      guard let frontDevice = tryFind(isFront: true, configuration: frontCamera) else { return }
-      store?.session?.currentSession.beginConfiguration()
-      tryInstall(deviceWithFormat: frontDevice, configuration: frontCamera, isFront: true)
-      store?.session?.currentSession.commitConfiguration()
-    } else if let backCamera {
-      guard let backDevice = tryFind(isFront: false, configuration: backCamera) else { return }
-      store?.session?.currentSession.beginConfiguration()
-      tryInstall(deviceWithFormat: backDevice, configuration: backCamera, isFront: false)
-      store?.session?.currentSession.commitConfiguration()
+  private func installCameras(deviceConfiguration: DeviceConfiguration) throws {
+    if let frontCamera = deviceConfiguration.frontCamera, let backCamera = deviceConfiguration.backCamera {
+      let multiSet = try find(backCamera: backCamera, frontCamera: frontCamera)
+      store?.session?.avSession.beginConfiguration()
+      defer { store?.session?.avSession.commitConfiguration() }
+      try install(deviceWithFormat: multiSet[0], deviceConfiguration: deviceConfiguration, isFront: false)
+      try install(deviceWithFormat: multiSet[1], deviceConfiguration: deviceConfiguration, isFront: true)
+    } else if let frontCamera = deviceConfiguration.frontCamera {
+      let frontDevice = try find(isFront: true, configuration: frontCamera)
+      store?.session?.avSession.beginConfiguration()
+      defer { store?.session?.avSession.commitConfiguration() }
+      try install(deviceWithFormat: frontDevice, deviceConfiguration: deviceConfiguration, isFront: true)
+    } else if let backCamera = deviceConfiguration.backCamera {
+      let backDevice = try find(isFront: false, configuration: backCamera)
+      store?.session?.avSession.beginConfiguration()
+      defer { store?.session?.avSession.commitConfiguration() }
+      try install(deviceWithFormat: backDevice, deviceConfiguration: deviceConfiguration, isFront: false)
     }
   }
 
-  private func tryInstall(deviceWithFormat: DeviceWithFormat, configuration: CameraConfiguration, isFront: Bool) {
-    let errorSubject = isFront ? frontCameraErrorSubject : backCameraErrorSubject
-    guard let input = makeInput(device: deviceWithFormat.device) else {
+  private func install(
+    deviceWithFormat: DeviceWithFormat,
+    deviceConfiguration: DeviceConfiguration,
+    isFront: Bool
+  ) throws {
+    let configuration = isFront ? deviceConfiguration.frontCamera : deviceConfiguration.backCamera
+    guard let configuration, let input = makeInput(device: deviceWithFormat.device) else {
       log.warn("[isFront=\(isFront)] Configuration not applied, input not created")
-      errorSubject.value = .connectionError
-      return
+      throw SessionConfiguratorError.camera(isFront: isFront, .connectionError)
     }
     guard let session = store?.session else { return }
     let cameraConfigurator = SessionCameraConfigurator(
-      session: session.currentSession,
+      session: session.avSession,
       deviceWithFormat: deviceWithFormat,
       configuration: configuration,
       input: input,
       output: isFront ? session.frontOutput : session.backOutput,
-      previewView: isFront ? session.frontCameraPreviewView : session.backCameraPreviewView
+      previewView: isFront ? session.frontCameraPreviewView : session.backCameraPreviewView,
+      orientation: deviceConfiguration.orientation
     )
     do {
       try cameraConfigurator.addInputOutput()
@@ -114,20 +80,19 @@ final class SessionConfiguratorImpl: SessionConfigurator {
       try cameraConfigurator.addConnections()
       try cameraConfigurator.configureDevice()
     } catch {
-      errorSubject.value = .connectionError
       log.warn(error: error)
       log.warn("[isFront=\(isFront)] Configuration not applied on final step")
+      throw SessionConfiguratorError.camera(isFront: isFront, .connectionError)
     }
   }
 
-  private func tryFind(isFront: Bool, configuration: CameraConfiguration) -> DeviceWithFormat? {
-    let errorSubject = isFront ? frontCameraErrorSubject : backCameraErrorSubject
+  private func find(isFront: Bool, configuration: CameraConfiguration) throws -> DeviceWithFormat {
     let devices = isFront ? discovery.frontCameras : discovery.backCameras
     let candidates = devices
       .flatMap { device in device.formats.map { format in (device, format) } }
       .filter { (_, format) in format.fov == configuration.fov && format.resolution == configuration.resolution }
     if candidates.isEmpty {
-      errorSubject.value = .fields(fields: [\.resolution, \.fov])
+      throw SessionConfiguratorError.camera(isFront: isFront, .fields(fields: [\.resolution, \.fov]))
     } else {
       let candidate = candidates.first { (_, format) in
         format.canApply(fps: configuration.fps) && format.canApply(zoom: configuration.zoom)
@@ -136,11 +101,10 @@ final class SessionConfiguratorImpl: SessionConfigurator {
         return .init(device: candidate.0, format: candidate.1)
       }
     }
-    errorSubject.value = .fields(fields: [\.zoom, \.fps])
-    return nil
+    throw SessionConfiguratorError.camera(isFront: isFront, .fields(fields: [\.zoom, \.fps]))
   }
 
-  private func findMulti(backCamera: CameraConfiguration, frontCamera: CameraConfiguration) -> [DeviceWithFormat] {
+  private func find(backCamera: CameraConfiguration, frontCamera: CameraConfiguration) throws -> [DeviceWithFormat] {
     var foundFovResolution = false
     for (frontDevice, backDevice) in discovery.multiCameraDeviceSets {
       for (frontFormat, backFormat) in zip(frontDevice.formats, backDevice.formats) {
@@ -156,12 +120,10 @@ final class SessionConfiguratorImpl: SessionConfigurator {
         return [backDWF, frontDWF]
       }
     }
-    let fields = SessionConfiguratorCameraError.fields(
+    let fields = SessionConfiguratorError.CameraError.fields(
       fields: foundFovResolution ? [\.zoom, \.fps] : [\.resolution, \.fov]
     )
-    frontCameraErrorSubject.value = fields
-    backCameraErrorSubject.value = fields
-    return []
+    throw SessionConfiguratorError.camera(front: fields, back: fields)
   }
 }
 

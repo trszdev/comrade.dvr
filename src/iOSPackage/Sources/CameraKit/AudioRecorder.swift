@@ -1,15 +1,20 @@
 import AVFoundation
 import Device
 import Util
+import Foundation
 
 public protocol AudioRecorder {
-  func setup(configuration: MicrophoneConfiguration?)
+  func setup(configuration: MicrophoneConfiguration?, maxDuration: TimeInterval)
+  func record()
+  func stop()
 }
 
 final class AudioRecorderImpl: NSObject, AudioRecorder {
   private let urlMaker: () -> URL
   private var configuration: MicrophoneConfiguration?
   private var recorders = [URL: AVAudioRecorder]()
+  private var maxDuration = TimeInterval.seconds(1)
+  private let queue = DispatchQueue(label: "audio-recorder-\(UUID().uuidString)")
 
   init(urlMaker: @escaping () -> URL) {
     self.urlMaker = urlMaker
@@ -22,10 +27,12 @@ final class AudioRecorderImpl: NSObject, AudioRecorder {
     )
   }
 
-  func setup(configuration: MicrophoneConfiguration?) {
-    self.configuration = configuration
-    stop()
-    record()
+  func setup(configuration: MicrophoneConfiguration?, maxDuration: TimeInterval) {
+    queue.sync { [weak self] in
+      guard let self else { return }
+      self.configuration = configuration
+      self.maxDuration = maxDuration
+    }
   }
 
   @objc private func wasInterrupted(notification: Notification) {
@@ -48,20 +55,22 @@ final class AudioRecorderImpl: NSObject, AudioRecorder {
   }
 
   private func interruptionWillBegin() {
-    stop()
+    queue.sync { [weak self] in
+      self?.stopInternal()
+    }
   }
 
   private func interruptionDidEnd(shouldResume: Bool) {
     record()
   }
 
-  private func stop() {
+  private func stopInternal() {
     for recorder in recorders.values {
       recorder.stop()
     }
   }
 
-  private func record() {
+  private func makeRecorderAndStart() {
     guard let recorder = makeRecorder() else { return }
     recorder.delegate = self
     if recorder.record() {
@@ -69,7 +78,27 @@ final class AudioRecorderImpl: NSObject, AudioRecorder {
     } else {
       log.crit("Failed to record audio \(recorder.url)")
     }
+    let workItem = DispatchWorkItem { [weak self] in
+      self?.stopInternal()
+      self?.makeRecorderAndStart()
+    }
+    queue.asyncAfter(deadline: .now() + .milliseconds(maxDuration.milliseconds), execute: workItem)
+    self.workItem = workItem
   }
+
+  func stop() {
+    queue.async { [weak self] in
+      self?.stopInternal()
+    }
+  }
+
+  func record() {
+    queue.async { [weak self] in
+      self?.makeRecorderAndStart()
+    }
+  }
+
+  private var workItem: DispatchWorkItem?
 
   private func makeRecorder() -> AVAudioRecorder? {
     guard let configuration else { return nil }
@@ -100,7 +129,9 @@ extension AudioRecorderImpl: AVAudioRecorderDelegate {
     if !flag {
       log.crit("Unsuccessfully finished recording [\(recorder.url)]")
     }
-    recorders.removeValue(forKey: recorder.url)
+    queue.async { [weak self] in
+      self?.recorders.removeValue(forKey: recorder.url)
+    }
   }
 }
 

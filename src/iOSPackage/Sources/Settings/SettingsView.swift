@@ -128,15 +128,6 @@ public struct SettingsView: View {
       }
 
       Picker(
-        selection: viewStore.binding(\.$settings.orientation),
-        label: Text(language.string(.orientation))
-      ) {
-        ForEach(orientations, id: \.self) {
-          Text(language.orientationName($0)).tag($0)
-        }
-      }
-
-      Picker(
         selection: viewStore.binding(\.$settings.maxFileLength),
         label: Text(language.string(.assetLength))
       ) {
@@ -197,7 +188,6 @@ public struct SettingsView: View {
 
 private let languages: [Language?] = Language.allCases + [nil]
 private let appearances: [Appearance?] = Appearance.allCases + [nil]
-private let orientations: [Settings.Orientation?] = Settings.Orientation.allCases + [nil]
 private let maxFileLengths: [TimeInterval] = [
   .minutes(1),
   .minutes(2),

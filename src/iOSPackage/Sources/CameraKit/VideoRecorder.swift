@@ -4,6 +4,7 @@ import Device
 
 public protocol VideoRecorder {
   func setup(output: AVCaptureVideoDataOutput, framesToFlush: Int, configuration: CameraConfiguration)
+  func flush()
 }
 
 final class VideoRecorderImpl: NSObject, VideoRecorder {
@@ -25,10 +26,19 @@ final class VideoRecorderImpl: NSObject, VideoRecorder {
   }
 
   func setup(output: AVCaptureVideoDataOutput, framesToFlush: Int, configuration: CameraConfiguration) {
-    self.framesToFlush = framesToFlush
-    self.configuration = configuration
-    output.setSampleBufferDelegate(self, queue: queue)
-    output.tryChangePixelFormat(quality: configuration.quality)
+    queue.sync { [weak self] in
+      guard let self else { return }
+      self.framesToFlush = framesToFlush
+      self.configuration = configuration
+      output.setSampleBufferDelegate(self, queue: self.queue)
+      output.tryChangePixelFormat(quality: configuration.quality)
+    }
+  }
+
+  func flush() {
+    queue.async { [weak self] in
+      self?.finalizeChunkIfNeeded(force: true)
+    }
   }
 
   private let queue = DispatchQueue(label: "video-recorder-\(UUID().uuidString)")
@@ -40,10 +50,14 @@ final class VideoRecorderImpl: NSObject, VideoRecorder {
   private let urlMaker: () -> URL
 
   @objc private func interruptionWillBegin() {
-    finalizeChunkIfNeeded(force: true)
+    // TODO: check
+    queue.sync { [weak self] in
+      self?.finalizeChunkIfNeeded(force: true)
+    }
   }
 
   @objc private func interruptionDidEnd() {
+    // TODO: check
   }
 
   private func makeWriter() -> AVAssetWriter? {
