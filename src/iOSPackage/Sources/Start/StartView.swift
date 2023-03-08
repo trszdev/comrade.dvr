@@ -111,7 +111,7 @@ public struct StartView: View {
       }
 
       Button {
-        viewStore.send(.start)
+        viewStore.send(.tapStart)
       } label: {
         RoundedRectangle(cornerRadius: 10)
           .frame(maxWidth: .infinity)
@@ -119,7 +119,7 @@ public struct StartView: View {
           .foregroundColor(.accentColor)
           .overlay(buttonOverlayView)
       }
-      .disabled(viewStore.isLocked)
+      .disabled(viewStore.hasErrorsInConfiguration)
     }
     .padding(.horizontal, 10)
     .padding(.vertical, verticalSpacing)

@@ -27,12 +27,16 @@ public struct StartState: Equatable {
 
   var deviceConfiguration: CameraKit.DeviceConfiguration {
     .init(
-      frontCamera: frontCameraState.enabled ? frontCameraState.configuration : nil,
-      backCamera: backCameraState.enabled ? backCameraState.configuration : nil,
-      microphone: microphoneState.enabled ? microphoneState.configuration : nil,
+      frontCamera: (frontCameraState.enabled && !frontCameraState.isLocked) ? frontCameraState.configuration : nil,
+      backCamera: (backCameraState.enabled && !backCameraState.isLocked) ? backCameraState.configuration : nil,
+      microphone: (microphoneState.enabled && !microphoneState.isLocked) ? microphoneState.configuration : nil,
       maxFileLength: maxFileLength,
       orientation: orientation
     )
+  }
+
+  var hasErrorsInConfiguration: Bool {
+    frontCameraState.hasErrors || backCameraState.hasErrors || microphoneState.hasErrors
   }
 
   public var selectedCameraState: DeviceCameraState {
@@ -50,9 +54,6 @@ public struct StartState: Equatable {
   public var frontCameraState: DeviceCameraState = .init(enabled: false, configuration: .defaultFrontCamera)
   public var backCameraState: DeviceCameraState = .init(enabled: true, configuration: .defaultBackCamera)
   public var microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default)
-  public var isLocked: Bool {
-    backCameraState.isLocked || frontCameraState.isLocked || microphoneState.isLocked
-  }
 
   public init(
     localState: LocalState = .init(),
@@ -101,14 +102,12 @@ public enum StartAction: BindableAction {
   case onAppear
   case onDisappear
   case onOrientationChange(Orientation)
-  case start
   case tapFrontCamera
   case tapBackCamera
   case tapMicrophone
+  case tapStart
   case autostart
   case autostartTick
-  case cancelAutostart
-  case forceStart
   case deviceConfigurationLoaded(Device.DeviceConfiguration)
   case deviceCameraAction(DeviceCameraAction)
   case deviceMicrophoneAction(DeviceMicrophoneAction)
@@ -141,6 +140,7 @@ public struct StartEnvironment {
   public var deviceConfigurationRepository: DeviceConfigurationRepository = DeviceConfigurationRepositoryStub()
   public var datedFileManager: DatedFileManager = DatedFileManagerStub()
   public var cameraKitService: CameraKitService = CameraKitServiceStub.shared
+  let discovery = Discovery()
 }
 
 public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.combine([
@@ -179,6 +179,9 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
       let entries = environment.datedFileManager.entries()
       state.localState.occupiedSpace = environment.datedFileManager.totalFileSize
       state.localState.lastCapture = environment.datedFileManager.entries().lazy.map(\.date).min()
+      state.backCameraState.isLocked = environment.discovery.backCameras.isEmpty
+      state.frontCameraState.isLocked = environment.discovery.frontCameras.isEmpty
+      state.microphoneState.isLocked = environment.discovery.builtInMic == nil
     case let .onOrientationChange(orientation):
       state.localState.orientation = orientation
     case .autostartTick:
@@ -188,10 +191,19 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
           .cancellable(id: AutostartTimerID())
       } else {
         state.localState.autostartSecondsRemaining = nil
-        return .init(value: .start)
+        return .merge(
+          .init(value: .tapStart),
+          .cancel(id: AutostartTimerID())
+        )
       }
     case .autostart:
       if environment.permissionChecker.hasStartPermissions {
+        do {
+          try environment.cameraKitService.configure(deviceConfiguration: state.deviceConfiguration)
+        } catch {
+          state.handleError(error)
+          return .none
+        }
         state.localState.autostartSecondsRemaining = 4
         return .init(value: .autostartTick)
       }
@@ -215,29 +227,27 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
         },
         .cancel(id: AutostartTimerID())
       )
-    case .start:
+    case .tapStart:
       if state.localState.autostartSecondsRemaining != nil {
         state.localState.autostartSecondsRemaining = nil
         return .cancel(id: AutostartTimerID())
       } else {
-        return .async {
-          if environment.permissionChecker.hasStartPermissions {
-            return .init(value: .forceStart)
+        if environment.permissionChecker.hasStartPermissions {
+          do {
+            try environment.cameraKitService.configure(deviceConfiguration: state.deviceConfiguration)
+          } catch {
+            state.handleError(error)
+            return .none
           }
-          await environment.routing.tabRouting?.startRouting?.showPermissions(animated: true)
-          return .none
+          environment.cameraKitService.play()
+          return .task {
+            await environment.routing.selectSession(animated: true)
+          }
+        } else {
+          return .task {
+            await environment.routing.tabRouting?.startRouting?.showPermissions(animated: true)
+          }
         }
-      }
-    case .forceStart:
-      do {
-        try environment.cameraKitService.configure(deviceConfiguration: state.deviceConfiguration)
-        environment.cameraKitService.play()
-      } catch {
-        state.handleError(error)
-        return .none
-      }
-      return .task {
-        await environment.routing.selectSession(animated: true)
       }
     case let .deviceConfigurationLoaded(configuration):
       state.frontCameraState = .init(

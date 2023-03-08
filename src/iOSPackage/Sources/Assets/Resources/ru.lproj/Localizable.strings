@@ -73,8 +73,8 @@
 "POLAR_PATTERN_SUBCARDIOID" = "Субкардиоид";
 "POLAR_PATTERN_UNSPECIFIED" = "По умолчанию";
 
-"FRONT_CAMERA" = "Фронтальная камера";
-"BACK_CAMERA" = "Задняя камера";
+"FRONT_CAMERA" = "Селфи камера";
+"BACK_CAMERA" = "Основная камера";
 "MICROPHONE" = "Микрофон";
 
 "RESTORE_DEFAULT_SETTINGS" = "Настройки по умолчанию";

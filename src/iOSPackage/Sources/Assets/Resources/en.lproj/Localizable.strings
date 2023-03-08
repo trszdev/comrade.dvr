@@ -73,8 +73,8 @@
 "POLAR_PATTERN_SUBCARDIOID" = "Subcardioid";
 "POLAR_PATTERN_UNSPECIFIED" = "Default";
 
-"FRONT_CAMERA" = "Front camera";
-"BACK_CAMERA" = "Back camera";
+"FRONT_CAMERA" = "Selfie camera";
+"BACK_CAMERA" = "Main camera";
 "MICROPHONE" = "Microphone";
 
 "RESTORE_DEFAULT_SETTINGS" = "Default settings";

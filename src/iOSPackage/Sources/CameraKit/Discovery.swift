@@ -1,9 +1,13 @@
 import AVFoundation
 
-struct Discovery {
-  let audioSession: AVAudioSession = .sharedInstance()
+public struct Discovery {
+  public init(audioSession: AVAudioSession = .sharedInstance()) {
+    self.audioSession = audioSession
+  }
 
-  var backCameras: [AVCaptureDevice] {
+  var audioSession: AVAudioSession = .sharedInstance()
+
+  public var backCameras: [AVCaptureDevice] {
     AVCaptureDevice.DiscoverySession(
       deviceTypes: cameraDeviceTypes,
       mediaType: .video,
@@ -11,7 +15,7 @@ struct Discovery {
     ).devices
   }
 
-  var frontCameras: [AVCaptureDevice] {
+  public var frontCameras: [AVCaptureDevice] {
     AVCaptureDevice.DiscoverySession(
       deviceTypes: cameraDeviceTypes,
       mediaType: .video,
@@ -19,7 +23,7 @@ struct Discovery {
     ).devices
   }
 
-  var builtInMic: AVAudioSessionPortDescription? {
+  public var builtInMic: AVAudioSessionPortDescription? {
     (audioSession.availableInputs ?? []).first { $0.portType == .builtInMic }
   }
 

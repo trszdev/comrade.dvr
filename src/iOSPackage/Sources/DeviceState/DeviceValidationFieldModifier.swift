@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct DeviceValidationFieldModifier: ViewModifier {
-
   var hasError: Bool
   @Environment(\.appearance) var appearance
 
@@ -14,12 +13,10 @@ struct DeviceValidationFieldModifier: ViewModifier {
       content
     }
   }
-
 }
 
 extension View {
   func fieldValidation(hasError: Bool) -> some View {
     modifier(DeviceValidationFieldModifier(hasError: hasError))
   }
-
 }

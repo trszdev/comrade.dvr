@@ -55,5 +55,6 @@ struct StartItemMicrophoneView: View {
           .opacity(opacity)
       )
     }
+    .disabled(state.isLocked)
   }
 }

@@ -12,7 +12,7 @@ struct StartItemCameraView: View {
   @Environment(\.appearance) private var appearance
 
   var body: some View {
-    let enabled = !shouldUpgrade && state.enabled
+    let enabled = !shouldUpgrade && state.enabled && !state.isLocked
     let opacity = (shouldUpgrade || state.isLocked) ? 0.5 : 1
     var color = (enabled ? Color.accentColor : Color.gray).opacity(opacity)
     let hasError = state.hasErrors && !shouldUpgrade
@@ -47,12 +47,8 @@ struct StartItemCameraView: View {
 
           Spacer()
 
-          if state.isLocked {
-            ProgressView()
-          } else {
-            Image(systemName: hasError ? "exclamationmark.circle" : "camera")
-              .foregroundColor(color)
-          }
+          Image(systemName: hasError ? "exclamationmark.circle" : "camera")
+            .foregroundColor(color)
         }
       }
       .padding(15)
@@ -63,5 +59,6 @@ struct StartItemCameraView: View {
           .opacity(opacity)
       )
     }
+    .disabled(state.isLocked)
   }
 }
