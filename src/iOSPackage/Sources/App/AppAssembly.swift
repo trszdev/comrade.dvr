@@ -26,6 +26,7 @@ public enum AppAssembly: SharedAssembly {
         deviceConfigurationRepository:
         historyRepository:
         datedFileManager:
+        cameraKitService:
       )
     )
     container.registerSingleton(AppCoordinator.self) { resolver in
@@ -43,7 +44,7 @@ public enum AppAssembly: SharedAssembly {
       let fileManager = resolver.resolve(FileManager.self)!
       return DatedFileManagerImpl(fileManager: fileManager, rootDirectory: fileManager.recordingsDirectory)
     }
-    .inObjectScope(.transient)
+    .inObjectScope(.container)
     return [CameraKitAssembly.shared, RoutingAssembly.shared, DeviceAssembly.shared]
   }
 }

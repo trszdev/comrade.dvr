@@ -14,4 +14,17 @@ public extension Optional where Wrapped == Language {
     }
     return "\(string(.lastCapture)): N/A"
   }
+
+  func errorMessage(_ error: StartStateError) -> String {
+    switch error {
+    case .unexpectedError(let message):
+      return String(format: string(.errorOccuredTemplate), message)
+    case .microphoneRuntimeError:
+      return string(.microphoneRuntimeError)
+    case .frontCameraRuntimeError:
+      return string(.frontCameraRuntimeError)
+    case .backCameraRuntimeError:
+      return string(.backCameraRuntimeError)
+    }
+  }
 }

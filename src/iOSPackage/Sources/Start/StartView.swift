@@ -4,6 +4,7 @@ import Assets
 import ComposableArchitecture
 import DeviceState
 import LocalizedUtils
+import Device
 
 public struct StartView: View {
   @Environment(\.language) var language
@@ -22,11 +23,34 @@ public struct StartView: View {
 
       view
     }
+    .trackOrientation { uiInterfaceOrientation in
+      switch uiInterfaceOrientation {
+      case .unknown:
+        break
+      case .portrait:
+        viewStore.send(.onOrientationChange(.portrait))
+      case .portraitUpsideDown:
+        viewStore.send(.onOrientationChange(.portraitUpsideDown))
+      case .landscapeLeft:
+        viewStore.send(.onOrientationChange(.landscapeLeft))
+      case .landscapeRight:
+        viewStore.send(.onOrientationChange(.landscapeRight))
+      @unknown default:
+        break
+      }
+    }
     .onAppear {
       viewStore.send(.onAppear)
     }
     .onDisappear {
       viewStore.send(.onDisappear)
+    }
+    .alert(item: viewStore.binding(\.$localState.alertError)) { error in
+      Alert(
+        title: Text(language.string(.error)),
+        message: Text(language.errorMessage(error)),
+        dismissButton: .cancel(Text(language.string(.ok)))
+      )
     }
   }
 

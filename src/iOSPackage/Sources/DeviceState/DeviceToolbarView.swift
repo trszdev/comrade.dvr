@@ -23,7 +23,8 @@ struct DeviceToolbarView: ToolbarContent {
         .alert(isPresented: $showAlert) {
           Alert(
             title: Text(language.string(.error)),
-            message: Text(language.string(.cantApplyConfiguration))
+            message: Text(language.string(.cantApplyConfiguration)),
+            dismissButton: .cancel(Text(language.string(.ok)))
           )
         }
       }

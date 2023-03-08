@@ -3,9 +3,23 @@ import Device
 import Util
 
 public struct DeviceConfiguration {
-  var frontCamera: CameraConfiguration?
-  var backCamera: CameraConfiguration?
-  var microphone: MicrophoneConfiguration?
-  var maxFileLength: TimeInterval = .seconds(1)
-  var orientation: Orientation = .portrait
+  public init(
+    frontCamera: CameraConfiguration? = nil,
+    backCamera: CameraConfiguration? = nil,
+    microphone: MicrophoneConfiguration? = nil,
+    maxFileLength: TimeInterval = .seconds(1),
+    orientation: Orientation = .portrait
+  ) {
+    self.frontCamera = frontCamera
+    self.backCamera = backCamera
+    self.microphone = microphone
+    self.maxFileLength = maxFileLength
+    self.orientation = orientation
+  }
+
+  public var frontCamera: CameraConfiguration?
+  public var backCamera: CameraConfiguration?
+  public var microphone: MicrophoneConfiguration?
+  public var maxFileLength: TimeInterval = .seconds(1)
+  public var orientation: Orientation = .portrait
 }

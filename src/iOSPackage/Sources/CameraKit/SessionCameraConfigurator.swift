@@ -15,8 +15,8 @@ struct SessionCameraConfigurator {
     switch orientation {
     case .portrait:
       previewView.transform = .identity
-//    case .portraitUpsideDown:
-//      previewView.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi))
+    case .portraitUpsideDown:
+      previewView.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi))
     case .landscapeLeft:
       previewView.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi/2))
     case .landscapeRight:

@@ -18,6 +18,8 @@ public enum L10n: String, Equatable {
   case autostart = "AUTOSTART"
   /// Back camera
   case backCamera = "BACK_CAMERA"
+  /// Error recording main camera
+  case backCameraRuntimeError = "BACK_CAMERA_RUNTIME_ERROR"
   /// Bitrate
   case bitrate = "BITRATE"
   /// Camera
@@ -74,6 +76,8 @@ public enum L10n: String, Equatable {
   case fps = "FPS"
   /// Front camera
   case frontCamera = "FRONT_CAMERA"
+  /// Error recording selfie camera
+  case frontCameraRuntimeError = "FRONT_CAMERA_RUNTIME_ERROR"
   /// Hardware cost exceeded, try use less demanding configuration
   case hardwareCostExceeded = "HARDWARE_COST_EXCEEDED"
   /// History
@@ -94,6 +98,8 @@ public enum L10n: String, Equatable {
   case microphone = "MICROPHONE"
   /// Microphone muted
   case microphoneMuted = "MICROPHONE_MUTED"
+  /// Error recording microphone
+  case microphoneRuntimeError = "MICROPHONE_RUNTIME_ERROR"
   /// Microphone unmuted
   case microphoneUnmuted = "MICROPHONE_UNMUTED"
   /// No

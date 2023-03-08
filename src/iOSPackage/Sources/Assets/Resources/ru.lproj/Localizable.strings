@@ -146,3 +146,7 @@
 
 "NO_HISTORY_TITLE" = "История пуста";
 "NO_HISTORY_SUBTITLE" = "Записи регистратора будут здесь";
+
+"MICROPHONE_RUNTIME_ERROR" = "Ошибка записи микрофона";
+"FRONT_CAMERA_RUNTIME_ERROR" = "Ошибка записи селфи камеры";
+"BACK_CAMERA_RUNTIME_ERROR" = "Ошибка записи основной камеры";

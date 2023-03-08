@@ -147,3 +147,7 @@
 
 "NO_HISTORY_TITLE" = "No history";
 "NO_HISTORY_SUBTITLE" = "Your dvr recordings will be here";
+
+"MICROPHONE_RUNTIME_ERROR" = "Error recording microphone";
+"FRONT_CAMERA_RUNTIME_ERROR" = "Error recording selfie camera";
+"BACK_CAMERA_RUNTIME_ERROR" = "Error recording main camera";

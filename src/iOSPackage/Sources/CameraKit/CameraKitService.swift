@@ -9,6 +9,23 @@ public protocol CameraKitService: SessionConfigurator {
   var monitorErrorPublisher: CurrentValuePublisher<SessionMonitorError?> { get }
 }
 
+public enum CameraKitServiceStub: CameraKitService {
+  case shared
+
+  public func play() {
+  }
+
+  public func stop() {
+  }
+
+  public var monitorErrorPublisher: CurrentValuePublisher<SessionMonitorError?> {
+    CurrentValueSubject(nil).currentValuePublisher
+  }
+
+  public func configure(deviceConfiguration: DeviceConfiguration) throws {
+  }
+}
+
 final class CameraKitServiceImpl: CameraKitService {
   init(
     sessionConfigurator: SessionConfigurator,

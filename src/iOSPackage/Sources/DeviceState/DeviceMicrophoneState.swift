@@ -22,24 +22,14 @@ public struct DeviceMicrophoneState: Equatable {
 
 public enum DeviceMicrophoneAction: BindableAction {
   case binding(BindingAction<DeviceMicrophoneState>)
-  case sendToConfigurator
-  case receiveConfiguratorError(Error)
-  case unlock
+  case onConfigurationChange
 }
 
-public let deviceMicrophoneReducer = Reducer<DeviceMicrophoneState, DeviceMicrophoneAction, Void> { state, action, _ in
+public let deviceMicrophoneReducer = Reducer<DeviceMicrophoneState, DeviceMicrophoneAction, Void> { _, action, _ in
   switch action {
   case .binding(let action):
     guard action.keyPath != \.$showAlert else { return .none }
-    return .init(value: .sendToConfigurator)
-  case .sendToConfigurator:
-    state.isLocked = true
-    return .async { [state] in
-      let configuration = state.enabled ? state.configuration : nil
-      return .init(value: .unlock)
-    }
-  case .unlock:
-    state.isLocked = false
+    return .init(value: .onConfigurationChange)
   default:
     break
   }

@@ -6,6 +6,8 @@ import Combine
 import Util
 import Permissions
 import DeviceState
+import CameraKit
+import SwiftUI
 
 public struct StartState: Equatable {
   public struct LocalState: Equatable {
@@ -14,10 +16,24 @@ public struct StartState: Equatable {
     public var autostartSecondsRemaining: Int?
     public var occupiedSpace: FileSize = .zero
     public var lastCapture: Date?
+    public var orientation: Orientation = .portrait
+    public var alertError: StartStateError?
   }
 
-  public var localState: LocalState = .init()
+  @BindableState public var localState: LocalState = .init()
   public var isPremium: Bool = false
+  public var maxFileLength: TimeInterval = .seconds(1)
+  public var orientation: Orientation = .portrait
+
+  var deviceConfiguration: CameraKit.DeviceConfiguration {
+    .init(
+      frontCamera: frontCameraState.enabled ? frontCameraState.configuration : nil,
+      backCamera: backCameraState.enabled ? backCameraState.configuration : nil,
+      microphone: microphoneState.enabled ? microphoneState.configuration : nil,
+      maxFileLength: maxFileLength,
+      orientation: orientation
+    )
+  }
 
   public var selectedCameraState: DeviceCameraState {
     get {
@@ -41,21 +57,50 @@ public struct StartState: Equatable {
   public init(
     localState: LocalState = .init(),
     isPremium: Bool = false,
+    maxFileLength: TimeInterval = .seconds(1),
     frontCameraState: DeviceCameraState = .init(enabled: false, configuration: .defaultFrontCamera),
     backCameraState: DeviceCameraState = .init(enabled: true, configuration: .defaultBackCamera),
     microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default)
   ) {
     self.localState = localState
     self.isPremium = isPremium
+    self.maxFileLength = maxFileLength
     self.frontCameraState = frontCameraState
     self.backCameraState = backCameraState
     self.microphoneState = microphoneState
   }
+
+  mutating func handleError(_ error: Error) {
+    guard let error = error as? SessionConfiguratorError else {
+      localState.alertError = .unexpectedError(error.localizedDescription)
+      return
+    }
+    switch error {
+    case let .camera(.fields(frontCameraFields), .fields(backCameraFields)):
+      frontCameraState.errorFields = Set(frontCameraFields)
+      backCameraState.errorFields = Set(backCameraFields)
+    case let .camera(.fields(frontCameraFields), _):
+      frontCameraState.errorFields = Set(frontCameraFields)
+    case let .camera(_, .fields(backCameraFields)):
+      backCameraState.errorFields = Set(backCameraFields)
+    case let .microphone(.fields(fields)):
+      microphoneState.errorFields = Set(fields)
+    case .microphone(.runtimeError):
+      localState.alertError = .microphoneRuntimeError
+    case .camera(.connectionError, _):
+      localState.alertError = .frontCameraRuntimeError
+    case .camera(_, .connectionError):
+      localState.alertError = .backCameraRuntimeError
+    default:
+      break
+    }
+  }
 }
 
-public enum StartAction {
+public enum StartAction: BindableAction {
   case onAppear
   case onDisappear
+  case onOrientationChange(Orientation)
   case start
   case tapFrontCamera
   case tapBackCamera
@@ -64,9 +109,10 @@ public enum StartAction {
   case autostartTick
   case cancelAutostart
   case forceStart
-  case deviceConfigurationLoaded(DeviceConfiguration)
+  case deviceConfigurationLoaded(Device.DeviceConfiguration)
   case deviceCameraAction(DeviceCameraAction)
   case deviceMicrophoneAction(DeviceMicrophoneAction)
+  case binding(BindingAction<StartState>)
 }
 
 public struct StartEnvironment {
@@ -76,7 +122,8 @@ public struct StartEnvironment {
     permissionDialogPresenting: PermissionDialogPresenting = PermissionDialogPresentingStub(),
     permissionChecker: PermissionChecker = .live,
     deviceConfigurationRepository: DeviceConfigurationRepository = DeviceConfigurationRepositoryStub(),
-    datedFileManager: DatedFileManager = DatedFileManagerStub()
+    datedFileManager: DatedFileManager = DatedFileManagerStub(),
+    cameraKitService: CameraKitService = CameraKitServiceStub.shared
   ) {
     self.routing = routing
     self.mainQueue = mainQueue
@@ -84,6 +131,7 @@ public struct StartEnvironment {
     self.permissionChecker = permissionChecker
     self.deviceConfigurationRepository = deviceConfigurationRepository
     self.datedFileManager = datedFileManager
+    self.cameraKitService = cameraKitService
   }
 
   public var routing: Routing = RoutingStub()
@@ -92,6 +140,7 @@ public struct StartEnvironment {
   public var permissionChecker: PermissionChecker = .live
   public var deviceConfigurationRepository: DeviceConfigurationRepository = DeviceConfigurationRepositoryStub()
   public var datedFileManager: DatedFileManager = DatedFileManagerStub()
+  public var cameraKitService: CameraKitService = CameraKitServiceStub.shared
 }
 
 public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.combine([
@@ -101,8 +150,14 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
       state.localState.selectedFrontCamera = true
     case .tapBackCamera:
       state.localState.selectedFrontCamera = false
-    case .deviceCameraAction(.sendToConfigurator), .deviceMicrophoneAction(.sendToConfigurator):
-      let deviceConfiguration = DeviceConfiguration(
+    case .deviceCameraAction(.onConfigurationChange), .deviceMicrophoneAction(.onConfigurationChange):
+      do {
+        try environment.cameraKitService.configure(deviceConfiguration: state.deviceConfiguration)
+      } catch {
+        state.handleError(error)
+        return .none
+      }
+      let deviceConfiguration = Device.DeviceConfiguration(
         frontCamera: state.frontCameraState.configuration,
         frontCameraEnabled: state.frontCameraState.enabled,
         backCamera: state.backCameraState.configuration,
@@ -124,6 +179,8 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
       let entries = environment.datedFileManager.entries()
       state.localState.occupiedSpace = environment.datedFileManager.totalFileSize
       state.localState.lastCapture = environment.datedFileManager.entries().lazy.map(\.date).min()
+    case let .onOrientationChange(orientation):
+      state.localState.orientation = orientation
     case .autostartTick:
       if let seconds = state.localState.autostartSecondsRemaining, seconds > 1 {
         state.localState.autostartSecondsRemaining = seconds - 1
@@ -172,6 +229,13 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
         }
       }
     case .forceStart:
+      do {
+        try environment.cameraKitService.configure(deviceConfiguration: state.deviceConfiguration)
+        environment.cameraKitService.play()
+      } catch {
+        state.handleError(error)
+        return .none
+      }
       return .task {
         await environment.routing.selectSession(animated: true)
       }

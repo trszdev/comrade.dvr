@@ -33,9 +33,7 @@ public struct DeviceCameraState: Equatable {
 
 public enum DeviceCameraAction: BindableAction {
   case binding(BindingAction<DeviceCameraState>)
-  case sendToConfigurator
-  case receiveConfiguratorError(Error)
-  case unlock
+  case onConfigurationChange
   case setBitrate(Bitrate)
 }
 
@@ -43,18 +41,10 @@ public let deviceCameraReducer = Reducer<DeviceCameraState, DeviceCameraAction, 
   switch action {
   case .binding(let action):
     guard action.keyPath != \.$showAlert else { return .none }
-    return .init(value: .sendToConfigurator)
+    return .init(value: .onConfigurationChange)
   case .setBitrate(let bitrate):
     state.configuration.bitrate = bitrate
-    return .init(value: .sendToConfigurator)
-  case .sendToConfigurator:
-    state.isLocked = true
-    return .async { [state] in
-      let configuration = state.enabled ? state.configuration : nil
-      return .init(value: .unlock)
-    }
-  case .unlock:
-    state.isLocked = false
+    return .init(value: .onConfigurationChange)
   default:
     break
   }

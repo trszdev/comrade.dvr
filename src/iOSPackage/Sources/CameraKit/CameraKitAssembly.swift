@@ -80,7 +80,7 @@ private extension Container {
   func registerService() {
     register(CameraKitService.self) { resolver in
       let sessionConfigurator = resolver.resolve(SessionConfigurator.self, name: Self.internalSessionConfigurator)!
-      let monitor = resolver.resolve(SessionMonitor.self, name: Self.internalSessionConfigurator)!
+      let monitor = resolver.resolve(SessionMonitor.self)!
       let store = resolver.resolve(SessionStore.self)!
       let frontCameraRecorder = resolver.resolve(VideoRecorder.self, name: Self.frontCameraRecorder)!
       let backCameraRecorder = resolver.resolve(VideoRecorder.self, name: Self.backCameraRecorder)!
@@ -94,5 +94,7 @@ private extension Container {
         audioRecorder: audioRecorder
       )
     }
+    .implements(SessionConfigurator.self)
+    .inObjectScope(.container)
   }
 }

@@ -37,6 +37,7 @@ public struct AppState: Equatable {
       .init(
         localState: startLocalState,
         isPremium: isPremium,
+        maxFileLength: settings.maxFileLength,
         frontCameraState: frontCameraState,
         backCameraState: backCameraState,
         microphoneState: microphoneState
@@ -63,10 +64,11 @@ public struct AppEnvironment {
   public var settingsRepository: SettingsRepository = SettingsRepositoryStub()
   public var permissionDialogPresenting: PermissionDialogPresenting = PermissionDialogPresentingStub()
   public var permissionChecker: PermissionChecker = .live
-  public var sessionConfigurator: SessionConfigurator = SessionConfiguratorStub()
+  public var sessionConfigurator: SessionConfigurator = SessionConfiguratorStub.shared
   public var deviceConfigurationRepository: DeviceConfigurationRepository = DeviceConfigurationRepositoryStub()
   public var historyRepository: HistoryRepository = HistoryRepositoryStub.shared
   public var datedFileManager: DatedFileManager = DatedFileManagerStub()
+  public var cameraKitService: CameraKitService = CameraKitServiceStub.shared
 }
 
 public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(

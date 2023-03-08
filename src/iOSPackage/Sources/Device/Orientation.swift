@@ -4,4 +4,5 @@ public enum Orientation: Hashable, Codable {
   case portrait
   case landscapeLeft
   case landscapeRight
+  case portraitUpsideDown
 }

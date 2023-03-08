@@ -11,4 +11,10 @@ public extension View {
         )
     )
   }
+
+  func trackOrientation(orientationDidChange: @escaping (UIInterfaceOrientation) -> Void) -> some View {
+    background(
+      UIInterfaceOrientationTrackerView(orientationDidChange: orientationDidChange)
+    )
+  }
 }
