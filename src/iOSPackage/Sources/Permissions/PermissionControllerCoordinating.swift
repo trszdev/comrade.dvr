@@ -9,9 +9,10 @@ import CommonUI
 import Combine
 
 public protocol PermissionControllerCoordinating: UIViewControllerProviding {
+  func waitToClose() async
 }
 
-public final class PermissionControllerCoordinator: PermissionControllerCoordinating {
+public final class PermissionControllerCoordinator: PermissionControllerCoordinating, SPPermissionsDelegate {
   public var viewController: UIViewController {
     navigationController
   }
@@ -49,8 +50,22 @@ public final class PermissionControllerCoordinator: PermissionControllerCoordina
   private lazy var controller: SPPermissionsListController = {
     let result = SPPermissions.list(permissions.map(\.spPermission))
     result.dataSource = dataSource
+    result.delegate = self
     result.showCloseButton = true
     setLanguage(controller: result, language: dataSource.language)
     return result
   }()
+
+  private var hideCompletion: (() -> Void)?
+
+  public func waitToClose() async {
+    await withCheckedContinuation { [weak self] continuation in
+      self?.hideCompletion = { continuation.resume() }
+    }
+  }
+
+  public func didHidePermissions(_ permissions: [SPPermissions.Permission]) {
+    log.info()
+    hideCompletion?()
+  }
 }

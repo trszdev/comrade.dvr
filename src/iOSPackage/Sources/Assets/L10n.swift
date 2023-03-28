@@ -16,7 +16,7 @@ public enum L10n: String, Equatable {
   case autofocusPhase = "AUTOFOCUS_PHASE"
   /// Autostart
   case autostart = "AUTOSTART"
-  /// Back camera
+  /// Main camera
   case backCamera = "BACK_CAMERA"
   /// Error recording main camera
   case backCameraRuntimeError = "BACK_CAMERA_RUNTIME_ERROR"
@@ -74,7 +74,7 @@ public enum L10n: String, Equatable {
   case fieldOfView = "FIELD_OF_VIEW"
   /// Frames per second
   case fps = "FPS"
-  /// Front camera
+  /// Selfie camera
   case frontCamera = "FRONT_CAMERA"
   /// Error recording selfie camera
   case frontCameraRuntimeError = "FRONT_CAMERA_RUNTIME_ERROR"

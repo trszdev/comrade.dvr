@@ -22,6 +22,11 @@ public final class StartRouter: StartRouting {
     self.deviceMicrophoneRoutingFactory = deviceMicrophoneRoutingFactory
     self.permissionRoutingFactory = permissionRoutingFactory
     Task { @MainActor in
+      TrackingViewController.installOnParent(rootViewController) {} viewWillAppear: { animated in
+        navigationController.setNavigationBarHidden(true, animated: animated)
+      } viewWillDisappear: { animated in
+        navigationController.setNavigationBarHidden(false, animated: animated)
+      }
       navigationController.viewControllers = [rootViewController]
     }
   }

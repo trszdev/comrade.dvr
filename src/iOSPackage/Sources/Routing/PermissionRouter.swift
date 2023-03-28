@@ -12,4 +12,8 @@ public final class PermissionRouter: PermissionRouting {
   public var viewController: UIViewController {
     coordinator.viewController
   }
+
+  public func waitToClose() async {
+    await coordinator.waitToClose()
+  }
 }

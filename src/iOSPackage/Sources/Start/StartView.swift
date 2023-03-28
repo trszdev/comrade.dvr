@@ -81,7 +81,6 @@ public struct StartView: View {
 
         startButtonView
       }
-      .navigationBarHidden(true)
     }
   }
 

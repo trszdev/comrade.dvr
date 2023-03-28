@@ -246,6 +246,9 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
         } else {
           return .task {
             await environment.routing.tabRouting?.startRouting?.showPermissions(animated: true)
+            await environment.routing.tabRouting?.startRouting?.permissionRouting?.waitToClose()
+            guard environment.permissionChecker.hasStartPermissions else { return }
+            await environment.routing.selectSession(animated: true)
           }
         }
       }

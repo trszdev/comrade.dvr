@@ -20,20 +20,23 @@ struct DeviceToolbarView: ToolbarContent {
           Image(systemName: "exclamationmark.circle")
             .foregroundColor(appearance.color(.textColorDestructive))
         }
-        .alert(isPresented: $showAlert) {
-          Alert(
-            title: Text(language.string(.error)),
-            message: Text(language.string(.cantApplyConfiguration)),
-            dismissButton: .cancel(Text(language.string(.ok)))
-          )
-        }
+        .disabled(true)
       }
     }
 
     ToolbarItem(placement: .principal) {
-      Text(language.string(title))
-        .foregroundColor(appearance.color(hasErrors ? .textColorDestructive : .textColorDefault))
-        .font(.headline)
+      VStack {
+        Text(language.string(title))
+          .foregroundColor(appearance.color(hasErrors ? .textColorDestructive : .textColorDefault))
+          .font(.headline)
+
+        if hasErrors {
+          Text(language.string(.cantApplyConfiguration))
+            .foregroundColor(appearance.color(.textColorDisabled))
+            .font(.caption)
+        }
+      }
+
     }
   }
 }
