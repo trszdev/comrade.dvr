@@ -46,8 +46,13 @@ public enum RoutingAssembly: SharedAssembly {
 
 private extension Container {
   func assembleSession() {
-    registerWithView(SessionRouting.self, with: SessionView.self) { viewController, _ in
-      StubRouter(viewController: viewController)
+    register(SessionRouting.self) { (resolver, orientation: UIInterfaceOrientation) in
+      let rootView = resolver.resolve(SessionView.self)!
+      let viewControllerFactory = resolver.resolve(HostingControllerFactory.self)!
+      let view = viewControllerFactory.hostingView(rootView: rootView)
+      let customizableViewController = CustomizableHostingController(rootView: view)
+      customizableViewController.forcedInterfaceOrientation = orientation
+      return StubRouter(viewController: customizableViewController)
     }
   }
 
@@ -76,7 +81,7 @@ private extension Container {
       Router(
         tabRoutingFactory: .init(resolver.resolve(TabRouting.self)!),
         loadingRoutingFactory: .init(resolver.resolve(LoadingRouting.self)!),
-        sessionRoutingFactory: .init(resolver.resolve(SessionRouting.self)!),
+        sessionRoutingFactory: { orientation in resolver.resolve(SessionRouting.self, argument: orientation)! },
         paywallRoutingFactory: .init(resolver.resolve(PaywallRouting.self)!)
       )
     }

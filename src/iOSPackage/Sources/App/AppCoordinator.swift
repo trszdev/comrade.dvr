@@ -31,12 +31,11 @@ public final class AppCoordinator {
     await router.selectLoading(animated: false)
     let settingsRepository = settingsRepositoryFactory.make()
     let deviceConfigurationRepository = deviceConfigurationRepositoryFactory.make()
-    appearancePublisher
+    cancellable = appearancePublisher
       .receive(on: DispatchQueue.main)
       .sink { [weak window] appearance in
         window?.overrideUserInterfaceStyle = appearance.interfaceStyle
       }
-      .store(in: &cancellables)
     let settings = await settingsRepository.load()
     let deviceConfiguration = await deviceConfigurationRepository.load()
     let viewStore = viewStoreFactory.make()
@@ -54,5 +53,5 @@ public final class AppCoordinator {
   private var settingsRepositoryFactory: Factory<SettingsRepository>
   private var viewStoreFactory: Factory<ViewStore<AppState, AppAction>>
   private let appearancePublisher: CurrentValuePublisher<Appearance?>
-  private var cancellables = Set<AnyCancellable>()
+  private var cancellable: AnyCancellable?
 }

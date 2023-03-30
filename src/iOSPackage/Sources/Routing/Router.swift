@@ -8,7 +8,7 @@ public final class Router: Routing {
   public nonisolated init(
     tabRoutingFactory: Factory<TabRouting>,
     loadingRoutingFactory: Factory<LoadingRouting>,
-    sessionRoutingFactory: Factory<SessionRouting>,
+    sessionRoutingFactory: @escaping (UIInterfaceOrientation) -> SessionRouting,
     paywallRoutingFactory: Factory<PaywallRouting>
   ) {
     self.tabRoutingFactory = tabRoutingFactory
@@ -25,7 +25,7 @@ public final class Router: Routing {
   public private(set) var paywallRouting: PaywallRouting?
   private let tabRoutingFactory: Factory<TabRouting>
   private let loadingRoutingFactory: Factory<LoadingRouting>
-  private let sessionRoutingFactory: Factory<SessionRouting>
+  private let sessionRoutingFactory: (UIInterfaceOrientation) -> SessionRouting
   private let paywallRoutingFactory: Factory<PaywallRouting>
 
   public func selectTab(animated: Bool) async {
@@ -52,9 +52,9 @@ public final class Router: Routing {
     await window?.fade(rootViewController: loadingRouting.viewController, animated: animated)
   }
 
-  public func selectSession(animated: Bool) async {
+  public func selectSession(orientation: UIInterfaceOrientation, animated: Bool) async {
     guard sessionRouting == nil else { return }
-    let sessionRouting = sessionRoutingFactory.make()
+    let sessionRouting = sessionRoutingFactory(orientation)
     self.sessionRouting = sessionRouting
     loadingRouting = nil
     tabRouting = nil

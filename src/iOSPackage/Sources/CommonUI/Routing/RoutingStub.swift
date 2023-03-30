@@ -1,3 +1,5 @@
+import UIKit
+
 public final class RoutingStub: Routing {
   public nonisolated init() {}
 
@@ -12,7 +14,7 @@ public final class RoutingStub: Routing {
   public func selectLoading(animated: Bool) async {
   }
 
-  public func selectSession(animated: Bool) async {
+  public func selectSession(orientation: UIInterfaceOrientation, animated: Bool) async {
   }
 
   public func showPaywall(animated: Bool) async {

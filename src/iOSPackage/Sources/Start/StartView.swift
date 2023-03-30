@@ -24,19 +24,8 @@ public struct StartView: View {
       view
     }
     .trackOrientation { uiInterfaceOrientation in
-      switch uiInterfaceOrientation {
-      case .unknown:
-        break
-      case .portrait:
-        viewStore.send(.onOrientationChange(.portrait))
-      case .portraitUpsideDown:
-        viewStore.send(.onOrientationChange(.portraitUpsideDown))
-      case .landscapeLeft:
-        viewStore.send(.onOrientationChange(.landscapeLeft))
-      case .landscapeRight:
-        viewStore.send(.onOrientationChange(.landscapeRight))
-      @unknown default:
-        break
+      if let orientation = Orientation.from(uiInterfaceOrientation) {
+        viewStore.send(.onOrientationChange(orientation))
       }
     }
     .onAppear {
@@ -115,7 +104,9 @@ public struct StartView: View {
         RoundedRectangle(cornerRadius: 10)
           .frame(maxWidth: .infinity)
           .frame(height: 50)
-          .foregroundColor(.accentColor)
+          .foregroundColor(
+            viewStore.state.localState.autostartSecondsRemaining == nil ? .accentColor : appearance.color(.proColor)
+          )
           .overlay(buttonOverlayView)
       }
       .disabled(!viewStore.canStart)

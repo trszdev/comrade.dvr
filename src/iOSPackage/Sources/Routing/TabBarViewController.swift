@@ -75,6 +75,7 @@ public final class TabBarViewController: UITabBarController {
       tabBar.standardAppearance = appearance
       tabBar.scrollEdgeAppearance = appearance
     }
+    view.backgroundColor = .systemBackground
     overrideUserInterfaceStyle = appearance.interfaceStyle
   }
 

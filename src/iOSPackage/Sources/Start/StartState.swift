@@ -114,6 +114,7 @@ public enum StartAction: BindableAction {
   case tapStart
   case autostart
   case autostartTick
+  case configureAndPlay
   case deviceConfigurationLoaded(Device.DeviceConfiguration)
   case deviceCameraAction(DeviceCameraAction)
   case deviceMicrophoneAction(DeviceMicrophoneAction)
@@ -239,24 +240,26 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
         return .cancel(id: AutostartTimerID())
       } else {
         if environment.permissionChecker.hasStartPermissions {
-          do {
-            try environment.cameraKitService.configure(deviceConfiguration: state.deviceConfiguration)
-          } catch {
-            state.handleError(error)
-            return .none
-          }
-          environment.cameraKitService.play()
-          return .task {
-            await environment.routing.selectSession(animated: true)
-          }
+          return .init(value: .configureAndPlay)
         } else {
-          return .task {
+          return .async {
             await environment.routing.tabRouting?.startRouting?.showPermissions(animated: true)
             await environment.routing.tabRouting?.startRouting?.permissionRouting?.waitToClose()
-            guard environment.permissionChecker.hasStartPermissions else { return }
-            await environment.routing.selectSession(animated: true)
+            return .init(value: .configureAndPlay)
           }
         }
+      }
+    case .configureAndPlay:
+      let config = state.deviceConfiguration
+      do {
+        try environment.cameraKitService.configure(deviceConfiguration: config)
+      } catch {
+        state.handleError(error)
+        return .none
+      }
+      environment.cameraKitService.play()
+      return .task {
+        await environment.routing.selectSession(orientation: config.orientation.interfaceOrientation, animated: true)
       }
     case let .deviceConfigurationLoaded(configuration):
       state.frontCameraState = .init(
