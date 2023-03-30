@@ -114,6 +114,7 @@ struct Module {
       .deviceState,
       .paywall,
       .permissions,
+      .session,
     ],
     externalDependencies: [.spStorkController]
   )

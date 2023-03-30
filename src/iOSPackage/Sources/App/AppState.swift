@@ -9,6 +9,7 @@ import Paywall
 import Permissions
 import CameraKit
 import Device
+import Session
 import Util
 
 public struct AppState: Equatable {
@@ -50,6 +51,8 @@ public struct AppState: Equatable {
       microphoneState = newValue.microphoneState
     }
   }
+
+  public var sessionState: SessionState = .init()
 }
 
 public enum AppAction {
@@ -57,6 +60,7 @@ public enum AppAction {
   case historyAction(HistoryAction)
   case startAction(StartAction)
   case paywallAction(PaywallAction)
+  case sessionAction(SessionAction)
 }
 
 public struct AppEnvironment {
@@ -107,5 +111,9 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
     )
   },
 
-  paywallReducer.pullback(state: \.paywallState, action: /AppAction.paywallAction)
+  paywallReducer.pullback(state: \.paywallState, action: /AppAction.paywallAction),
+
+  sessionReducer.pullback(state: \.sessionState, action: /AppAction.sessionAction) {
+    .init(routing: $0.routing)
+  }
 )

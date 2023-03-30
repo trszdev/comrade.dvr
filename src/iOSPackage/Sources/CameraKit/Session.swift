@@ -12,8 +12,8 @@ public final class Session {
     self.multiCameraSession = multiCameraSession
   }
 
-  public let frontOutput = AVCaptureVideoDataOutput()
-  public let backOutput = AVCaptureVideoDataOutput()
+  let frontOutput = AVCaptureVideoDataOutput()
+  let backOutput = AVCaptureVideoDataOutput()
   public let frontCameraPreviewView = PreviewView()
   public let backCameraPreviewView = PreviewView()
 

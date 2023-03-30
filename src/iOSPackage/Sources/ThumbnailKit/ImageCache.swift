@@ -5,5 +5,5 @@ import Combine
 public protocol ImageCache {
   func image(for url: URL, size: CGSize) -> CGImage?
   func purgeCache()
-  nonisolated var cacheWillChangePublisher: AnyPublisher<Void, Never> { get }
+  var cacheWillChangePublisher: AnyPublisher<Void, Never> { get }
 }

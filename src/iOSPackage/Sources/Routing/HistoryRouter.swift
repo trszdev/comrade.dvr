@@ -6,9 +6,9 @@ import Util
 public final class HistoryRouter: HistoryRouting {
   public var shareRouting: ShareRouting?
 
-  public func share(animated: Bool) async {
+  public func share(url: URL, animated: Bool) async {
     guard shareRouting == nil else { return }
-    let shareRouting = shareRoutingFactory.make()
+    let shareRouting = shareRoutingFactory(url)
     self.shareRouting = shareRouting
     TrackingViewController.installOnParent(shareRouting.viewController) {} viewDidDisappear: { [weak self] _ in
       self?.shareRouting = nil
@@ -16,11 +16,11 @@ public final class HistoryRouter: HistoryRouting {
     await viewController.present(viewController: shareRouting.viewController, animated: animated)
   }
 
-  public nonisolated init(viewController: UIViewController, shareRoutingFactory: Factory<ShareRouting>) {
+  public nonisolated init(viewController: UIViewController, shareRoutingFactory: @escaping (URL) -> ShareRouting) {
     self.viewController = viewController
     self.shareRoutingFactory = shareRoutingFactory
   }
 
   public let viewController: UIViewController
-  private let shareRoutingFactory: Factory<ShareRouting>
+  private let shareRoutingFactory: (URL) -> ShareRouting
 }

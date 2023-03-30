@@ -4,19 +4,17 @@ import Util
 
 @MainActor
 public final class ObservableImageCache: ObservableObject, ImageCache {
-  public nonisolated var cacheWillChangePublisher: AnyPublisher<Void, Never> {
-    if let cache = cache {
-      return cache.cacheWillChangePublisher
-    } else {
-      fatalError()
-    }
+  public var cacheWillChangePublisher: AnyPublisher<Void, Never> {
+    objectWillChange.eraseToAnyPublisher()
   }
 
   public nonisolated init(cache: ImageCache? = nil) {
     self.cache = cache
-    self.cancellable = cache?.cacheWillChangePublisher.sink { [weak self] _ in
-      self?.objectWillChange.send()
-      log.verbose("objectWillChange")
+    Task { @MainActor [weak self] in
+      self?.cancellable = cache?.cacheWillChangePublisher.sink { [weak self] _ in
+        self?.objectWillChange.send()
+        log.verbose("objectWillChange")
+      }
     }
   }
 

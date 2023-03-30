@@ -43,6 +43,8 @@ struct HostingControllerFactory {
 
   func hostingController<Content: View>(rootView: Content) -> UIHostingController<HostingView<Content>> {
     let view = HostingView(hostingObject: hostingObject) { rootView }
-    return UIHostingController(rootView: view)
+    let controller = UIHostingController(rootView: view)
+    controller.view.backgroundColor = .clear
+    return controller
   }
 }

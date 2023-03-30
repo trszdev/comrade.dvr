@@ -19,6 +19,12 @@ public final class PermissionControllerCoordinator: PermissionControllerCoordina
 
   public nonisolated init(languagePublisher: CurrentValuePublisher<Language?>, permissions: [Permission]) {
     self.permissions = permissions
+    Task { @MainActor [weak self] in
+      self?.setup(languagePublisher: languagePublisher)
+    }
+  }
+
+  private func setup(languagePublisher: CurrentValuePublisher<Language?>) {
     cancellable = languagePublisher.receive(on: DispatchQueue.main).sink { [weak self] language in
       Task { @MainActor [weak self] in
         guard let self = self else { return }

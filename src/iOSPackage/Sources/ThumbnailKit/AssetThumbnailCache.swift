@@ -6,7 +6,7 @@ import Combine
 
 @MainActor
 final class AssetThumbnailCache: NSObject, ImageCache, NSCacheDelegate {
-  nonisolated var cacheWillChangePublisher: AnyPublisher<Void, Never> {
+  var cacheWillChangePublisher: AnyPublisher<Void, Never> {
     subject.eraseToAnyPublisher()
   }
 

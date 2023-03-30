@@ -16,23 +16,27 @@ public struct HistoryView: View {
   }
 
   public var body: some View {
-    view
-      .onChange(of: viewStore.selectedItem) { newItem in
-        player?.pause()
-        if let newItem = newItem {
-          player = .init(url: newItem.url)
-          player?.play()
-        } else {
-          player = nil
-        }
+    ZStack {
+      appearance.color(.mainBackgroundColor).ignoresSafeArea()
+
+      view
+    }
+    .onChange(of: viewStore.selectedItem) { newItem in
+      player?.pause()
+      if let newItem = newItem {
+        player = .init(url: newItem.url)
+        player?.play()
+      } else {
+        player = nil
       }
-      .onAppear {
-        viewStore.send(.onAppear)
-      }
-      .onDisappear {
-        player?.pause()
-        viewStore.send(.onDisappear)
-      }
+    }
+    .onAppear {
+      viewStore.send(.onAppear)
+    }
+    .onDisappear {
+      player?.pause()
+      viewStore.send(.onDisappear)
+    }
   }
 
   @ViewBuilder private var view: some View {
@@ -86,7 +90,7 @@ public struct HistoryView: View {
                 HistoryItemCompactView(item: item)
               }
             }
-            .opacity(viewStore.selectedItem == nil ? 1 : (isSelected ? 1 : 0.35))
+            .opacity(viewStore.selectedItem == nil ? 1 : (isSelected ? 1 : 0.5))
             .contextMenu {
               contextMenu(for: item)
             }

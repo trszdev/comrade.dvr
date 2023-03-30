@@ -118,7 +118,7 @@ public struct StartView: View {
           .foregroundColor(.accentColor)
           .overlay(buttonOverlayView)
       }
-      .disabled(viewStore.hasErrorsInConfiguration)
+      .disabled(!viewStore.canStart)
     }
     .padding(.horizontal, 10)
     .padding(.vertical, verticalSpacing)

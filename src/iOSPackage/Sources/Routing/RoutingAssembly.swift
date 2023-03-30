@@ -12,6 +12,7 @@ import Paywall
 import Util
 import Assets
 import Permissions
+import Session
 
 public enum RoutingAssembly: SharedAssembly {
   case shared
@@ -38,25 +39,21 @@ public enum RoutingAssembly: SharedAssembly {
       DeviceStateAssembly.shared,
       PaywallAssembly.shared,
       PermissionsAssembly.shared,
+      SessionAssembly.shared,
     ]
   }
 }
 
 private extension Container {
   func assembleSession() {
-    registerWithView(SessionRouting.self, with: PaywallView.self) { viewController, _ in
+    registerWithView(SessionRouting.self, with: SessionView.self) { viewController, _ in
       StubRouter(viewController: viewController)
     }
   }
 
   func assembleShare() {
-    register(ShareRouting.self) { resolver in
-      let viewStore = resolver.resolve(ViewStore<HistoryState, HistoryAction>.self)!
-      var activityItems = [Any]()
-      if let url = viewStore.shareItem?.url {
-        activityItems.append(url)
-      }
-      let viewController = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    register(ShareRouting.self) { (_, url: URL) in
+      let viewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
       return StubRouter(viewController: viewController)
     }
   }
@@ -69,7 +66,7 @@ private extension Container {
 
       return HistoryRouter(
         viewController: viewController,
-        shareRoutingFactory: .init(resolver.resolve(ShareRouting.self)!)
+        shareRoutingFactory: { url in resolver.resolve(ShareRouting.self, argument: url)! }
       )
     }
   }

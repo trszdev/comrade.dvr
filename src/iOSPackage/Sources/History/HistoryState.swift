@@ -69,9 +69,8 @@ public let historyReducer = Reducer<HistoryState, HistoryAction, HistoryEnvironm
       return .init(value: .reload)
     }
   case .share(let item):
-    state.shareItem = item
     return .task {
-      await environment.routing.tabRouting?.historyRouting?.share(animated: true)
+      await environment.routing.tabRouting?.historyRouting?.share(url: item.url, animated: true)
     }
   }
   return .none

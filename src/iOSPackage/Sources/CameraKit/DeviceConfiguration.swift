@@ -2,7 +2,7 @@ import Foundation
 import Device
 import Util
 
-public struct DeviceConfiguration {
+public struct DeviceConfiguration: Hashable {
   public init(
     frontCamera: CameraConfiguration? = nil,
     backCamera: CameraConfiguration? = nil,

@@ -32,10 +32,15 @@ public final class Router: Routing {
     guard tabRouting == nil else { return }
     let tabRouting = tabRoutingFactory.make()
     self.tabRouting = tabRouting
+    let needToSlide = sessionRouting != nil
     sessionRouting = nil
     loadingRouting = nil
     tabRouting.selectStart()
-    await window?.set(rootViewController: tabRouting.viewController, animated: animated)
+    if needToSlide {
+      await window?.curlDown(rootViewController: tabRouting.viewController, animated: animated)
+    } else {
+      await window?.fade(rootViewController: tabRouting.viewController, animated: animated)
+    }
   }
 
   public func selectLoading(animated: Bool) async {
@@ -44,7 +49,7 @@ public final class Router: Routing {
     self.loadingRouting = loadingRouting
     sessionRouting = nil
     tabRouting = nil
-    await window?.set(rootViewController: loadingRouting.viewController, animated: animated)
+    await window?.fade(rootViewController: loadingRouting.viewController, animated: animated)
   }
 
   public func selectSession(animated: Bool) async {
@@ -53,7 +58,7 @@ public final class Router: Routing {
     self.sessionRouting = sessionRouting
     loadingRouting = nil
     tabRouting = nil
-    await window?.set(rootViewController: sessionRouting.viewController, animated: animated)
+    await window?.curlUp(rootViewController: sessionRouting.viewController, animated: animated)
   }
 
   public func showPaywall(animated: Bool) async {

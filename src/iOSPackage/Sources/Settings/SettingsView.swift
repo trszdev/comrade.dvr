@@ -21,9 +21,9 @@ public struct SettingsView: View {
 
       interfaceSectionView
 
-      if let notificationsEnabled = viewStore.localState.notificationsEnabled {
-        pushSectionView(notificationsEnabled: notificationsEnabled)
-      }
+//      if let notificationsEnabled = viewStore.localState.notificationsEnabled {
+//        pushSectionView(notificationsEnabled: notificationsEnabled)
+//      }
 
       proSectionView
 

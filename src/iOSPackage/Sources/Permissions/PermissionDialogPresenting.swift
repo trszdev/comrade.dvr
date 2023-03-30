@@ -38,7 +38,7 @@ struct PermissionDialogPresenter: PermissionDialogPresenting {
   private let controller: SPPermissionsNativeController
   private let dataSource = DataSource()
 
-  @MainActor func present() async -> Bool {
+  func present() async -> Bool {
     guard let viewController = UIApplication.shared.topViewController else {
       return false
     }
@@ -52,19 +52,23 @@ struct PermissionDialogPresenter: PermissionDialogPresenting {
 
   private var permissionCallback: (Bool) -> Void = { _ in }
 
-  func didAllowPermission(_ permission: SPPermissions.Permission) {
+  nonisolated func didAllowPermission(_ permission: SPPermissions.Permission) {
     log.debug()
-    permissionCallback(true)
-    permissionCallback = { _ in }
+    Task { @MainActor in
+      permissionCallback(true)
+      permissionCallback = { _ in }
+    }
   }
 
-  func didDeniedPermission(_ permission: SPPermissions.Permission) {
+  nonisolated func didDeniedPermission(_ permission: SPPermissions.Permission) {
     log.debug()
-    permissionCallback(false)
-    permissionCallback = { _ in }
+    Task { @MainActor in
+      permissionCallback(false)
+      permissionCallback = { _ in }
+    }
   }
 
-  func didHidePermissions(_ permissions: [SPPermissions.Permission]) {
+  nonisolated func didHidePermissions(_ permissions: [SPPermissions.Permission]) {
     log.debug()
   }
 }

@@ -63,6 +63,7 @@ private extension Container {
     registerStore(state: \.startState.microphoneState, action: { AppAction.startAction(.deviceMicrophoneAction($0)) })
     registerStore(state: \.startState, action: AppAction.startAction)
     registerStore(state: \.paywallState, action: AppAction.paywallAction)
+    registerStore(state: \.sessionState, action: AppAction.sessionAction)
   }
 
   func registerStore<LocalState: Equatable, LocalAction>(

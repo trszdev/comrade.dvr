@@ -35,8 +35,14 @@ public struct StartState: Equatable {
     )
   }
 
-  var hasErrorsInConfiguration: Bool {
-    frontCameraState.hasErrors || backCameraState.hasErrors || microphoneState.hasErrors
+  var canStart: Bool {
+    if frontCameraState.hasErrors || backCameraState.hasErrors || microphoneState.hasErrors {
+      return false
+    }
+    let frontCameraEnabled = !frontCameraState.isLocked && frontCameraState.enabled
+    let backCameraEnabled = !backCameraState.isLocked && backCameraState.enabled
+    let microphoneEnabled = !microphoneState.isLocked && microphoneState.enabled
+    return frontCameraEnabled || backCameraEnabled || microphoneEnabled
   }
 
   public var selectedCameraState: DeviceCameraState {
