@@ -30,6 +30,7 @@ public enum SettingsAction: BindableAction {
   case binding(BindingAction<SettingsState>)
   case clearAllRecordings
   case contactUs
+  case contactUsCopy
   case upgradeToPro
   case openNotificationSettings
   case settingsLoaded(Settings)
@@ -55,13 +56,16 @@ public struct SettingsEnvironment {
 }
 
 public let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment> { state, action, environment in
+  let email = Optional(Language.en).appEmail
   switch action {
   case .contactUs:
     let application = UIApplication.shared
-    guard let url = URL(string: "mailto:\(Optional(Language.en).appEmail)"), application.canOpenURL(url) else {
+    guard let url = URL(string: "mailto:\(email)"), application.canOpenURL(url) else {
       return .none
     }
     application.open(url, options: [:], completionHandler: nil)
+  case .contactUsCopy:
+    UIPasteboard.general.string = email
   case .binding:
     return .task { [state] in
       await environment.repository.save(settings: state.settings)

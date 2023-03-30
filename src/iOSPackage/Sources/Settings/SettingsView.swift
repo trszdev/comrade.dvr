@@ -90,6 +90,14 @@ public struct SettingsView: View {
       } label: {
         Text(verbatim: language.appEmail)
       }
+      .contextMenu {
+        Button {
+          viewStore.send(.contactUsCopy)
+        } label: {
+          Text(language.string(.copy))
+          Image(systemName: "doc.on.doc.fill")
+        }
+      }
 
       DestructiveButton {
         showClearAllAssets = true

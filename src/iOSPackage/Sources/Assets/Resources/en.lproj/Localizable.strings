@@ -151,3 +151,5 @@
 "MICROPHONE_RUNTIME_ERROR" = "Error recording microphone";
 "FRONT_CAMERA_RUNTIME_ERROR" = "Error recording selfie camera";
 "BACK_CAMERA_RUNTIME_ERROR" = "Error recording main camera";
+
+"COPY" = "Copy";

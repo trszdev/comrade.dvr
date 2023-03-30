@@ -40,6 +40,8 @@ public enum L10n: String, Equatable {
   case contactUs = "CONTACT_US"
   /// Continue
   case `continue` = "CONTINUE"
+  /// Copy
+  case copy = "COPY"
   /// Dark
   case darkTheme = "DARK_THEME"
   /// Delete
