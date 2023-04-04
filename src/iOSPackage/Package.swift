@@ -140,7 +140,7 @@ struct Module {
 
   static let session = Self(
     name: "Session",
-    moduleDependencies: [.permissions, .composableArchitectureExtensions, .commonUI]
+    moduleDependencies: [.permissions, .composableArchitectureExtensions, .commonUI, .cameraKit]
   )
 
   static let composableArchitectureExtensions = Self(

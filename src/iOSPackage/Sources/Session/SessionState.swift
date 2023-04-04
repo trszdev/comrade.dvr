@@ -3,6 +3,7 @@ import CommonUI
 import ComposableArchitectureExtensions
 import UIKit
 import CameraKit
+import Device
 
 public struct SessionState: Equatable {
   public struct LocalState: Equatable {
@@ -18,15 +19,18 @@ public struct SessionState: Equatable {
   public init(
     backCameraPreviewView: UIView? = nil,
     frontCameraPreviewView: UIView? = nil,
+    orientation: Orientation = .portrait,
     localState: LocalState = LocalState()
   ) {
     self.backCameraPreviewView = backCameraPreviewView
     self.frontCameraPreviewView = frontCameraPreviewView
+    self.orientation = orientation
     self.localState = localState
   }
 
   public var backCameraPreviewView: UIView?
   public var frontCameraPreviewView: UIView?
+  public var orientation: Orientation = .portrait
   @BindableState public var localState = LocalState()
 
   var mainCameraPreviewView: UIView? {

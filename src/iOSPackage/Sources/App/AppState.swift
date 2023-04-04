@@ -16,6 +16,7 @@ public struct AppState: Equatable {
   public var settings: Settings = .init()
   public var isPremium: Bool = true
   public var session: Session?
+  public var deviceConfiguration: CameraKit.DeviceConfiguration { startState.deviceConfiguration }
 
   public var settingsLocalState = SettingsState.LocalState()
   public var settingsState: SettingsState {
@@ -62,6 +63,7 @@ public struct AppState: Equatable {
       .init(
         backCameraPreviewView: session?.backCameraPreviewView,
         frontCameraPreviewView: session?.frontCameraPreviewView,
+        orientation: deviceConfiguration.orientation,
         localState: sessionLocalState
       )
     }

@@ -17,8 +17,8 @@ public struct SessionView: View {
     Color.black
       .ignoresSafeArea()
       .overlay(mainVideoView)
-      .overlay(viewStore.state.hasTwoCameras ? secondaryVideoView : nil, alignment: .topTrailing)
-      .overlay(backButtonView, alignment: .bottom)
+      .overlay(viewStore.state.hasTwoCameras ? secondaryVideoView : nil, alignment: secondaryVideoAlignment)
+      .overlay(backButtonView, alignment: stopButtonAlignment)
       .alert(item: viewStore.binding(\.$localState.alertError)) { error in
         Alert(
           title: Text(language.string(.error)),
@@ -32,6 +32,32 @@ public struct SessionView: View {
       .onDisappear {
         viewStore.send(.onDisappear)
       }
+  }
+
+  private var stopButtonAlignment: Alignment {
+    switch viewStore.orientation {
+    case .landscapeLeft:
+      return .trailing
+    case .landscapeRight:
+      return .leading
+    case .portrait:
+      return .bottom
+    case .portraitUpsideDown:
+      return .top
+    }
+  }
+
+  private var secondaryVideoAlignment: Alignment {
+    switch viewStore.orientation {
+    case .landscapeLeft:
+      return .topLeading
+    case .landscapeRight:
+      return .topTrailing
+    case .portrait:
+      return .topTrailing
+    case .portraitUpsideDown:
+      return .bottomLeading
+    }
   }
 
   private var secondaryVideoView: some View {
@@ -87,16 +113,19 @@ private struct StopButtonStyle: ButtonStyle {
   }
 }
 
+@available(iOS 15.0, *)
 struct SessionViewPreviews: PreviewProvider {
   static var previews: some View {
     SessionView(store: .init(
       initialState: .init(
         backCameraPreviewView: .colored(.orange),
-        frontCameraPreviewView: .colored(.green)
+        frontCameraPreviewView: .colored(.green),
+        orientation: .portrait
       ),
       reducer: sessionReducer,
       environment: .init())
     )
+    .previewInterfaceOrientation(.portrait)
   }
 }
 

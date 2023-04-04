@@ -26,7 +26,7 @@ public struct StartState: Equatable {
   public var maxFileLength: TimeInterval = .seconds(1)
   public var orientation: Orientation = .portrait
 
-  var deviceConfiguration: CameraKit.DeviceConfiguration {
+  public var deviceConfiguration: CameraKit.DeviceConfiguration {
     .init(
       frontCamera: (frontCameraState.enabled && !frontCameraState.isLocked) ? frontCameraState.configuration : nil,
       backCamera: (backCameraState.enabled && !backCameraState.isLocked) ? backCameraState.configuration : nil,
