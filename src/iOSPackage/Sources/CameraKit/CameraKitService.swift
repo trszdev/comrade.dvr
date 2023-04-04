@@ -3,10 +3,9 @@ import Combine
 import Util
 import Foundation
 
-public protocol CameraKitService: SessionConfigurator {
+public protocol CameraKitService: SessionConfigurator, SessionMonitor {
   func play()
   func stop()
-  var monitorErrorPublisher: CurrentValuePublisher<SessionMonitorError?> { get }
 }
 
 public enum CameraKitServiceStub: CameraKitService {
@@ -22,7 +21,10 @@ public enum CameraKitServiceStub: CameraKitService {
     CurrentValueSubject(nil).currentValuePublisher
   }
 
-  public func configure(deviceConfiguration: DeviceConfiguration) throws {
+  public func checkAfterStart(session: Session) {
+  }
+
+  public func configure(session: Session, deviceConfiguration: DeviceConfiguration) throws {
   }
 }
 
@@ -30,14 +32,12 @@ final class CameraKitServiceImpl: CameraKitService {
   init(
     sessionConfigurator: SessionConfigurator,
     monitor: SessionMonitor,
-    store: SessionStore,
     frontCameraRecorder: VideoRecorder,
     backCameraRecorder: VideoRecorder,
     audioRecorder: AudioRecorder
   ) {
     self.sessionConfigurator = sessionConfigurator
     self.monitor = monitor
-    self.store = store
     self.frontCameraRecorder = frontCameraRecorder
     self.backCameraRecorder = backCameraRecorder
     self.audioRecorder = audioRecorder
@@ -45,8 +45,7 @@ final class CameraKitServiceImpl: CameraKitService {
 
   private let sessionConfigurator: SessionConfigurator
   private let monitor: SessionMonitor
-  private weak var store: SessionStore?
-  private var session: Session? { store?.session }
+  private weak var session: Session?
   private let frontCameraRecorder: VideoRecorder
   private let backCameraRecorder: VideoRecorder
   private let audioRecorder: AudioRecorder
@@ -55,7 +54,7 @@ final class CameraKitServiceImpl: CameraKitService {
     guard let session, !session.avSession.isRunning else { return }
     session.avSession.startRunning()
     monitor.checkAfterStart(session: session)
-    guard monitorErrorPublisher.value == nil else { return }
+    guard monitor.monitorErrorPublisher.value == nil else { return }
     audioRecorder.record()
   }
 
@@ -67,18 +66,16 @@ final class CameraKitServiceImpl: CameraKitService {
     audioRecorder.stop()
   }
 
-  func configure(deviceConfiguration: DeviceConfiguration) throws {
-    let wasRunning = session?.avSession.isRunning == true
+  func configure(session: Session, deviceConfiguration: DeviceConfiguration) throws {
+    self.session = session
+    let wasRunning = session.avSession.isRunning == true
     if wasRunning {
       stop()
     }
-    recreateSession(deviceConfiguration: deviceConfiguration)
-    if let session {
-      try sessionConfigurator.configure(deviceConfiguration: deviceConfiguration)
-      setupCameraRecorder(isFront: true, session: session, deviceConfiguration: deviceConfiguration)
-      setupCameraRecorder(isFront: false, session: session, deviceConfiguration: deviceConfiguration)
-      audioRecorder.setup(configuration: deviceConfiguration.microphone, maxDuration: deviceConfiguration.maxFileLength)
-    }
+    try sessionConfigurator.configure(session: session, deviceConfiguration: deviceConfiguration)
+    setupCameraRecorder(isFront: true, session: session, deviceConfiguration: deviceConfiguration)
+    setupCameraRecorder(isFront: false, session: session, deviceConfiguration: deviceConfiguration)
+    audioRecorder.setup(configuration: deviceConfiguration.microphone, maxDuration: deviceConfiguration.maxFileLength)
     if wasRunning {
       play()
     }
@@ -92,19 +89,11 @@ final class CameraKitServiceImpl: CameraKitService {
     recorder.setup(output: session.frontOutput, framesToFlush: framesToFlush, configuration: cameraConfiguration)
   }
 
-  private func recreateSession(deviceConfiguration: DeviceConfiguration) {
-    guard let store else {
-      log.crit("failed to recreate session")
-      return
-    }
-    if deviceConfiguration.backCamera != nil, deviceConfiguration.frontCamera != nil {
-      store.session = .init(multiCameraSession: .init())
-    } else {
-      store.session = .init(singleCameraSession: .init())
-    }
-  }
+  var monitorErrorPublisher: CurrentValuePublisher<SessionMonitorError?> { monitor.monitorErrorPublisher }
 
-  var monitorErrorPublisher: CurrentValuePublisher<SessionMonitorError?> { monitor.errorPublisher }
+  func checkAfterStart(session: Session) {
+    monitor.checkAfterStart(session: session)
+  }
 }
 
 private extension CameraConfiguration {

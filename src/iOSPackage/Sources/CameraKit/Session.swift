@@ -1,6 +1,10 @@
 import AVFoundation
 
-public final class Session {
+public final class Session: Equatable {
+  public static func == (lhs: Session, rhs: Session) -> Bool {
+    lhs === rhs
+  }
+
   var singleCameraSession: AVCaptureSession!
   var multiCameraSession: AVCaptureMultiCamSession!
 
@@ -14,8 +18,8 @@ public final class Session {
 
   let frontOutput = AVCaptureVideoDataOutput()
   let backOutput = AVCaptureVideoDataOutput()
-  public let frontCameraPreviewView = PreviewView()
-  public let backCameraPreviewView = PreviewView()
+  public internal(set) var frontCameraPreviewView: PreviewView?
+  public internal(set) var backCameraPreviewView: PreviewView?
 
   var avSession: AVCaptureSession! {
     singleCameraSession ?? multiCameraSession

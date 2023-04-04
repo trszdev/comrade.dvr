@@ -21,6 +21,7 @@ public struct StartState: Equatable {
   }
 
   @BindableState public var localState: LocalState = .init()
+  public var session: Session?
   public var isPremium: Bool = false
   public var maxFileLength: TimeInterval = .seconds(1)
   public var orientation: Orientation = .portrait
@@ -35,6 +36,10 @@ public struct StartState: Equatable {
     )
   }
 
+  mutating func recreateSession() {
+    session = deviceConfiguration.makeSession()
+  }
+
   var canStart: Bool {
     if frontCameraState.hasErrors || backCameraState.hasErrors || microphoneState.hasErrors {
       return false
@@ -42,7 +47,7 @@ public struct StartState: Equatable {
     let frontCameraEnabled = !frontCameraState.isLocked && frontCameraState.enabled
     let backCameraEnabled = !backCameraState.isLocked && backCameraState.enabled
     let microphoneEnabled = !microphoneState.isLocked && microphoneState.enabled
-    return frontCameraEnabled || backCameraEnabled || microphoneEnabled
+    return frontCameraEnabled || backCameraEnabled
   }
 
   public var selectedCameraState: DeviceCameraState {
@@ -67,7 +72,8 @@ public struct StartState: Equatable {
     maxFileLength: TimeInterval = .seconds(1),
     frontCameraState: DeviceCameraState = .init(enabled: false, configuration: .defaultFrontCamera),
     backCameraState: DeviceCameraState = .init(enabled: true, configuration: .defaultBackCamera),
-    microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default)
+    microphoneState: DeviceMicrophoneState = .init(enabled: true, configuration: .default),
+    session: Session? = nil
   ) {
     self.localState = localState
     self.isPremium = isPremium
@@ -75,6 +81,7 @@ public struct StartState: Equatable {
     self.frontCameraState = frontCameraState
     self.backCameraState = backCameraState
     self.microphoneState = microphoneState
+    self.session = session
   }
 
   mutating func handleError(_ error: Error) {
@@ -158,12 +165,7 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
     case .tapBackCamera:
       state.localState.selectedFrontCamera = false
     case .deviceCameraAction(.onConfigurationChange), .deviceMicrophoneAction(.onConfigurationChange):
-      do {
-        try environment.cameraKitService.configure(deviceConfiguration: state.deviceConfiguration)
-      } catch {
-        state.handleError(error)
-        return .none
-      }
+      guard environment.cameraKitService.tryConfigure(using: &state) else { return .none }
       let deviceConfiguration = Device.DeviceConfiguration(
         frontCamera: state.frontCameraState.configuration,
         frontCameraEnabled: state.frontCameraState.enabled,
@@ -205,12 +207,7 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
       }
     case .autostart:
       if environment.permissionChecker.hasStartPermissions {
-        do {
-          try environment.cameraKitService.configure(deviceConfiguration: state.deviceConfiguration)
-        } catch {
-          state.handleError(error)
-          return .none
-        }
+        guard environment.cameraKitService.tryConfigure(using: &state) else { return .none }
         state.localState.autostartSecondsRemaining = 4
         return .init(value: .autostartTick)
       }
@@ -245,19 +242,15 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
           return .async {
             await environment.routing.tabRouting?.startRouting?.showPermissions(animated: true)
             await environment.routing.tabRouting?.startRouting?.permissionRouting?.waitToClose()
+            guard environment.permissionChecker.hasStartPermissions else { return .none }
             return .init(value: .configureAndPlay)
           }
         }
       }
     case .configureAndPlay:
-      let config = state.deviceConfiguration
-      do {
-        try environment.cameraKitService.configure(deviceConfiguration: config)
-      } catch {
-        state.handleError(error)
-        return .none
-      }
+      guard environment.cameraKitService.tryConfigure(using: &state) else { return .none }
       environment.cameraKitService.play()
+      let config = state.deviceConfiguration
       return .task {
         await environment.routing.selectSession(orientation: config.orientation.interfaceOrientation, animated: true)
       }
@@ -280,6 +273,7 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
   deviceMicrophoneReducer.pullback(state: \.microphoneState, action: /StartAction.deviceMicrophoneAction),
 
 ])
+.binding()
 
 private struct AutostartTimerID: Hashable {}
 
@@ -289,5 +283,22 @@ private extension PermissionChecker {
     let hasMicrophoneAccess = authorized(.microphone) == true
     let hasDeterminedNotification = authorized(.notification) != nil
     return hasCameraAccess && hasMicrophoneAccess && hasDeterminedNotification
+  }
+}
+
+private extension CameraKitService {
+  func tryConfigure(using startState: inout StartState) -> Bool {
+    startState.recreateSession()
+    guard let session = startState.session else {
+      log.crit("no session found")
+      return false
+    }
+    do {
+      try configure(session: session, deviceConfiguration: startState.deviceConfiguration)
+      return true
+    } catch {
+      startState.handleError(error)
+      return false
+    }
   }
 }

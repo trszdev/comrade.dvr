@@ -153,3 +153,4 @@
 "BACK_CAMERA_RUNTIME_ERROR" = "Error recording main camera";
 
 "COPY" = "Copy";
+"RUNTIME_ERROR" = "Runtime error";

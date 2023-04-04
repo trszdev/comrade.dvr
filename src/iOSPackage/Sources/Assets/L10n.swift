@@ -200,6 +200,8 @@ public enum L10n: String, Equatable {
   case restoreDefaultSettingsAsk = "RESTORE_DEFAULT_SETTINGS_ASK"
   /// Yes, restore default settings
   case restoreDefaultSettingsConfirm = "RESTORE_DEFAULT_SETTINGS_CONFIRM"
+  /// Runtime error
+  case runtimeError = "RUNTIME_ERROR"
   /// Settings
   case settings = "SETTINGS"
   /// Share

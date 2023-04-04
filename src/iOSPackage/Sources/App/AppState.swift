@@ -14,6 +14,9 @@ import Util
 
 public struct AppState: Equatable {
   public var settings: Settings = .init()
+  public var isPremium: Bool = true
+  public var session: Session?
+
   public var settingsLocalState = SettingsState.LocalState()
   public var settingsState: SettingsState {
     get {
@@ -28,7 +31,6 @@ public struct AppState: Equatable {
   public var frontCameraState: DeviceCameraState = .init(enabled: false, isFrontCamera: true)
   public var backCameraState: DeviceCameraState = .init(enabled: true)
   public var microphoneState: DeviceMicrophoneState = .init(enabled: true)
-  public var isPremium: Bool = true
 
   public var paywallState: PaywallState = .init()
 
@@ -41,7 +43,8 @@ public struct AppState: Equatable {
         maxFileLength: settings.maxFileLength,
         frontCameraState: frontCameraState,
         backCameraState: backCameraState,
-        microphoneState: microphoneState
+        microphoneState: microphoneState,
+        session: session
       )
     }
     set {
@@ -49,10 +52,23 @@ public struct AppState: Equatable {
       frontCameraState = newValue.frontCameraState
       backCameraState = newValue.backCameraState
       microphoneState = newValue.microphoneState
+      session = newValue.session
     }
   }
 
-  public var sessionState: SessionState = .init()
+  public var sessionLocalState = SessionState.LocalState()
+  public var sessionState: SessionState {
+    get {
+      .init(
+        backCameraPreviewView: session?.backCameraPreviewView,
+        frontCameraPreviewView: session?.frontCameraPreviewView,
+        localState: sessionLocalState
+      )
+    }
+    set {
+      sessionLocalState = newValue.localState
+    }
+  }
 }
 
 public enum AppAction {
@@ -107,7 +123,8 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
       routing: $0.routing,
       permissionDialogPresenting: $0.permissionDialogPresenting,
       deviceConfigurationRepository: $0.deviceConfigurationRepository,
-      datedFileManager: $0.datedFileManager
+      datedFileManager: $0.datedFileManager,
+      cameraKitService: $0.cameraKitService
     )
   },
 

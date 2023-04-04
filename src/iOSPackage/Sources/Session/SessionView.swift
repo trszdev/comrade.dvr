@@ -19,6 +19,19 @@ public struct SessionView: View {
       .overlay(mainVideoView)
       .overlay(viewStore.state.hasTwoCameras ? secondaryVideoView : nil, alignment: .topTrailing)
       .overlay(backButtonView, alignment: .bottom)
+      .alert(item: viewStore.binding(\.$localState.alertError)) { error in
+        Alert(
+          title: Text(language.string(.error)),
+          message: Text(language.errorMessage(error)),
+          dismissButton: .cancel(Text(language.string(.ok)))
+        )
+      }
+      .onAppear {
+        viewStore.send(.onAppear)
+      }
+      .onDisappear {
+        viewStore.send(.onDisappear)
+      }
   }
 
   private var secondaryVideoView: some View {

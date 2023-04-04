@@ -7,7 +7,6 @@ public enum CameraKitAssembly: SharedAssembly {
   case shared
 
   public func assemble(container: Container) {
-    container.registerStore()
     container.registerInternalConfigurator()
     container.registerMonitor()
     container.registerURLMaker()
@@ -22,13 +21,6 @@ private extension Container {
   static var frontCameraRecorder: String { "frontCameraRecorder" }
   static var backCameraRecorder: String { "backCameraRecorder" }
   static var internalSessionConfigurator: String { "internalSessionConfigurator" }
-
-  func registerStore() {
-    self
-      .registerInstance(SessionStoreImpl())
-      .implements(SessionStore.self, PreviewProvider.self)
-      .inObjectScope(.container)
-  }
 
   func registerInternalConfigurator() {
     self
@@ -81,14 +73,12 @@ private extension Container {
     register(CameraKitService.self) { resolver in
       let sessionConfigurator = resolver.resolve(SessionConfigurator.self, name: Self.internalSessionConfigurator)!
       let monitor = resolver.resolve(SessionMonitor.self)!
-      let store = resolver.resolve(SessionStore.self)!
       let frontCameraRecorder = resolver.resolve(VideoRecorder.self, name: Self.frontCameraRecorder)!
       let backCameraRecorder = resolver.resolve(VideoRecorder.self, name: Self.backCameraRecorder)!
       let audioRecorder = resolver.resolve(AudioRecorder.self)!
       return CameraKitServiceImpl(
         sessionConfigurator: sessionConfigurator,
         monitor: monitor,
-        store: store,
         frontCameraRecorder: frontCameraRecorder,
         backCameraRecorder: backCameraRecorder,
         audioRecorder: audioRecorder

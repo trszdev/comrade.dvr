@@ -165,7 +165,7 @@ struct Module {
     externalDependencies: [.util]
   )
 
-  static let device = Self(name: "Device")
+  static let device = Self(name: "Device", moduleDependencies: [.swinjectExtensions])
 
   static let deviceState = Self(
     name: "DeviceState",

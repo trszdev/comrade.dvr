@@ -22,4 +22,23 @@ public struct DeviceConfiguration: Hashable {
   public var microphone: MicrophoneConfiguration?
   public var maxFileLength: TimeInterval = .seconds(1)
   public var orientation: Orientation = .portrait
+
+  public func makeSession() -> Session? {
+    let hasBackCamera = backCamera != nil
+    let hasFrontCamera = frontCamera != nil
+    switch (hasBackCamera, hasFrontCamera) {
+    case (true, true):
+      return .init(multiCameraSession: .init())
+    case (true, false):
+      let session = Session(singleCameraSession: .init())
+      session.backCameraPreviewView = .init()
+      return session
+    case (false, true):
+      let session = Session(singleCameraSession: .init())
+      session.frontCameraPreviewView = .init()
+      return session
+    case (false, false):
+      return .init(singleCameraSession: .init())
+    }
+  }
 }

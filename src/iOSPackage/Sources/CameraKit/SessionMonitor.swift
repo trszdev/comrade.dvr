@@ -3,14 +3,16 @@ import Combine
 import Util
 
 public protocol SessionMonitor {
-  var errorPublisher: CurrentValuePublisher<SessionMonitorError?> { get }
+  var monitorErrorPublisher: CurrentValuePublisher<SessionMonitorError?> { get }
   func checkAfterStart(session: Session)
 }
 
-public enum SessionMonitorError: Error {
+public enum SessionMonitorError: String, Error, Identifiable {
   case systemPressureExceeded
   case hardwareCostExceeded
   case runtimeError
+
+  public var id: String { rawValue }
 }
 
 final class SessionMonitorImpl: SessionMonitor {
@@ -24,16 +26,22 @@ final class SessionMonitorImpl: SessionMonitor {
     )
   }
 
-  var errorPublisher: CurrentValuePublisher<SessionMonitorError?> { errorSubject.currentValuePublisher }
+  var monitorErrorPublisher: CurrentValuePublisher<SessionMonitorError?> { errorSubject.currentValuePublisher }
 
   func checkAfterStart(session: Session) {
-    guard let multicamSession = session.multiCameraSession else { return }
-
-    if multicamSession.hardwareCost >= 1 {
-      errorSubject.value = .hardwareCostExceeded
-    }
-    if multicamSession.systemPressureCost >= 1 {
-      errorSubject.value = .systemPressureExceeded
+    if let singleCameraSession = session.singleCameraSession {
+      if #available(iOS 16.0, *) {
+        if singleCameraSession.hardwareCost >= 1 {
+          errorSubject.value = .hardwareCostExceeded
+        }
+      }
+    } else if let multiCameraSession = session.multiCameraSession {
+      if multiCameraSession.hardwareCost >= 1 {
+        errorSubject.value = .hardwareCostExceeded
+      }
+      if multiCameraSession.systemPressureCost >= 1 {
+        errorSubject.value = .systemPressureExceeded
+      }
     }
   }
 

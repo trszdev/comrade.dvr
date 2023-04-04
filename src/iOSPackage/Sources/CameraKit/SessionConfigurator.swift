@@ -4,32 +4,22 @@ import Util
 import Combine
 
 public protocol SessionConfigurator {
-  /**
-   Configures the provided `session` with the given `deviceConfiguration`.
-   - Parameters:
-     - deviceConfiguration: The object that contains the device configuration settings to be applied to the session.
-   - Throws: A `SessionConfiguratorError` if the configuration fails for any reason.
-   - Returns: A `Task` object representing the asynchronous operation.
-   */
-  func configure(deviceConfiguration: DeviceConfiguration) throws
+  func configure(session: Session, deviceConfiguration: DeviceConfiguration) throws
 }
 
 public enum SessionConfiguratorStub: SessionConfigurator {
   case shared
 
-  public func configure(deviceConfiguration: DeviceConfiguration) throws {
+  public func configure(session: Session, deviceConfiguration: DeviceConfiguration) throws {
   }
 }
 
 final class SessionConfiguratorImpl: SessionConfigurator {
-  private weak var store: SessionStore?
   private let discovery = Discovery()
+  private weak var session: Session?
 
-  init(store: SessionStore?) {
-    self.store = store
-  }
-
-  func configure(deviceConfiguration: DeviceConfiguration) throws {
+  func configure(session: Session, deviceConfiguration: DeviceConfiguration) throws {
+    self.session = session
     try installCameras(deviceConfiguration: deviceConfiguration)
     try SessionMicrophoneConfigurator().configure(configuration: deviceConfiguration.microphone)
   }
@@ -37,19 +27,19 @@ final class SessionConfiguratorImpl: SessionConfigurator {
   private func installCameras(deviceConfiguration: DeviceConfiguration) throws {
     if let frontCamera = deviceConfiguration.frontCamera, let backCamera = deviceConfiguration.backCamera {
       let multiSet = try find(backCamera: backCamera, frontCamera: frontCamera)
-      store?.session?.avSession.beginConfiguration()
-      defer { store?.session?.avSession.commitConfiguration() }
+      session?.avSession.beginConfiguration()
+      defer { session?.avSession.commitConfiguration() }
       try install(deviceWithFormat: multiSet[0], deviceConfiguration: deviceConfiguration, isFront: false)
       try install(deviceWithFormat: multiSet[1], deviceConfiguration: deviceConfiguration, isFront: true)
     } else if let frontCamera = deviceConfiguration.frontCamera {
       let frontDevice = try find(isFront: true, configuration: frontCamera)
-      store?.session?.avSession.beginConfiguration()
-      defer { store?.session?.avSession.commitConfiguration() }
+      session?.avSession.beginConfiguration()
+      defer { session?.avSession.commitConfiguration() }
       try install(deviceWithFormat: frontDevice, deviceConfiguration: deviceConfiguration, isFront: true)
     } else if let backCamera = deviceConfiguration.backCamera {
       let backDevice = try find(isFront: false, configuration: backCamera)
-      store?.session?.avSession.beginConfiguration()
-      defer { store?.session?.avSession.commitConfiguration() }
+      session?.avSession.beginConfiguration()
+      defer { session?.avSession.commitConfiguration() }
       try install(deviceWithFormat: backDevice, deviceConfiguration: deviceConfiguration, isFront: false)
     }
   }
@@ -64,14 +54,15 @@ final class SessionConfiguratorImpl: SessionConfigurator {
       log.warn("[isFront=\(isFront)] Configuration not applied, input not created")
       throw SessionConfiguratorError.camera(isFront: isFront, .connectionError)
     }
-    guard let session = store?.session else { return }
+    guard let session else { return }
+    guard let previewView = isFront ? session.frontCameraPreviewView : session.backCameraPreviewView else { return }
     let cameraConfigurator = SessionCameraConfigurator(
       session: session.avSession,
       deviceWithFormat: deviceWithFormat,
       configuration: configuration,
       input: input,
       output: isFront ? session.frontOutput : session.backOutput,
-      previewView: isFront ? session.frontCameraPreviewView : session.backCameraPreviewView,
+      previewView: previewView,
       orientation: deviceConfiguration.orientation
     )
     do {
