@@ -27,7 +27,7 @@ public struct Discovery {
     (audioSession.availableInputs ?? []).first { $0.portType == .builtInMic }
   }
 
-  var multiCameraDeviceSets: [(AVCaptureDevice, AVCaptureDevice)] {
+  public var multiCameraDeviceSets: [(AVCaptureDevice, AVCaptureDevice)] {
     AVCaptureDevice.DiscoverySession(
       deviceTypes: cameraDeviceTypes,
       mediaType: .video,

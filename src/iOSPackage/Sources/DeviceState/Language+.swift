@@ -12,8 +12,12 @@ public extension Optional where Wrapped == Language {
     "\(value)FPS"
   }
 
-  func fov(_ value: Int) -> String {
-    "\(value)°"
+  func fov(_ value: Fov) -> String {
+    let numberFormatter = NumberFormatter()
+    numberFormatter.minimumFractionDigits = 2
+    numberFormatter.maximumFractionDigits = 2
+    let value = numberFormatter.string(from: NSNumber(value: value)) ?? ""
+    return "\(value)°"
   }
 
   func zoom(_ value: Double) -> String {

@@ -5,7 +5,7 @@ public struct CameraConfiguration: Hashable, Codable {
     bitrate: Bitrate,
     useH265: Bool,
     zoom: Double,
-    fov: Int,
+    fov: Fov,
     quality: Quality
   ) {
     self.fps = fps
@@ -22,7 +22,7 @@ public struct CameraConfiguration: Hashable, Codable {
   public var bitrate: Bitrate
   public var useH265: Bool
   public var zoom: Double
-  public var fov: Int
+  public var fov: Fov
   public var quality: Quality
 
   public static let defaultFrontCamera = Self(

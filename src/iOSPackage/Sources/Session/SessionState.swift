@@ -82,6 +82,7 @@ public let sessionReducer = Reducer<SessionState, SessionAction, SessionEnvironm
   case .showError(let error):
     state.localState.alertError = error
   case .tapBack:
+    UIImpactFeedbackGenerator(style: .light).impactOccurred()
     return .task {
       await environment.routing.selectTab(animated: true)
     }

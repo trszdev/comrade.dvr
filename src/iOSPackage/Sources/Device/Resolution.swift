@@ -1,4 +1,4 @@
-public struct Resolution: Codable, Hashable {
+public struct Resolution: Codable, Hashable, Comparable {
   public init(width: Int, height: Int) {
     self.width = width
     self.height = height
@@ -13,4 +13,8 @@ public struct Resolution: Codable, Hashable {
 
   public let width: Int
   public let height: Int
+
+  public static func < (lhs: Self, rhs: Self) -> Bool {
+    lhs.width < rhs.width && lhs.height < rhs.height
+  }
 }

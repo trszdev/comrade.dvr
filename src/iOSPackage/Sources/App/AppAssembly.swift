@@ -35,7 +35,8 @@ public enum AppAssembly: SharedAssembly {
         deviceConfigurationRepositoryFactory: .init(resolver.resolve(DeviceConfigurationRepository.self)!),
         appearancePublisher: resolver.resolve(CurrentValuePublisher<Appearance?>.self)!,
         settingsRepositoryFactory: .init(resolver.resolve(SettingsRepository.self)!),
-        viewStoreFactory: .init(resolver.resolve(ViewStore<AppState, AppAction>.self)!)
+        viewStoreFactory: .init(resolver.resolve(ViewStore<AppState, AppAction>.self)!),
+        indexer: resolver.resolve(DeviceConfigurationIndexer.self)!
       )
     }
     container.registerInstance(FileManager.default)

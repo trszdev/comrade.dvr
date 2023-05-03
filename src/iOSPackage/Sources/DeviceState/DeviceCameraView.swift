@@ -26,17 +26,27 @@ public struct DeviceCameraView: View {
           selection: viewStore.binding(\.$configuration.resolution),
           label: Text(language.string(.resolution))
         ) {
-          ForEach(Resolution.known, id: \.self) {
+          ForEach(viewStore.index.resolutions, id: \.self) {
             Text(language.resolution($0)).tag($0)
           }
         }
         .fieldValidation(hasError: viewStore.errorFields.contains(\.resolution))
 
         Picker(
+          selection: viewStore.binding(\.$configuration.fov),
+          label: Text(language.string(.fieldOfView))
+        ) {
+          ForEach(viewStore.fovIndex.fovs, id: \.self) {
+            Text(language.fov($0)).tag($0)
+          }
+        }
+        .fieldValidation(hasError: viewStore.errorFields.contains(\.fov))
+
+        Picker(
           selection: viewStore.binding(\.$configuration.fps),
           label: Text(language.string(.fps))
         ) {
-          ForEach(Array(0...120), id: \.self) {
+          ForEach(viewStore.fpsAndZoom.fps, id: \.self) {
             Text(language.fps($0)).tag($0)
           }
         }
@@ -62,10 +72,6 @@ public struct DeviceCameraView: View {
         .fieldValidation(hasError: viewStore.errorFields.contains(\.useH265))
         .disabled(!viewStore.enabled || viewStore.isLocked)
 
-      fovView
-        .fieldValidation(hasError: viewStore.errorFields.contains(\.fov))
-        .disabled(!viewStore.enabled || viewStore.isLocked)
-
       zoomView
         .fieldValidation(hasError: viewStore.errorFields.contains(\.zoom))
         .disabled(!viewStore.enabled || viewStore.isLocked)
@@ -88,25 +94,15 @@ public struct DeviceCameraView: View {
     }
   }
 
-  private var fovView: some View {
-    Section(header: Text(language.string(.fieldOfView))) {
-      VStack(spacing: 0) {
-        Text(language.fov(viewStore.configuration.fov))
-
-        IntSlider(
-          value: viewStore.binding(\.$configuration.fov),
-          in: 0...120
-        )
-      }
-    }
-  }
-
   private var zoomView: some View {
     Section(header: Text(language.string(.zoom))) {
       VStack(spacing: 0) {
         Text(language.zoom(viewStore.configuration.zoom))
 
-        Slider(value: viewStore.binding(\.$configuration.zoom), in: 0.1...2)
+        Slider(
+          value: viewStore.binding(\.$configuration.zoom),
+          in: viewStore.fpsAndZoom.zoom
+        )
       }
     }
   }

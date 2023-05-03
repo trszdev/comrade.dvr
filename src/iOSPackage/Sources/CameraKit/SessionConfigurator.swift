@@ -128,14 +128,14 @@ private func makeInput(device: AVCaptureDevice) -> AVCaptureDeviceInput? {
   }
 }
 
-private extension AVCaptureDevice.Format {
+extension AVCaptureDevice.Format {
   var resolution: Resolution {
     let fmtDesc = CMVideoFormatDescriptionGetDimensions(formatDescription)
     return Resolution(width: Int(fmtDesc.width), height: Int(fmtDesc.height))
   }
 
-  var fov: Int {
-    Int(videoFieldOfView)
+  var fov: Double {
+    Double(videoFieldOfView)
   }
 
   func canApply(fps: Int) -> Bool {

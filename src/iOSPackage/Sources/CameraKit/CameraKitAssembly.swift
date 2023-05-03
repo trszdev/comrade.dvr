@@ -14,6 +14,7 @@ public enum CameraKitAssembly: SharedAssembly {
     container.registerBackRecorder()
     container.registerAudioRecorder()
     container.registerService()
+    container.registerIndexer()
   }
 }
 
@@ -21,6 +22,12 @@ private extension Container {
   static var frontCameraRecorder: String { "frontCameraRecorder" }
   static var backCameraRecorder: String { "backCameraRecorder" }
   static var internalSessionConfigurator: String { "internalSessionConfigurator" }
+
+  func registerIndexer() {
+    self
+      .autoregister(DeviceConfigurationIndexer.self, initializer: DeviceConfigurationIndexerImpl.init)
+      .inObjectScope(.transient)
+  }
 
   func registerInternalConfigurator() {
     self

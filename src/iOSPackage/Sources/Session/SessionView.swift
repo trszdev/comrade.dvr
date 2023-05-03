@@ -37,9 +37,9 @@ public struct SessionView: View {
   private var stopButtonAlignment: Alignment {
     switch viewStore.orientation {
     case .landscapeLeft:
-      return .trailing
-    case .landscapeRight:
       return .leading
+    case .landscapeRight:
+      return .trailing
     case .portrait:
       return .bottom
     case .portraitUpsideDown:
@@ -50,9 +50,9 @@ public struct SessionView: View {
   private var secondaryVideoAlignment: Alignment {
     switch viewStore.orientation {
     case .landscapeLeft:
-      return .topLeading
-    case .landscapeRight:
       return .topTrailing
+    case .landscapeRight:
+      return .topLeading
     case .portrait:
       return .topTrailing
     case .portraitUpsideDown:
