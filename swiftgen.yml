@@ -1,0 +1,15 @@
+strings:
+  inputs: 
+    - src/iOSPackage/Sources/Assets/Resources/en.lproj
+  outputs:
+    - templatePath: src/iOSPackage/Sources/Assets/L10n.stencil
+      output: src/iOSPackage/Sources/Assets/L10n.swift
+xcassets:
+  inputs:
+    - src/iOSPackage/Sources/Assets/Resources/Assets.xcassets
+  outputs:
+    - templatePath: src/iOSPackage/Sources/Assets/ColorAsset.stencil
+      output: src/iOSPackage/Sources/Assets/ColorAsset.swift
+    - templatePath: src/iOSPackage/Sources/Assets/ImageAsset.stencil
+      output: src/iOSPackage/Sources/Assets/ImageAsset.swift
+

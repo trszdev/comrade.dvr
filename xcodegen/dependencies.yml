@@ -4,33 +4,18 @@ packages:
     majorVersion: 8.8.0
 
 localPackages:
-  - ./src/AutocontainerKit
-  - ./src/CameraKit
-  - ./src/Accessibility
-  - ./src/Util
+  - ./src/iOSPackage
+  - ./src/UniversalPackage
 
 targets:
   ComradeDVR:
     dependencies:
-      - package: AutocontainerKit
-      - package: CameraKit
-      - package: Util
-      - package: Accessibility
+      - package: iOSPackage
+        product: App
       - package: Firebase
         product: FirebaseAnalytics
       - package: Firebase
         product: FirebaseCrashlytics
       - package: Firebase
         product: FirebasePerformance
-  ScreenshotTool:
-    dependencies:
-      - target: ComradeDVR
-      - package: Accessibility
-  ComradeDVRTests:
-    dependencies:
-      - target: ComradeDVR
-  TestCameraKitApp:
-    dependencies:
-      - package: CameraKit
-      - package: AutocontainerKit
 

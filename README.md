@@ -4,9 +4,9 @@
 
 ```bash
 brew bundle
-brew bundle exec pre-commit install
-mint bootstrap
-mint run xcodegen
+pre-commit install
+MINT_PATH=.mint mint bootstrap
+./scripts/generate
 ```
 
 ### Reveal secrets

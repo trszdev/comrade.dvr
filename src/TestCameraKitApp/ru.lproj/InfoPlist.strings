@@ -1,3 +1,0 @@
-CFBundleDisplayName = "Тест CameraKit";
-NSMicrophoneUsageDescription = "Доступ к микрофону";
-NSCameraUsageDescription = "Доступ к камере";

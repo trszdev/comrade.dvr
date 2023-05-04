@@ -1,0 +1,2 @@
+NSMicrophoneUsageDescription = "Required for microphone setup and audio recording";
+NSCameraUsageDescription = "Required for cameras setup and video recording";

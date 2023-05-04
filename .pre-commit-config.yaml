@@ -1,8 +1,9 @@
+repos:
 - repo: local
   hooks:
     - id: SwiftLint
       name: SwiftLint
-      entry: bash -c 'PATH=/usr/local/bin:$PATH  mint run swiftlint --quiet --no-cache --strict'
+      entry: bash -c './scripts/mint run swiftlint --quiet --strict'
       language: system
       pass_filenames: false
 

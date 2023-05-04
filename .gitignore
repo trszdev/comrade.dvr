@@ -104,5 +104,6 @@ report.xml
 .gitsecret/keys/random_seed
 !*.secret
 
-/src/App/GoogleService-Info.plist
-
+!Package.resolved
+/.mint/
+/src/iOSApp/GoogleService-Info.plist

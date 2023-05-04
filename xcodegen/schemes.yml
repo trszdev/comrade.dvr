@@ -1,0 +1,16 @@
+schemes:
+  ComradeDVR:
+    build:
+      targets:
+        ComradeDVR: all
+    run:
+      environmentVariables:
+        DYLD_PRINT_STATISTICS: 1
+    test:
+      targets:
+        - package: iOSPackage/AssetsTests
+        - package: iOSPackage/CameraKitTests
+        - package: iOSPackage/CommonUITests
+        - package: iOSPackage/HistoryTests
+        - package: UniversalPackage/UtilTests
+

@@ -2,31 +2,15 @@ targets:
   ComradeDVR:
     postCompileScripts:
       - script: |
-          mint run swiftlint --fix
-          mint run swiftlint --no-cache --strict
+          "$SRCROOT/scripts/mint" run swiftlint --fix
+          "$SRCROOT/scripts/mint" run swiftlint --strict
         name: SwiftLint
+        basedOnDependencyAnalysis: false
     postBuildScripts:
       - script: |
           if [ "${CONFIGURATION}" != "Debug" ]; then
             ${BUILD_DIR%Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run
           fi
         name: Upload dSYM to Firebase Crashlytics
-  ScreenshotTool:
-    postCompileScripts:
-      - script: |
-          mint run swiftlint --fix
-          mint run swiftlint --no-cache --strict
-        name: SwiftLint
-  ComradeDVRTests:
-    postCompileScripts:
-      - script: |
-          mint run swiftlint --fix
-          mint run swiftlint --no-cache --strict
-        name: SwiftLint
-  TestCameraKitApp:
-    postCompileScripts:
-      - script: |
-          mint run swiftlint --fix
-          mint run swiftlint --no-cache --strict
-        name: SwiftLint
+        basedOnDependencyAnalysis: false
 
