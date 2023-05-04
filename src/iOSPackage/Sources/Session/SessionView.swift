@@ -16,7 +16,6 @@ public struct SessionView: View {
 
   public var body: some View {
     mainVideoView
-      .ignoresSafeArea()
       .overlay(viewStore.state.hasTwoCameras ? secondaryVideoView : nil, alignment: secondaryVideoAlignment)
       .overlay(backButtonView, alignment: stopButtonAlignment)
       .alert(item: viewStore.binding(\.$localState.alertError)) { error in
@@ -83,11 +82,20 @@ public struct SessionView: View {
     .padding()
   }
 
-  @ViewBuilder private var mainVideoView: some View {
-    if let view = viewStore.mainCameraPreviewView {
-      UIViewRepresentableView(view: view)
-    } else {
-      Color.black
+  private var mainVideoView: some View {
+    GeometryReader { geometry in
+      ZStack(alignment: .top) {
+        if let view = viewStore.mainCameraPreviewView {
+          UIViewRepresentableView(view: view)
+        } else {
+          Color.black
+        }
+
+        Color.black
+          .opacity(0.5)
+          .frame(height: geometry.safeAreaInsets.top)
+      }
+      .ignoresSafeArea()
     }
   }
 

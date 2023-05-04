@@ -19,7 +19,7 @@ public struct StartView: View {
   public var body: some View {
     ZStack {
       appearance.color(.secondaryBackgroundColor)
-        .edgesIgnoringSafeArea(.all)
+        .ignoresSafeArea()
 
       view
     }
@@ -115,7 +115,7 @@ public struct StartView: View {
     .padding(.vertical, verticalSpacing)
     .background(
       appearance.color(.mainBackgroundColor)
-        .edgesIgnoringSafeArea(.all)
+        .ignoresSafeArea()
     )
   }
 

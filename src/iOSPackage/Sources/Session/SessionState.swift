@@ -94,7 +94,7 @@ public let sessionReducer = Reducer<SessionState, SessionAction, SessionEnvironm
     environment.player.stop()
     return .cancel(id: MonitorID())
   case .showError(let error):
-    // environment.player.stop()
+    environment.player.stop()
     state.localState.alertError = error
     return .cancel(id: MonitorID())
   case .tapBack:

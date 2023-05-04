@@ -52,7 +52,7 @@ private extension Container {
       let view = viewControllerFactory.hostingView(rootView: rootView)
       let customizableViewController = CustomizableHostingController(rootView: view)
       customizableViewController.forcedInterfaceOrientation = orientation
-      customizableViewController.forcedStatusBarStyle = .darkContent
+      customizableViewController.forcedStatusBarStyle = .lightContent
       return StubRouter(viewController: customizableViewController)
     }
   }

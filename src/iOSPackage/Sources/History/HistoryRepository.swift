@@ -1,4 +1,5 @@
 import Util
+import Assets
 import Foundation
 import AVFoundation
 
@@ -43,7 +44,15 @@ final class HistoryRepositoryImpl: HistoryRepository {
       for await item in group where item != nil {
         items.append(item!)
       }
-      return items.sorted { $0.createdAt < $1.createdAt }
+      return items.sorted {
+        let date1 = Optional(Language.en).format(date: $0.createdAt, timeStyle: .long, dateStyle: .none)
+        let date2 = Optional(Language.en).format(date: $1.createdAt, timeStyle: .long, dateStyle: .none)
+        if date1 == date2 {
+          return $0.deviceName < $1.deviceName
+        } else {
+          return date1 < date2
+        }
+      }
     }
     var itemsByDay = [Date: [HistoryItem]]()
     for item in items {
