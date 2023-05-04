@@ -30,15 +30,11 @@ public struct DeviceConfiguration: Hashable {
     case (true, true):
       return .init(multiCameraSession: .init())
     case (true, false):
-      let session = Session(singleCameraSession: .init())
-      session.backCameraPreviewView = .init()
-      return session
+      return .init(backCameraSession: .init())
     case (false, true):
-      let session = Session(singleCameraSession: .init())
-      session.frontCameraPreviewView = .init()
-      return session
+      return .init(frontCameraSession: .init())
     case (false, false):
-      return .init(singleCameraSession: .init())
+      return nil
     }
   }
 }

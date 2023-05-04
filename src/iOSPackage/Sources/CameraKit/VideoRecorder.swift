@@ -3,7 +3,7 @@ import Util
 import Device
 
 public protocol VideoRecorder {
-  func setup(output: AVCaptureVideoDataOutput, framesToFlush: Int, configuration: CameraConfiguration)
+  func setup(output: AVCaptureVideoDataOutput, options: VideoRecorderOptions)
   func flush()
 }
 
@@ -25,13 +25,11 @@ final class VideoRecorderImpl: NSObject, VideoRecorder {
     )
   }
 
-  func setup(output: AVCaptureVideoDataOutput, framesToFlush: Int, configuration: CameraConfiguration) {
+  func setup(output: AVCaptureVideoDataOutput, options: VideoRecorderOptions) {
+    output.setSampleBufferDelegate(self, queue: self.queue)
+    output.tryChangePixelFormat(quality: options.configuration.quality)
     queue.sync { [weak self] in
-      guard let self else { return }
-      self.framesToFlush = framesToFlush
-      self.configuration = configuration
-      output.setSampleBufferDelegate(self, queue: self.queue)
-      output.tryChangePixelFormat(quality: configuration.quality)
+      self?.options = options
     }
   }
 
@@ -42,29 +40,32 @@ final class VideoRecorderImpl: NSObject, VideoRecorder {
   }
 
   private let queue = DispatchQueue(label: "video-recorder-\(UUID().uuidString)")
-  private var framesToFlush = 60 * 60 * 3
   private var framesWritten = 0
   private var assetWriter: AVAssetWriter?
-  private var configuration = CameraConfiguration.defaultBackCamera
+  private var options = VideoRecorderOptions(
+    framesToFlush: 60 * 60 * 3,
+    configuration: .defaultBackCamera,
+    isLandscape: false
+  )
   private var finishingWriters = [URL: AVAssetWriter]()
   private let urlMaker: () -> URL
 
   @objc private func interruptionWillBegin() {
-    // TODO: check
+    log.debug()
     queue.sync { [weak self] in
       self?.finalizeChunkIfNeeded(force: true)
     }
   }
 
   @objc private func interruptionDidEnd() {
-    // TODO: check
+    log.debug()
   }
 
   private func makeWriter() -> AVAssetWriter? {
     let url = urlMaker().appendingPathExtension("mov")
     do {
       let writer = try AVAssetWriter(url: url, fileType: .mov)
-      writer.add(configuration.assetWriterInput)
+      writer.add(options.assetWriterInput)
       return writer
     } catch {
       log.warn("Error creating AVAssetWriter with url: \(url)")
@@ -74,7 +75,8 @@ final class VideoRecorderImpl: NSObject, VideoRecorder {
   }
 
   private func finalizeChunkIfNeeded(force: Bool = false) {
-    guard let assetWriter, framesWritten >= framesToFlush || (force && framesWritten > 0) else { return }
+    guard let assetWriter, framesWritten >= options.framesToFlush || (force && framesWritten > 0) else { return }
+    log.info("Finalizing chunk")
     framesWritten = 0
     let key = assetWriter.outputURL
     finishingWriters[key] = assetWriter
@@ -99,6 +101,7 @@ extension VideoRecorderImpl: AVCaptureVideoDataOutputSampleBufferDelegate {
       let startTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
       assetWriter.startWriting()
       assetWriter.startSession(atSourceTime: startTime)
+      log.info("Starting write to \(assetWriter.outputURL)")
     }
     for input in assetWriter.inputs where input.isReadyForMoreMediaData {
       input.append(sampleBuffer)

@@ -7,6 +7,10 @@ public enum Orientation: Hashable, Codable {
   case landscapeRight
   case portraitUpsideDown
 
+  public var isLandscape: Bool {
+    [.landscapeLeft, .landscapeRight].contains(self)
+  }
+
   public var interfaceOrientation: UIInterfaceOrientation {
     switch self {
     case .portrait:

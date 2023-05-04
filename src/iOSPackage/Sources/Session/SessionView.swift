@@ -2,6 +2,7 @@ import SwiftUI
 import ComposableArchitecture
 import LocalizedUtils
 import Assets
+import CameraKit
 import CommonUI
 
 public struct SessionView: View {
@@ -14,9 +15,8 @@ public struct SessionView: View {
   }
 
   public var body: some View {
-    Color.black
+    mainVideoView
       .ignoresSafeArea()
-      .overlay(mainVideoView)
       .overlay(viewStore.state.hasTwoCameras ? secondaryVideoView : nil, alignment: secondaryVideoAlignment)
       .overlay(backButtonView, alignment: stopButtonAlignment)
       .alert(item: viewStore.binding(\.$localState.alertError)) { error in
@@ -61,9 +61,8 @@ public struct SessionView: View {
   }
 
   private var secondaryVideoView: some View {
-    let view = viewStore.secondaryCameraPreviewView.map(UIViewRepresentableView.init)
-
-    return Button {
+    Button {
+      UIImpactFeedbackGenerator(style: .medium).impactOccurred()
       viewStore.send(.switchCameras)
     } label: {
       Color.white
@@ -71,28 +70,39 @@ public struct SessionView: View {
         .cornerRadius(20)
         .shadow(radius: 10)
         .overlay(
-          view?
+          viewStore.secondaryCameraPreviewView.flatMap(UIViewRepresentableView.init)?
+            .frame(maxWidth: .infinity)
+            .background(Color.gray)
             .cornerRadius(10)
             .padding(8)
         )
     }
+    .simultaneousGesture(LongPressGesture(minimumDuration: 0).onEnded { _ in
+      UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    })
     .padding()
   }
 
   @ViewBuilder private var mainVideoView: some View {
     if let view = viewStore.mainCameraPreviewView {
       UIViewRepresentableView(view: view)
+    } else {
+      Color.black
     }
   }
 
   private var backButtonView: some View {
     Button {
+      UIImpactFeedbackGenerator(style: .medium).impactOccurred()
       viewStore.send(.tapBack)
     } label: {
       appearance.color(.textColorDestructive)
         .frame(width: 45, height: 45)
         .cornerRadius(5)
     }
+    .simultaneousGesture(LongPressGesture(minimumDuration: 0).onEnded { _ in
+      UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    })
     .buttonStyle(StopButtonStyle())
   }
 }
@@ -131,8 +141,8 @@ struct SessionViewPreviews: PreviewProvider {
 
 private extension UIView {
   static func colored(_ color: UIColor) -> UIView {
-    let previewView = UIView()
-    previewView.backgroundColor = color
-    return previewView
+    let view = UIView()
+    view.backgroundColor = color
+    return view
   }
 }

@@ -1,5 +1,6 @@
 import Device
 import AVFoundation
+import Util
 
 public protocol DeviceConfigurationIndexer {
   func makeIndex() async -> DeviceConfigurationIndex
@@ -10,13 +11,12 @@ struct DeviceConfigurationIndexerImpl: DeviceConfigurationIndexer {
   let discovery: Discovery = .init()
 
   func makeIndex() async -> DeviceConfigurationIndex {
-    let task = Task(priority: .userInitiated) {
+    await withTaskGroup(of: DeviceConfigurationIndex.self) { _ in
       DeviceConfigurationIndex(
         backCamera: makeIndex(devices: discovery.backCameras),
         frontCamera: makeIndex(devices: discovery.frontCameras)
       )
     }
-    return await task.value
   }
 
   func makeDefaultConfig(index: DeviceConfigurationIndex) -> Device.DeviceConfiguration {
@@ -54,7 +54,7 @@ struct DeviceConfigurationIndexerImpl: DeviceConfigurationIndexer {
       var fovIndex = resolutionIndex.index[format.resolution] ?? .init()
       var fpsAndZoom = fovIndex.index[format.fov] ?? .init(fps: fps, zoom: zoom)
       fpsAndZoom.fps = fps.union(fpsAndZoom.fps)
-      fpsAndZoom.zoom = zoom.union(fpsAndZoom.zoom)
+      fpsAndZoom.zoom = zoom.union(fpsAndZoom.zoom).clamped(to: 1...8)
 
       fovIndex.index[format.fov] = fpsAndZoom
       resolutionIndex.index[format.resolution] = fovIndex

@@ -2,16 +2,15 @@ import Device
 import Combine
 import Util
 import Foundation
+import AVFoundation
 
-public protocol CameraKitService: SessionConfigurator, SessionMonitor {
-  func play()
-  func stop()
+public protocol CameraKitService: SessionPlayer, SessionConfigurator, SessionMonitor {
 }
 
 public enum CameraKitServiceStub: CameraKitService {
   case shared
 
-  public func play() {
+  public func play() async {
   }
 
   public func stop() {
@@ -50,12 +49,23 @@ final class CameraKitServiceImpl: CameraKitService {
   private let backCameraRecorder: VideoRecorder
   private let audioRecorder: AudioRecorder
 
-  func play() {
+  @MainActor private var avSession: AVCaptureSession? { session?.avSession }
+
+  @MainActor func play() async {
     guard let session, !session.avSession.isRunning else { return }
-    session.avSession.startRunning()
-    monitor.checkAfterStart(session: session)
-    guard monitor.monitorErrorPublisher.value == nil else { return }
-    audioRecorder.record()
+    await withTaskGroup(of: Void.self) { [weak self] _ in
+      await self?.forcePlay(session: session)
+    }
+  }
+
+  private func forcePlay(session: Session) async {
+    await avSession?.startRunning()
+    await MainActor.run { [weak self] in
+      guard let self = self else { return }
+      self.monitor.checkAfterStart(session: session)
+      guard self.monitor.monitorErrorPublisher.value == nil else { return }
+      self.audioRecorder.record()
+    }
   }
 
   func stop() {
@@ -68,25 +78,32 @@ final class CameraKitServiceImpl: CameraKitService {
 
   func configure(session: Session, deviceConfiguration: DeviceConfiguration) throws {
     self.session = session
-    let wasRunning = session.avSession.isRunning == true
-    if wasRunning {
-      stop()
-    }
+//    let wasRunning = session.avSession.isRunning == true
+//    if wasRunning {
+//      stop()
+//    }
     try sessionConfigurator.configure(session: session, deviceConfiguration: deviceConfiguration)
     setupCameraRecorder(isFront: true, session: session, deviceConfiguration: deviceConfiguration)
     setupCameraRecorder(isFront: false, session: session, deviceConfiguration: deviceConfiguration)
     audioRecorder.setup(configuration: deviceConfiguration.microphone, maxDuration: deviceConfiguration.maxFileLength)
-    if wasRunning {
-      play()
-    }
+//    if wasRunning {
+//      play()
+//    }
   }
 
   private func setupCameraRecorder(isFront: Bool, session: Session, deviceConfiguration: DeviceConfiguration) {
     let cameraConfiguration = isFront ? deviceConfiguration.frontCamera : deviceConfiguration.backCamera
     guard let cameraConfiguration else { return }
     let recorder = isFront ? frontCameraRecorder : backCameraRecorder
-    let framesToFlush = cameraConfiguration.framesToFlush(deviceConfiguration.maxFileLength)
-    recorder.setup(output: session.frontOutput, framesToFlush: framesToFlush, configuration: cameraConfiguration)
+    let output = isFront ? session.frontOutput : session.backOutput
+    recorder.setup(
+      output: output,
+      options: .init(
+        framesToFlush: cameraConfiguration.framesToFlush(deviceConfiguration.maxFileLength),
+        configuration: cameraConfiguration,
+        isLandscape: deviceConfiguration.orientation.isLandscape
+      )
+    )
   }
 
   var monitorErrorPublisher: CurrentValuePublisher<SessionMonitorError?> { monitor.monitorErrorPublisher }

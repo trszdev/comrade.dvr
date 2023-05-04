@@ -12,6 +12,7 @@ struct SessionCameraConfigurator {
 
   func configurePreviewView() {
     previewView.videoPreviewLayer.setSessionWithNoConnection(session)
+    previewView.videoPreviewLayer.videoGravity = .resizeAspectFill
     switch orientation {
     case .portrait:
       previewView.transform = .identity
@@ -40,8 +41,8 @@ struct SessionCameraConfigurator {
     }
     let connection = AVCaptureConnection(inputPorts: ports, output: output)
     let previewConnection = AVCaptureConnection(inputPort: ports[0], videoPreviewLayer: previewView.videoPreviewLayer)
-//    connection.videoOrientation = configuration.orientation.avOrientation
-//    previewConnection.videoOrientation = configuration.orientation.avOrientation
+    connection.videoOrientation = orientation.avOrientation
+    previewConnection.videoOrientation = orientation.avOrientation
 //    previewConnection.preferredVideoStabilizationMode = configuration.stabilizationMode.avStabilizationMode
 //    connection.preferredVideoStabilizationMode = configuration.stabilizationMode.avStabilizationMode
     guard session.canAddConnection(previewConnection), session.canAddConnection(connection) else {
@@ -70,4 +71,19 @@ enum SessionCameraConfiguratorError: Error {
   case cantAddDevice
   case cantConnectDevice
   case cantConfigureDevice(innerError: Error)
+}
+
+private extension Orientation {
+  var avOrientation: AVCaptureVideoOrientation {
+    switch self {
+    case .portrait:
+      return .portrait
+    case .portraitUpsideDown:
+      return .portraitUpsideDown
+    case .landscapeLeft:
+      return .landscapeLeft
+    case .landscapeRight:
+      return .landscapeRight
+    }
+  }
 }

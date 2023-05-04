@@ -22,6 +22,7 @@ private extension Container {
   static var frontCameraRecorder: String { "frontCameraRecorder" }
   static var backCameraRecorder: String { "backCameraRecorder" }
   static var internalSessionConfigurator: String { "internalSessionConfigurator" }
+  static var internalSessionMonitor: String { "internalSessionMonitor" }
 
   func registerIndexer() {
     self
@@ -39,7 +40,7 @@ private extension Container {
   func registerMonitor() {
     self
       .registerInstance(SessionMonitorImpl())
-      .implements(SessionMonitor.self)
+      .implements(SessionMonitor.self, name: Self.internalSessionMonitor)
       .inObjectScope(.container)
   }
 
@@ -79,7 +80,7 @@ private extension Container {
   func registerService() {
     register(CameraKitService.self) { resolver in
       let sessionConfigurator = resolver.resolve(SessionConfigurator.self, name: Self.internalSessionConfigurator)!
-      let monitor = resolver.resolve(SessionMonitor.self)!
+      let monitor = resolver.resolve(SessionMonitor.self, name: Self.internalSessionMonitor)!
       let frontCameraRecorder = resolver.resolve(VideoRecorder.self, name: Self.frontCameraRecorder)!
       let backCameraRecorder = resolver.resolve(VideoRecorder.self, name: Self.backCameraRecorder)!
       let audioRecorder = resolver.resolve(AudioRecorder.self)!
@@ -91,7 +92,7 @@ private extension Container {
         audioRecorder: audioRecorder
       )
     }
-    .implements(SessionConfigurator.self)
+    .implements(SessionConfigurator.self, SessionPlayer.self, SessionMonitor.self)
     .inObjectScope(.container)
   }
 }

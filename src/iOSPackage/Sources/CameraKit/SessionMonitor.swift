@@ -29,6 +29,7 @@ final class SessionMonitorImpl: SessionMonitor {
   var monitorErrorPublisher: CurrentValuePublisher<SessionMonitorError?> { errorSubject.currentValuePublisher }
 
   func checkAfterStart(session: Session) {
+    errorSubject.value = nil
     if let singleCameraSession = session.singleCameraSession {
       if #available(iOS 16.0, *) {
         if singleCameraSession.hardwareCost >= 1 {

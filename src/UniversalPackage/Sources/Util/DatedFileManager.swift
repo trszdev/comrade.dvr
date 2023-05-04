@@ -45,7 +45,7 @@ public struct DatedFileManagerImpl: DatedFileManager {
   }
 
   private let fileManager: FileManager
-  private let rootDirectory: URL
+  let rootDirectory: URL
 
   public var totalFileSize: FileSize {
     let totalBytes = entries().map(\.size).reduce(0) { $0 + $1.bytes }

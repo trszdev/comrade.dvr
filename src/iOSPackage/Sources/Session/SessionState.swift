@@ -4,6 +4,7 @@ import ComposableArchitectureExtensions
 import UIKit
 import CameraKit
 import Device
+import Util
 
 public struct SessionState: Equatable {
   public struct LocalState: Equatable {
@@ -46,7 +47,7 @@ public struct SessionState: Equatable {
   }
 
   var hasTwoCameras: Bool {
-    frontCameraPreviewView != nil && frontCameraPreviewView != nil
+    backCameraPreviewView != nil && frontCameraPreviewView != nil
   }
 }
 
@@ -60,38 +61,54 @@ public enum SessionAction: BindableAction {
 }
 
 public struct SessionEnvironment {
-  public init(routing: Routing = RoutingStub()) {
+  public init(
+    routing: Routing = RoutingStub(),
+    player: SessionPlayer = CameraKitServiceStub.shared,
+    monitor: SessionMonitor = CameraKitServiceStub.shared
+  ) {
     self.routing = routing
+    self.player = player
+    self.monitor = monitor
   }
 
   public var routing: Routing = RoutingStub()
+  public var player: SessionPlayer = CameraKitServiceStub.shared
   public var monitor: SessionMonitor = CameraKitServiceStub.shared
 }
 
 public let sessionReducer = Reducer<SessionState, SessionAction, SessionEnvironment> { state, action, environment in
   switch action {
   case .onAppear:
-    return environment.monitor.monitorErrorPublisher
-      .receive(on: DispatchQueue.main)
-      .compactMap { $0 }
-      .map { error in SessionAction.showError(error) }
-      .eraseToEffect()
-      .cancellable(id: MonitorID())
+    return .merge(
+      environment.monitor.monitorErrorPublisher
+        .receive(on: DispatchQueue.main)
+        .compactMap { $0 }
+        .map { error in SessionAction.showError(error) }
+        .eraseToEffect()
+        .cancellable(id: MonitorID(), cancelInFlight: true),
+      .task {
+        await environment.player.play()
+      }
+    )
   case .onDisappear:
+    environment.player.stop()
     return .cancel(id: MonitorID())
   case .showError(let error):
+    // environment.player.stop()
     state.localState.alertError = error
+    return .cancel(id: MonitorID())
   case .tapBack:
-    UIImpactFeedbackGenerator(style: .light).impactOccurred()
     return .task {
       await environment.routing.selectTab(animated: true)
     }
   case .switchCameras:
-    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     state.localState.hasSwitchedCameras.toggle()
-  case .binding:
-    // check alert and stop session
-    break
+  case .binding(let action):
+    if action.keyPath == \.$localState.alertError, state.localState.alertError == nil {
+      return .task {
+        await environment.routing.selectTab(animated: true)
+      }
+    }
   }
   return .none
 }

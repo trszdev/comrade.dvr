@@ -116,7 +116,7 @@ public struct DeviceCameraView: View {
 
         IntSlider(
           value: viewStore.binding(\.$configuration.bitrate.bitsPerSecond),
-          in: 0...Int(upperBound)
+          in: 1...Int(upperBound)
         )
       }
 
@@ -139,6 +139,12 @@ public struct DeviceCameraView: View {
 
 struct DeviceCameraPreviews: PreviewProvider {
   static var previews: some View {
-    DeviceCameraView(store: .init(initialState: .init(), reducer: deviceCameraReducer))
+    DeviceCameraView(
+      store: .init(
+        initialState: .init(),
+        reducer: deviceCameraReducer,
+        environment: .init()
+      )
+    )
   }
 }

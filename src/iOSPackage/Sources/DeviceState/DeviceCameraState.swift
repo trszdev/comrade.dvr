@@ -49,7 +49,19 @@ public enum DeviceCameraAction: BindableAction {
   case setBitrate(Bitrate)
 }
 
-public let deviceCameraReducer = Reducer<DeviceCameraState, DeviceCameraAction, Void> { state, action, _ in
+public struct DeviceCameraEnvironment {
+  public init(mainQueue: AnySchedulerOf<DispatchQueue> = .main) {
+    self.mainQueue = mainQueue
+  }
+
+  public var mainQueue: AnySchedulerOf<DispatchQueue> = .main
+}
+
+public let deviceCameraReducer = Reducer<
+  DeviceCameraState,
+  DeviceCameraAction,
+  DeviceCameraEnvironment
+> { state, action, environment in
   switch action {
   case .binding(let action):
     switch action.keyPath {
@@ -60,8 +72,11 @@ public let deviceCameraReducer = Reducer<DeviceCameraState, DeviceCameraAction, 
     case \.$configuration.fov:
       state.configuration.fps.clamp(state.fpsAndZoom.fps)
       state.configuration.zoom.clamp(state.fpsAndZoom.zoom)
-    case \.showAlert, \.$configuration.zoom, \.$configuration.bitrate:
+    case \.showAlert:
       return .none
+    case \.$configuration.zoom, \.$configuration.bitrate.bitsPerSecond:
+      return .init(value: .onConfigurationChange, delay: .seconds(1), scheduler: environment.mainQueue)
+        .cancellable(id: ConfigurationDebounceID(), cancelInFlight: true)
     default:
       break
     }
@@ -69,9 +84,11 @@ public let deviceCameraReducer = Reducer<DeviceCameraState, DeviceCameraAction, 
   case .setBitrate(let bitrate):
     state.configuration.bitrate = bitrate
     return .init(value: .onConfigurationChange)
-  default:
-    break
+  case .onConfigurationChange:
+    log.debug("onConfigurationChange")
   }
   return .none
 }
 .binding()
+
+private struct ConfigurationDebounceID: Hashable {}

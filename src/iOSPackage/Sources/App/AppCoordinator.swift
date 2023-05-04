@@ -56,12 +56,6 @@ public final class AppCoordinator {
     }
     await Task.wait(.seconds(0.1))
     await router.selectTab(animated: true)
-    do {
-      try AVAudioSession.sharedInstance().setAllowHapticsAndSystemSoundsDuringRecording(true)
-    } catch {
-      log.warn("failed setAllowHapticsAndSystemSoundsDuringRecording")
-      log.warn(error: error)
-    }
   }
 
   private let router: Router

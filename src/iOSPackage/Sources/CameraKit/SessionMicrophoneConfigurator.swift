@@ -35,6 +35,7 @@ struct SessionMicrophoneConfigurator {
 //    }
     do {
       try audioSession.setCategory(.playAndRecord, mode: .default, options: options)
+      try audioSession.setAllowHapticsAndSystemSoundsDuringRecording(true)
       try audioSession.setActive(true)
     } catch {
       log.crit(error: error)

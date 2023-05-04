@@ -126,13 +126,13 @@ public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
       permissionDialogPresenting: $0.permissionDialogPresenting,
       deviceConfigurationRepository: $0.deviceConfigurationRepository,
       datedFileManager: $0.datedFileManager,
-      cameraKitService: $0.cameraKitService
+      sessionConfigurator: $0.cameraKitService
     )
   },
 
   paywallReducer.pullback(state: \.paywallState, action: /AppAction.paywallAction),
 
   sessionReducer.pullback(state: \.sessionState, action: /AppAction.sessionAction) {
-    .init(routing: $0.routing)
+    .init(routing: $0.routing, player: $0.cameraKitService, monitor: $0.cameraKitService)
   }
 )

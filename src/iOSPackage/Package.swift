@@ -161,7 +161,7 @@ struct Module {
 
   static let cameraKit = Self(
     name: "CameraKit",
-    moduleDependencies: [.device, .swinjectExtensions],
+    moduleDependencies: [.device, .swinjectExtensions, .commonUI],
     externalDependencies: [.util]
   )
 

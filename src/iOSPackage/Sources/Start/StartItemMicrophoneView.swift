@@ -11,7 +11,7 @@ struct StartItemMicrophoneView: View {
   @Environment(\.appearance) private var appearance
 
   var body: some View {
-    let enabled = state.enabled
+    let enabled = state.enabled && !state.isLocked
     let opacity = state.isLocked ? 0.5 : 1
     var color = (enabled ? Color.accentColor : Color.gray).opacity(opacity)
     let hasError = state.hasErrors
@@ -39,12 +39,8 @@ struct StartItemMicrophoneView: View {
         HStack {
           Spacer()
 
-          if state.isLocked {
-            ProgressView()
-          } else {
-            Image(systemName: hasError ? "exclamationmark.circle" : "mic")
-              .foregroundColor(color)
-          }
+          Image(systemName: hasError ? "exclamationmark.circle" : "mic")
+            .foregroundColor(color)
         }
       }
       .padding(15)
