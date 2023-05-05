@@ -19,9 +19,10 @@ final class DatedFileManagerTests: XCTestCase {
   }
 
   func testURL() {
+    NSTimeZone.default = NSTimeZone(forSecondsFromGMT: 0) as TimeZone
     let url = sut.url(name: "qwe123", date: Date(timeIntervalSince1970: 0))
 
-    XCTAssertEqual(url.pathComponents.suffix(2), ["qwe123", "1-Jan-1970_04-00-00"])
+    XCTAssertEqual(url.pathComponents.suffix(2), ["qwe123", "1-Jan-1970_00-00-00"])
   }
 
   func testEnumerateEmpty() {
