@@ -36,8 +36,10 @@ struct HistoryItemVerticalView: View {
   }
 }
 
+#if DEBUG
 struct HistoryItemViewPreviews: PreviewProvider {
   static var previews: some View {
     HistoryItemVerticalView().background(Color.gray)
   }
 }
+#endif

@@ -213,8 +213,10 @@ private let assetLimits: [FileSize?] = [
   nil,
 ]
 
+#if DEBUG
 struct SettingsViewPreviews: PreviewProvider {
   static var previews: some View {
     SettingsView(store: .init(initialState: .init(), reducer: settingsReducer, environment: .init()))
   }
 }
+#endif

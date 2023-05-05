@@ -32,7 +32,7 @@ public struct SessionState: Equatable {
   public var backCameraPreviewView: UIView?
   public var frontCameraPreviewView: UIView?
   public var orientation: Orientation = .portrait
-  @BindableState public var localState = LocalState()
+  @BindingState public var localState = LocalState()
 
   var mainCameraPreviewView: UIView? {
     if hasTwoCameras {
@@ -76,7 +76,7 @@ public struct SessionEnvironment {
   public var monitor: SessionMonitor = CameraKitServiceStub.shared
 }
 
-public let sessionReducer = Reducer<SessionState, SessionAction, SessionEnvironment> { state, action, environment in
+public let sessionReducer = AnyReducer<SessionState, SessionAction, SessionEnvironment> { state, action, environment in
   switch action {
   case .onAppear:
     return .merge(
@@ -86,7 +86,7 @@ public let sessionReducer = Reducer<SessionState, SessionAction, SessionEnvironm
         .map { error in SessionAction.showError(error) }
         .eraseToEffect()
         .cancellable(id: MonitorID(), cancelInFlight: true),
-      .task {
+      .fireAndForget {
         await environment.player.play()
       }
     )
@@ -98,14 +98,14 @@ public let sessionReducer = Reducer<SessionState, SessionAction, SessionEnvironm
     state.localState.alertError = error
     return .cancel(id: MonitorID())
   case .tapBack:
-    return .task {
+    return .fireAndForget {
       await environment.routing.selectTab(animated: true)
     }
   case .switchCameras:
     state.localState.hasSwitchedCameras.toggle()
   case .binding(let action):
     if action.keyPath == \.$localState.alertError, state.localState.alertError == nil {
-      return .task {
+      return .fireAndForget {
         await environment.routing.selectTab(animated: true)
       }
     }

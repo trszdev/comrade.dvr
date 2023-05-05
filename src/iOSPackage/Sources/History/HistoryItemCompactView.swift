@@ -32,8 +32,10 @@ struct HistoryItemCompactView: View {
   }
 }
 
+#if DEBUG
 struct HistoryItemCompactViewPreviews: PreviewProvider {
   static var previews: some View {
     HistoryItemCompactView().background(Color.gray)
   }
 }
+#endif

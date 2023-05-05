@@ -72,8 +72,10 @@ public struct PaywallView: View {
   }
 }
 
+#if DEBUG
 struct PaywallViewPreviews: PreviewProvider {
   static var previews: some View {
     PaywallView(store: paywallReducer.store(initialState: .init()))
   }
 }
+#endif

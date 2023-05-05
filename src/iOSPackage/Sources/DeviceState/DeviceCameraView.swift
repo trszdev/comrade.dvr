@@ -137,6 +137,7 @@ public struct DeviceCameraView: View {
   }
 }
 
+#if DEBUG
 struct DeviceCameraPreviews: PreviewProvider {
   static var previews: some View {
     DeviceCameraView(
@@ -148,3 +149,4 @@ struct DeviceCameraPreviews: PreviewProvider {
     )
   }
 }
+#endif

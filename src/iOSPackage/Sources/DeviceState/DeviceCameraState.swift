@@ -4,6 +4,7 @@ import Assets
 import Device
 import Util
 import CameraKit
+import Foundation
 
 public struct DeviceCameraState: Equatable {
   public init(
@@ -26,9 +27,9 @@ public struct DeviceCameraState: Equatable {
     fovIndex.index[configuration.fov] ?? .init()
   }
 
-  @BindableState public var showAlert: Bool = false
-  @BindableState public var enabled: Bool = false
-  @BindableState public var configuration: CameraConfiguration = .defaultBackCamera
+  @BindingState public var showAlert: Bool = false
+  @BindingState public var enabled: Bool = false
+  @BindingState public var configuration: CameraConfiguration = .defaultBackCamera
   public var isFrontCamera: Bool = false
   public var index: CameraConfigurationIndex = .init()
   public var errorFields: Set<PartialKeyPath<CameraConfiguration>> = .init()
@@ -57,7 +58,7 @@ public struct DeviceCameraEnvironment {
   public var mainQueue: AnySchedulerOf<DispatchQueue> = .main
 }
 
-public let deviceCameraReducer = Reducer<
+public let deviceCameraReducer = AnyReducer<
   DeviceCameraState,
   DeviceCameraAction,
   DeviceCameraEnvironment

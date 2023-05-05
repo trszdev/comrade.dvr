@@ -130,8 +130,10 @@ public struct StartView: View {
   }
 }
 
+#if DEBUG
 struct StartPreviews: PreviewProvider {
   static var previews: some View {
     StartView(store: .init(initialState: .init(), reducer: startReducer, environment: .init()))
   }
 }
+#endif

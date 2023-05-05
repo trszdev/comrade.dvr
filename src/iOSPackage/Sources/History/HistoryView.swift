@@ -127,6 +127,7 @@ public struct HistoryView: View {
   private let observableImageCache: ObservableImageCache
 }
 
+#if DEBUG
 @available(iOS 15.0, *)
 struct HistoryViewPreviews: PreviewProvider {
   static var previews: some View {
@@ -136,3 +137,4 @@ struct HistoryViewPreviews: PreviewProvider {
       .previewInterfaceOrientation(.landscapeRight)
   }
 }
+#endif

@@ -131,6 +131,7 @@ private struct StopButtonStyle: ButtonStyle {
   }
 }
 
+#if DEBUG
 @available(iOS 15.0, *)
 struct SessionViewPreviews: PreviewProvider {
   static var previews: some View {
@@ -154,3 +155,4 @@ private extension UIView {
     return view
   }
 }
+#endif

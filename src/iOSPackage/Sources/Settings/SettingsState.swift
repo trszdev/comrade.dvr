@@ -22,7 +22,7 @@ public struct SettingsState: Equatable {
 
   public var localState: LocalState = .init()
   public var isPremium: Bool = false
-  @BindableState public var settings: Settings = .init()
+  @BindingState public var settings: Settings = .init()
 }
 
 public enum SettingsAction: BindableAction {
@@ -55,7 +55,11 @@ public struct SettingsEnvironment {
   }
 }
 
-public let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment> { state, action, environment in
+public let settingsReducer = AnyReducer<
+  SettingsState,
+  SettingsAction,
+  SettingsEnvironment
+> { state, action, environment in
   let email = Optional(Language.en).appEmail
   switch action {
   case .contactUs:
@@ -67,19 +71,19 @@ public let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvi
   case .contactUsCopy:
     UIPasteboard.general.string = email
   case .binding:
-    return .task { [state] in
+    return .fireAndForget { [state] in
       await environment.repository.save(settings: state.settings)
     }
   case .settingsLoaded(let settings):
     state.settings = settings
   case .upgradeToPro:
-    return .task {
+    return .fireAndForget {
       await environment.routing.showPaywall(animated: true)
     }
   case .updatePermissionStatus:
     state.localState.notificationsEnabled = environment.permissionChecker.authorized(.notification)
   case .openNotificationSettings:
-    return .task {
+    return .fireAndForget {
       _ = await environment.permissionDialogPresenting.tryPresentDialog(for: .notification)
     }
   default:

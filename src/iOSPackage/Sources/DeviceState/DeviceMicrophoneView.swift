@@ -57,8 +57,10 @@ public struct DeviceMicrophoneView: View {
   private var showAlert = false
 }
 
+#if DEBUG
 struct DeviceMicrophonePreviews: PreviewProvider {
   static var previews: some View {
     DeviceMicrophoneView(store: .init(initialState: .init(), reducer: deviceMicrophoneReducer))
   }
 }
+#endif

@@ -17,8 +17,10 @@ struct LoadingView: View {
   }
 }
 
+#if DEBUG
 struct LoadingViewPreviews: PreviewProvider {
   static var previews: some View {
     LoadingView()
   }
 }
+#endif

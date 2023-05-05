@@ -93,11 +93,11 @@ public struct AppEnvironment {
   public var cameraKitService: CameraKitService = CameraKitServiceStub.shared
 }
 
-public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
+public let appReducer = AnyReducer<AppState, AppAction, AppEnvironment>.combine(
   .init { _, action, environment in
     switch action {
     case .settingsAction(.clearAllRecordings):
-      return .task {
+      return .fireAndForget {
         environment.datedFileManager.removeFiles(toFit: .zero)
         await environment.routing.tabRouting?.selectHistory()
       }

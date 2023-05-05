@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version: 5.8
 import PackageDescription
 
 var package = Package(
@@ -46,20 +46,29 @@ struct ExternalDependency {
 
   static let spPermissionsCamera = Self(
     id: 0,
-    target: .product(name: "SPPermissionsCamera", package: "SPPermissions"),
-    package: .package(url: "https://github.com/ivanvorobei/SPPermissions", "7.1.5"..."8.0.0")
+    target: .product(name: "SPPermissionsCamera", package: "PermissionsKit"),
+    package: .package(
+      url: "https://github.com/sparrowcode/PermissionsKit",
+      revision: "ec3fc55e4fbc212cc746a84304f4aece0cb45467"
+    )
   )
 
   static let spPermissionsNotification = Self(
     id: 0,
-    target: .product(name: "SPPermissionsNotification", package: "SPPermissions"),
-    package: .package(url: "https://github.com/ivanvorobei/SPPermissions", "7.1.5"..."8.0.0")
+    target: .product(name: "SPPermissionsNotification", package: "PermissionsKit"),
+    package: .package(
+      url: "https://github.com/sparrowcode/PermissionsKit",
+      revision: "ec3fc55e4fbc212cc746a84304f4aece0cb45467"
+    )
   )
 
   static let spPermissionsMicrophone = Self(
     id: 0,
-    target: .product(name: "SPPermissionsMicrophone", package: "SPPermissions"),
-    package: .package(url: "https://github.com/ivanvorobei/SPPermissions", "7.1.5"..."8.0.0")
+    target: .product(name: "SPPermissionsMicrophone", package: "PermissionsKit"),
+    package: .package(
+      url: "https://github.com/sparrowcode/PermissionsKit",
+      revision: "ec3fc55e4fbc212cc746a84304f4aece0cb45467"
+    )
   )
 }
 

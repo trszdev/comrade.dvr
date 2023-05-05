@@ -2,6 +2,7 @@ import ComposableArchitecture
 import ThumbnailKit
 import CommonUI
 import Util
+import Foundation
 
 public struct HistoryState: Equatable {
   public struct Section: Equatable {
@@ -45,14 +46,14 @@ public struct HistoryEnvironment {
   public var repository: HistoryRepository = HistoryRepositoryStub.shared
 }
 
-public let historyReducer = Reducer<HistoryState, HistoryAction, HistoryEnvironment> { state, action, environment in
+public let historyReducer = AnyReducer<HistoryState, HistoryAction, HistoryEnvironment> { state, action, environment in
   switch action {
   case .onAppear:
     return .init(value: .reload)
   case .reload:
-    return .async {
+    return .task {
       let sections = await environment.repository.loadHistory()
-      return .init(value: .loaded(sections))
+      return .loaded(sections)
     }
   case .loaded(let sections):
     guard sections != state.sections else { return .none }
@@ -63,13 +64,13 @@ public let historyReducer = Reducer<HistoryState, HistoryAction, HistoryEnvironm
   case .select(let item):
     state.selectedItem = item
   case .remove(let item):
-    return .async {
+    return .task {
       try? await Task.sleep(.seconds(0.7)) // solves context menu glitch
       await environment.repository.remove(item)
-      return .init(value: .reload)
+      return .reload
     }
   case .share(let item):
-    return .task {
+    return .fireAndForget {
       await environment.routing.tabRouting?.historyRouting?.share(url: item.url, animated: true)
     }
   }

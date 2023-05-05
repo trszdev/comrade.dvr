@@ -20,7 +20,7 @@ public struct StartState: Equatable {
     public var alertError: StartStateError?
   }
 
-  @BindableState public var localState: LocalState = .init()
+  @BindingState public var localState: LocalState = .init()
   public var session: Session?
   public var isPremium: Bool = false
   public var maxFileLength: TimeInterval = .seconds(1)
@@ -161,7 +161,7 @@ public struct StartEnvironment {
   let discovery = Discovery()
 }
 
-public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.combine([
+public let startReducer = AnyReducer<StartState, StartAction, StartEnvironment>.combine([
   .init { state, action, environment in
     switch action {
     case .tapFrontCamera:
@@ -178,7 +178,7 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
         microphone: state.microphoneState.configuration,
         microphoneEnabled: state.microphoneState.enabled
       )
-      return .task {
+      return .fireAndForget {
         await environment.deviceConfigurationRepository.save(deviceConfiguration: deviceConfiguration)
       }
     default:
@@ -218,7 +218,7 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
     case .tapFrontCamera, .tapBackCamera:
       state.localState.autostartSecondsRemaining = nil
       return .merge(
-        .task {
+        .fireAndForget {
           let hasAccess = await environment.permissionDialogPresenting.tryPresentDialog(for: .camera)
           guard hasAccess else { return }
           await environment.routing.tabRouting?.startRouting?.openDeviceCamera(animated: true)
@@ -228,7 +228,7 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
     case .tapMicrophone:
       state.localState.autostartSecondsRemaining = nil
       return .merge(
-        .task {
+        .fireAndForget {
           let hasAccess = await environment.permissionDialogPresenting.tryPresentDialog(for: .microphone)
           guard hasAccess else { return }
           await environment.routing.tabRouting?.startRouting?.openDeviceMicrophone(animated: true)
@@ -243,18 +243,18 @@ public let startReducer = Reducer<StartState, StartAction, StartEnvironment>.com
         if environment.permissionChecker.hasStartPermissions {
           return .init(value: .configureAndPlay)
         } else {
-          return .async {
+          return .run { send in
             await environment.routing.tabRouting?.startRouting?.showPermissions(animated: true)
             await environment.routing.tabRouting?.startRouting?.permissionRouting?.waitToClose()
-            guard environment.permissionChecker.hasStartPermissions else { return .none }
-            return .init(value: .configureAndPlay)
+            guard environment.permissionChecker.hasStartPermissions else { return }
+            await send.send(.configureAndPlay)
           }
         }
       }
     case .configureAndPlay:
       guard environment.sessionConfigurator.tryConfigure(using: &state) else { return .none }
       let config = state.deviceConfiguration
-      return .task {
+      return .fireAndForget {
         await environment.routing.selectSession(orientation: config.orientation.interfaceOrientation, animated: true)
       }
     case let .deviceConfigurationLoaded(configuration, index):
@@ -305,6 +305,7 @@ private extension SessionConfigurator {
       try configure(session: session, deviceConfiguration: startState.deviceConfiguration)
       return true
     } catch {
+      log.warn(error: error)
       startState.handleError(error)
       return false
     }

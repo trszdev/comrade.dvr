@@ -9,6 +9,7 @@ import Settings
 import CommonUI
 import Device
 import CameraKit
+import Foundation
 
 public enum AppAssembly: SharedAssembly {
   case shared

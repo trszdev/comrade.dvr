@@ -9,9 +9,9 @@ public struct DeviceMicrophoneState: Equatable {
     self.configuration = configuration
   }
 
-  @BindableState public var showAlert: Bool = false
-  @BindableState public var enabled: Bool = false
-  @BindableState public var configuration: MicrophoneConfiguration = .default
+  @BindingState public var showAlert: Bool = false
+  @BindingState public var enabled: Bool = false
+  @BindingState public var configuration: MicrophoneConfiguration = .default
   public var errorFields: Set<PartialKeyPath<MicrophoneConfiguration>> = .init()
   public var isLocked: Bool = false
 
@@ -25,7 +25,7 @@ public enum DeviceMicrophoneAction: BindableAction {
   case onConfigurationChange
 }
 
-public let deviceMicrophoneReducer = Reducer<DeviceMicrophoneState, DeviceMicrophoneAction, Void> { _, action, _ in
+public let deviceMicrophoneReducer = AnyReducer<DeviceMicrophoneState, DeviceMicrophoneAction, Void> { _, action, _ in
   switch action {
   case .binding(let action):
     guard action.keyPath != \.$showAlert else { return .none }

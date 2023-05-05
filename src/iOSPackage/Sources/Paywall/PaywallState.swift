@@ -10,6 +10,6 @@ public enum PaywallAction {
   case tapRules
 }
 
-public let paywallReducer = Reducer<PaywallState, PaywallAction, Void> { _, _, _ in
+public let paywallReducer = AnyReducer<PaywallState, PaywallAction, Void> { _, _, _ in
   .none
 }

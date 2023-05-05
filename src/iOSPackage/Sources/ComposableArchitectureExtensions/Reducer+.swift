@@ -1,10 +1,10 @@
 import ComposableArchitecture
 
-public extension Reducer where Environment == Void {
+public extension AnyReducer where Environment == Void {
   func pullback<GlobalState, GlobalAction, GlobalEnvironment>(
     state toLocalState: WritableKeyPath<GlobalState, State>,
     action toLocalAction: CasePath<GlobalAction, Action>
-  ) -> Reducer<GlobalState, GlobalAction, GlobalEnvironment> {
+  ) -> AnyReducer<GlobalState, GlobalAction, GlobalEnvironment> {
     pullback(state: toLocalState, action: toLocalAction) { _ in () }
   }
 
@@ -13,7 +13,7 @@ public extension Reducer where Environment == Void {
   }
 }
 
-public extension Reducer {
+public extension AnyReducer {
   func store(initialState: State, environment: Environment) -> Store<State, Action> {
     .init(initialState: initialState, reducer: self, environment: environment)
   }
