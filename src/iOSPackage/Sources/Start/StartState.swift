@@ -287,8 +287,8 @@ private extension PermissionChecker {
   var hasStartPermissions: Bool {
     let hasCameraAccess = authorized(.camera) == true
     let hasMicrophoneAccess = authorized(.microphone) == true
-    let hasDeterminedNotification = authorized(.notification) != nil
-    return hasCameraAccess && hasMicrophoneAccess && hasDeterminedNotification
+    // let hasDeterminedNotification = authorized(.notification) != nil
+    return hasCameraAccess && hasMicrophoneAccess
   }
 }
 

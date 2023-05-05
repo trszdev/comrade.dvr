@@ -12,7 +12,7 @@ public enum PermissionsAssembly: SharedAssembly {
       .register(PermissionControllerCoordinating.self) { resolver in
         PermissionControllerCoordinator(
           languagePublisher: resolver.resolve(CurrentValuePublisher<Language?>.self)!,
-          permissions: [.camera, .microphone, .notification]
+          permissions: [.camera, .microphone]
         )
       }
       .inObjectScope(.transient)

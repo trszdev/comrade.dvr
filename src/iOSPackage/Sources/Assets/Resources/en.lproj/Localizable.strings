@@ -130,7 +130,7 @@
 
 "PERMISSIONS_TITLE" = "PERMISSIONS REQUEST";
 "PERMISSIONS_SUBTITLE" = "Need Permission";
-"PERMISSIONS_CAPTION" = "Permissions are necessary for application to work properly. Notifications aren't required.";
+"PERMISSIONS_CAPTION" = "Permissions are necessary for application to work properly.";
 "PERMISSIONS_CAMERA" = "Required for cameras setup and video recording";
 "PERMISSIONS_MICROPHONE" = "Required for microphone setup and audio recording";
 "PERMISSIONS_NOTIFICATIONS" = "Start/stop notifications";

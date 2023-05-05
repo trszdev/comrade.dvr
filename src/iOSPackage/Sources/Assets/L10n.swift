@@ -140,7 +140,7 @@ public enum L10n: String, Equatable {
   case permissionsBtnDenied = "PERMISSIONS_BTN_DENIED"
   /// Required for cameras setup and video recording
   case permissionsCamera = "PERMISSIONS_CAMERA"
-  /// Permissions are necessary for application to work properly. Notifications aren't required.
+  /// Permissions are necessary for application to work properly.
   case permissionsCaption = "PERMISSIONS_CAPTION"
   /// Permission denied
   case permissionsDenied = "PERMISSIONS_DENIED"
