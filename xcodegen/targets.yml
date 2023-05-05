@@ -15,7 +15,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.trszdev.ComradeDVR
         TARGETED_DEVICE_FAMILY: 1
         XCODEGEN_STATE: YES
-        OTHER_LDFLAGS: -ObjC
+        OTHER_LDFLAGS: -ObjC -Wl -weak-lswiftAVFoundation
         OTHER_SWIFT_FLAGS: -Xfrontend -enable-experimental-concurrency
       configs:
         Production:
