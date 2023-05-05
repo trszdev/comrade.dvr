@@ -10,3 +10,4 @@ public enum ColorAsset: String {
   case textColorDestructive = "TextColorDestructive"
   case textColorDisabled = "TextColorDisabled"
 }
+// swiftlint:enable all

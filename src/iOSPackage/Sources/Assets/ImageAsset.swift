@@ -4,3 +4,4 @@
 public enum ImageAsset: String {
   case startIcon = "StartIcon"
 }
+// swiftlint:enable all

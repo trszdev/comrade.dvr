@@ -86,4 +86,5 @@ private struct RoundBorder: Shape {
       ),
     ]
   }
+  // swiftlint:enable large_tuple
 }

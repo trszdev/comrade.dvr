@@ -240,3 +240,4 @@ public enum L10n: String, Equatable {
   case zoom = "ZOOM"
 }
 
+// swiftlint:enable all
