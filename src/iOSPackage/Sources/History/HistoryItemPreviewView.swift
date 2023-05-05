@@ -1,24 +1,28 @@
 import SwiftUI
 import ThumbnailKit
+import Assets
 
 struct HistoryItemPreviewView: View {
   var item = HistoryItem.mockAudio
   var size = CGFloat(70)
   var iconPaddingSize = CGFloat(5)
+  private let previews: [ImageAsset] = [.preview1, .preview2, .preview3, .preview4, .preview5]
 
   var body: some View {
     if item.previewType == .video {
-      PreviewImage(url: item.url, size: .init(width: 2 * size, height: 2 * size)) { image in
-        if let image = image {
-          Image(decorative: image, scale: 1)
-            .resizable()
-            .scaledToFill()
-            .frame(width: size, height: size)
-            .clipped()
-        } else {
-          iconPreviewView
-        }
-      }
+      previews.randomElement()?
+        .image()
+        .resizable()
+        .scaledToFill()
+        .frame(width: size, height: size)
+        .clipped()
+    } else if item.previewType == .selfie {
+      ImageAsset.previewFront
+        .image()
+        .resizable()
+        .scaledToFill()
+        .frame(width: size, height: size)
+        .clipped()
     } else {
       iconPreviewView
     }
@@ -36,8 +40,8 @@ struct HistoryItemPreviewView: View {
   @ViewBuilder private var iconView: some View {
     switch item.previewType {
     case .audio:
-      Image(systemName: "mic.square").resizable()
-    case .video:
+      Image(systemName: "mic.fill").resizable().scaledToFit()
+    case .video, .selfie:
       Image(systemName: "video.square").resizable()
     }
   }

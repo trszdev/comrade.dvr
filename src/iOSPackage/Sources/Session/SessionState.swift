@@ -47,7 +47,8 @@ public struct SessionState: Equatable {
   }
 
   var hasTwoCameras: Bool {
-    backCameraPreviewView != nil && frontCameraPreviewView != nil
+    true
+    // backCameraPreviewView != nil && frontCameraPreviewView != nil
   }
 }
 

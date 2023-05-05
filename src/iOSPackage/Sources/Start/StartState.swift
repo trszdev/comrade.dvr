@@ -192,9 +192,9 @@ public let startReducer = AnyReducer<StartState, StartAction, StartEnvironment>.
       let entries = environment.datedFileManager.entries()
       state.localState.occupiedSpace = environment.datedFileManager.totalFileSize
       state.localState.lastCapture = environment.datedFileManager.entries().lazy.map(\.date).min()
-      state.backCameraState.isLocked = environment.discovery.backCameras.isEmpty
-      state.frontCameraState.isLocked = environment.discovery.frontCameras.isEmpty
-      state.microphoneState.isLocked = environment.discovery.builtInMic == nil
+//      state.backCameraState.isLocked = environment.discovery.backCameras.isEmpty
+//      state.frontCameraState.isLocked = environment.discovery.frontCameras.isEmpty
+//      state.microphoneState.isLocked = environment.discovery.builtInMic == nil
     case let .onOrientationChange(orientation):
       state.localState.orientation = orientation
     case .autostartTick:
@@ -295,19 +295,20 @@ private extension PermissionChecker {
 private extension SessionConfigurator {
   @discardableResult
   func tryConfigure(using startState: inout StartState) -> Bool {
-    startState.recreateSession()
-    guard let session = startState.session else {
-      log.crit("no session found")
-      return false
-    }
-    do {
-      log.debug("configuring \(session)")
-      try configure(session: session, deviceConfiguration: startState.deviceConfiguration)
-      return true
-    } catch {
-      log.warn(error: error)
-      startState.handleError(error)
-      return false
-    }
+    true
+//    startState.recreateSession()
+//    guard let session = startState.session else {
+//      log.crit("no session found")
+//      return false
+//    }
+//    do {
+//      log.debug("configuring \(session)")
+//      try configure(session: session, deviceConfiguration: startState.deviceConfiguration)
+//      return true
+//    } catch {
+//      log.warn(error: error)
+//      startState.handleError(error)
+//      return false
+//    }
   }
 }

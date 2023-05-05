@@ -13,7 +13,7 @@ public struct HistoryState: Equatable {
 
     public var day: Date = .init()
     public var items: [HistoryItem] = []
-    public static var mock: Self = .init(items: [.mockAudio, .mockVideo])
+    public static var mock: Self = .init(items: HistoryItem.makePreviews(amount: 10))
   }
 
   public init(sections: [Section] = [], selectedItem: HistoryItem? = nil) {
@@ -52,8 +52,8 @@ public let historyReducer = AnyReducer<HistoryState, HistoryAction, HistoryEnvir
     return .init(value: .reload)
   case .reload:
     return .task {
-      let sections = await environment.repository.loadHistory()
-      return .loaded(sections)
+      // let sections = await environment.repository.loadHistory()
+      return .loaded([.mock])
     }
   case .loaded(let sections):
     guard sections != state.sections else { return .none }
@@ -62,6 +62,7 @@ public let historyReducer = AnyReducer<HistoryState, HistoryAction, HistoryEnvir
   case .onDisappear:
     state.selectedItem = nil
   case .select(let item):
+    log.debug("\(item)")
     state.selectedItem = item
   case .remove(let item):
     return .task {

@@ -4,6 +4,7 @@ import ComposableArchitectureExtensions
 import CommonUI
 import AVKit
 import ThumbnailKit
+import Assets
 
 public struct HistoryView: View {
   @Environment(\.verticalSizeClass) var verticalSizeClass
@@ -24,7 +25,7 @@ public struct HistoryView: View {
     .onChange(of: viewStore.selectedItem) { newItem in
       player?.pause()
       if let newItem = newItem {
-        player = .init(url: newItem.url)
+        player = .init(url: VideoAsset.preview.url)
         player?.play()
       } else {
         player = nil

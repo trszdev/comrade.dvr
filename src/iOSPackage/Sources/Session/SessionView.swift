@@ -69,9 +69,9 @@ public struct SessionView: View {
         .cornerRadius(20)
         .shadow(radius: 10)
         .overlay(
-          viewStore.secondaryCameraPreviewView.flatMap(UIViewRepresentableView.init)?
-            .frame(maxWidth: .infinity)
-            .background(Color.gray)
+          Color.gray
+            .overlay(ImageAsset.previewFront.image().resizable().scaledToFill())
+            .clipped()
             .cornerRadius(10)
             .padding(8)
         )
@@ -85,11 +85,8 @@ public struct SessionView: View {
   private var mainVideoView: some View {
     GeometryReader { geometry in
       ZStack(alignment: .top) {
-        if let view = viewStore.mainCameraPreviewView {
-          UIViewRepresentableView(view: view)
-        } else {
-          Color.black
-        }
+        Color.black
+          .overlay(ImageAsset.previewBack.image().resizable().scaledToFill())
 
         Color.black
           .opacity(0.5)
