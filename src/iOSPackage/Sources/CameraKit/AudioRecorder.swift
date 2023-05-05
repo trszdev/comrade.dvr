@@ -51,12 +51,15 @@ final class AudioRecorderImpl: NSObject, AudioRecorder {
       let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
       let type = AVAudioSession.InterruptionType(rawValue: typeValue)
     else {
+      log.crit("Unknown notification")
       return
     }
     switch type {
     case .began:
+      log.debug("audio int begin")
       interruptionWillBegin()
     case .ended:
+      log.debug("audio int end")
       interruptionDidEnd(shouldResume: false)
 //      guard let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt else { break }
 //      let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
@@ -67,21 +70,21 @@ final class AudioRecorderImpl: NSObject, AudioRecorder {
   }
 
   @objc private func cameraInterruptionWillBegin() {
+    log.debug()
     interruptionWillBegin()
   }
 
   @objc private func cameraInterruptionDidEnd() {
+    log.debug()
     interruptionDidEnd(shouldResume: false)
   }
 
   private func interruptionWillBegin() {
-    log.debug()
     isInterrupted = true
     stopInternal()
   }
 
   private func interruptionDidEnd(shouldResume: Bool) {
-    log.debug("shouldResume=\(shouldResume)")
     isInterrupted = false
     recordInternal()
   }

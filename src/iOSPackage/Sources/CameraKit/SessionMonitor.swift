@@ -3,7 +3,7 @@ import Combine
 import Util
 
 public protocol SessionMonitor {
-  var monitorErrorPublisher: CurrentValuePublisher<SessionMonitorError?> { get }
+  var monitorErrorPublisher: AnyPublisher<SessionMonitorError?, Never> { get }
   func checkAfterStart(session: Session)
 }
 
@@ -16,7 +16,7 @@ public enum SessionMonitorError: String, Error, Identifiable {
 }
 
 final class SessionMonitorImpl: SessionMonitor {
-  private let errorSubject = CurrentValueSubject<SessionMonitorError?, Never>(nil)
+  private let errorSubject = PassthroughSubject<SessionMonitorError?, Never>()
   init() {
     NotificationCenter.default.addObserver(
       self,
@@ -26,22 +26,24 @@ final class SessionMonitorImpl: SessionMonitor {
     )
   }
 
-  var monitorErrorPublisher: CurrentValuePublisher<SessionMonitorError?> { errorSubject.currentValuePublisher }
+  var monitorErrorPublisher: AnyPublisher<SessionMonitorError?, Never> { errorSubject.eraseToAnyPublisher() }
 
   func checkAfterStart(session: Session) {
-    errorSubject.value = nil
     if let singleCameraSession = session.singleCameraSession {
       if #available(iOS 16.0, *) {
         if singleCameraSession.hardwareCost >= 1 {
-          errorSubject.value = .hardwareCostExceeded
+          log.warn("hardwareCostExceeded")
+          errorSubject.send(.hardwareCostExceeded)
         }
       }
     } else if let multiCameraSession = session.multiCameraSession {
       if multiCameraSession.hardwareCost >= 1 {
-        errorSubject.value = .hardwareCostExceeded
+        log.warn("hardwareCostExceeded")
+        errorSubject.send(.hardwareCostExceeded)
       }
       if multiCameraSession.systemPressureCost >= 1 {
-        errorSubject.value = .systemPressureExceeded
+        log.warn("systemPressureExceeded")
+        errorSubject.send(.systemPressureExceeded)
       }
     }
   }
@@ -53,11 +55,11 @@ final class SessionMonitorImpl: SessionMonitor {
     }
     switch error.code {
     case .sessionHardwareCostOverage:
-      errorSubject.value = .hardwareCostExceeded
+      errorSubject.send(.hardwareCostExceeded)
     default:
-      log.crit(error: error)
-      log.crit("Runtime error")
-      errorSubject.value = .runtimeError
+      log.warn(error: error)
+      log.warn("Runtime error")
+      errorSubject.send(.runtimeError)
     }
   }
 }

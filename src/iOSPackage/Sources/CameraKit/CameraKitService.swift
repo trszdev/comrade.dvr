@@ -16,8 +16,8 @@ public enum CameraKitServiceStub: CameraKitService {
   public func stop() {
   }
 
-  public var monitorErrorPublisher: CurrentValuePublisher<SessionMonitorError?> {
-    CurrentValueSubject(nil).currentValuePublisher
+  public var monitorErrorPublisher: AnyPublisher<SessionMonitorError?, Never> {
+    Empty().eraseToAnyPublisher()
   }
 
   public func checkAfterStart(session: Session) {
@@ -52,6 +52,7 @@ final class CameraKitServiceImpl: CameraKitService {
   @MainActor private var avSession: AVCaptureSession? { session?.avSession }
 
   @MainActor func play() async {
+    audioRecorder.record()
     guard let session, !session.avSession.isRunning else { return }
     await withTaskGroup(of: Void.self) { [weak self] _ in
       await self?.forcePlay(session: session)
@@ -60,20 +61,15 @@ final class CameraKitServiceImpl: CameraKitService {
 
   private func forcePlay(session: Session) async {
     await avSession?.startRunning()
-    await MainActor.run { [weak self] in
-      guard let self = self else { return }
-      self.monitor.checkAfterStart(session: session)
-      guard self.monitor.monitorErrorPublisher.value == nil else { return }
-      self.audioRecorder.record()
-    }
+    await checkAfterStart(session: session)
   }
 
   func stop() {
+    audioRecorder.stop()
     guard let session, session.avSession.isRunning else { return }
     session.avSession.stopRunning()
     frontCameraRecorder.flush()
     backCameraRecorder.flush()
-    audioRecorder.stop()
   }
 
   func configure(session: Session, deviceConfiguration: DeviceConfiguration) throws {
@@ -106,9 +102,9 @@ final class CameraKitServiceImpl: CameraKitService {
     )
   }
 
-  var monitorErrorPublisher: CurrentValuePublisher<SessionMonitorError?> { monitor.monitorErrorPublisher }
+  var monitorErrorPublisher: AnyPublisher<SessionMonitorError?, Never> { monitor.monitorErrorPublisher }
 
-  func checkAfterStart(session: Session) {
+  @MainActor func checkAfterStart(session: Session) {
     monitor.checkAfterStart(session: session)
   }
 }
