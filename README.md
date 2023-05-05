@@ -24,5 +24,5 @@ git secret reveal
 ### Test
 
 ```bash
-./scripts/test.sh
+./scripts/test
 ```
