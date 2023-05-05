@@ -79,6 +79,7 @@ public struct SessionEnvironment {
 public let sessionReducer = AnyReducer<SessionState, SessionAction, SessionEnvironment> { state, action, environment in
   switch action {
   case .onAppear:
+    UIApplication.shared.isIdleTimerDisabled = true
     return .merge(
       environment.monitor.monitorErrorPublisher
         .receive(on: DispatchQueue.main)
@@ -91,6 +92,7 @@ public let sessionReducer = AnyReducer<SessionState, SessionAction, SessionEnvir
       }
     )
   case .onDisappear:
+    UIApplication.shared.isIdleTimerDisabled = false
     environment.player.stop()
     return .cancel(id: MonitorID())
   case .showError(let error):
